@@ -6,12 +6,13 @@
   "homepage": "https://nominee.world",
   "license": "Apache-2.0",
   "type": "module",
-  "workspaces": [
-    "nominee-contract"
-  ],
+  "workspaces": ["contract", "cli", "test"],
   "scripts": {
-    "compact": "cd nominee-contract && compact compile +0.31.1 src/nominee.compact managed",
-    "leakcheck": "python3 nominee-contract/tools/leakcheck.py",
-    "test": "npm --prefix research/experiments/multiheir test"
+    "compact": "cd contract && compact compile +0.31.1 src/nominee.compact out",
+    "leakcheck": "python3 test/privacy/leakcheck.py contract/out/zkir",
+    "leaktest": "python3 test/privacy/leaktest.py",
+    "test": "npm --workspace test run test",
+    "demo": "npm --workspace cli exec -- tsx src/index.ts demo",
+    "nominee": "npm --workspace cli exec -- tsx src/index.ts"
   }
 }
