@@ -230,7 +230,7 @@ Both flagged variables were traced: each is consumed by **exactly one instructio
 
 **Every genuinely secret value — owner secret, will root, heir secret, heir share, PIN, total value, executor id, guardian signatures — is clean in every circuit.** `heartbeat` in particular has 38 private variables and zero leaks.
 
-Reusable: `final/leakcheck.py`.
+Reusable: `nominee-contract/tools/leakcheck.py`.
 
 ### B5. Leak test on deployed state — **RESOLVED**
 
@@ -309,7 +309,7 @@ Also note `getProvingProvider()`: if a DApp delegates proving to the wallet, **t
 
 ### D10. Official Rules PDF — **RESOLVED, and it contradicts the page**
 
-Extracted with `pypdf` (8 pages, `sha256 3400b47a…`; `pdftotext` unavailable, no Homebrew). Full text: `raw/rules_clean.txt`.
+Extracted with `pypdf` (8 pages, `sha256 3400b47a…`; `pdftotext` unavailable, no Homebrew). Full text: `research/evidence/rules_clean.txt`.
 
 **🔴 The finding that matters — verbatim:**
 

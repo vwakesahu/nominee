@@ -7,7 +7,7 @@
 **Method:** every capability claim below was compiled on **Compact toolchain 0.31.1** (language 0.23.0, ledger-8.0.2, runtime 0.16.0) — the version the support matrix lists for Preview, Preprod and Mainnet. Row counts come from `zkir mock-compile`. Leakage claims come from dataflow analysis of the generated ZKIR, not from reading docs. 0.34.0 was used only where noted for comparison.
 
 **Date:** 2026-09-14 · **Machine:** macOS 26.5.2, arm64, 11 cores, 18 GB RAM
-**Artifacts:** `nominee/` (contracts + measurements), `priorart/` (19 cloned repos), `raw/gh_all.txt` (all 439 Midnight-topic repos)
+**Artifacts:** `research/experiments/capability-matrix/` (contracts + measurements), `priorart/` (19 cloned repos), `research/evidence/gh_all.txt` (all 439 Midnight-topic repos)
 
 ---
 
@@ -79,7 +79,7 @@ Nominee is the first design where the beneficiary set, the per-heir shares, and 
 
 ## PART B — Core mechanics, compiled on 0.31.1
 
-All row counts from `zkir mock-compile`. Sources are in `nominee/src/` and `nominee/nominee.compact`.
+All row counts from `zkir mock-compile`. Sources are in `research/experiments/capability-matrix/src/` and `research/experiments/capability-matrix/nominee.compact`.
 
 ### B4. 🔴 Shielded custody — **it compiles**, but node acceptance is unproven
 
@@ -134,9 +134,9 @@ export circuit claim(qual: QualifiedShieldedCoinInfo, heirKey: ZswapCoinPublicKe
 
 | Question | Answer | Evidence | Confidence |
 |---|---|---|---|
-| Is there a native **shield/unshield conversion** for NIGHT at ledger or wallet-SDK level on 0.31.1? | **No such operation found.** The SDK has *separate* `@midnight-ntwrk/wallet-sdk-shielded` (3.0.1) and `-unshielded-wallet` (3.1.0) packages and `shieldedToken()`/`unshieldedToken()` type helpers, but **no conversion primitive**. NIGHT is documented unshielded; DUST is shielded but **non-transferable and generated, not converted** | `npm view`; `raw/llms.txt` lines 398/469/475/531/548 | Medium-High (absence of evidence in the docs index) |
-| Can a contract **mint its own shielded token**? | **YES — compiles, 10,154 rows, k=14.** `mintShieldedToken(domain_sep, value, nonce, recipient)`; color is deterministically `tokenType(domain_sep, contractAddress)` | `nominee/src/a4_mint.compact` | High (compile) |
-| Is `nativeToken()` usable as a shielded coin color? | **Compiles (6,258 rows, k=13).** `nativeToken()` is `pad(32,"")` — 32 zero bytes | `nominee/src/a4_native.compact` | Medium — compiles, but whether a user can *acquire* native shielded coins on Preprod today is **unverified** |
+| Is there a native **shield/unshield conversion** for NIGHT at ledger or wallet-SDK level on 0.31.1? | **No such operation found.** The SDK has *separate* `@midnight-ntwrk/wallet-sdk-shielded` (3.0.1) and `-unshielded-wallet` (3.1.0) packages and `shieldedToken()`/`unshieldedToken()` type helpers, but **no conversion primitive**. NIGHT is documented unshielded; DUST is shielded but **non-transferable and generated, not converted** | `npm view`; `research/evidence/llms.txt` lines 398/469/475/531/548 | Medium-High (absence of evidence in the docs index) |
+| Can a contract **mint its own shielded token**? | **YES — compiles, 10,154 rows, k=14.** `mintShieldedToken(domain_sep, value, nonce, recipient)`; color is deterministically `tokenType(domain_sep, contractAddress)` | `research/experiments/capability-matrix/src/a4_mint.compact` | High (compile) |
+| Is `nativeToken()` usable as a shielded coin color? | **Compiles (6,258 rows, k=13).** `nativeToken()` is `pad(32,"")` — 32 zero bytes | `research/experiments/capability-matrix/src/a4_native.compact` | Medium — compiles, but whether a user can *acquire* native shielded coins on Preprod today is **unverified** |
 | What is KAAMOS's "USDC on Midnight preprod"? | **UNSHIELDED, and self-minted.** Their `usdc.compact` header: *"USD Coin (USDC) — **native unshielded token** on Midnight. Mints native Zswap unshielded coins (via `mintUnshieldedToken`)."* It is their own test token, not bridged USDC | `priorart/kaamos-otc/contract/src/usdc.compact` | High |
 | Does a shielded send **reveal the amount** on-chain? | **NO.** See below | ZKIR dataflow | High |
 | Is the **token type (color)** hidden? | **Yes — the color is inside the commitment**, not declared public. `color` (private vars 6,7) feeds only `persistent_hash` (the nullifier and commitment), never `declare_pub_input` | ZKIR dataflow | Medium-High |
@@ -299,7 +299,7 @@ ZKIR check: only **one** `assert` (on the OR result), with two independent `test
 
 ### Realistic full contract — fits k ≤ 15 comfortably
 
-`nominee/nominee.compact`, six circuits, compiled on 0.31.1:
+`research/experiments/capability-matrix/nominee.compact`, six circuits, compiled on 0.31.1:
 
 | Circuit | rows | k | prover key |
 |---|---:|---:|---:|

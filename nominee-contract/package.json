@@ -1,0 +1,11 @@
+{
+  "name": "nominee-contract",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Nominee — Compact contracts",
+  "license": "Apache-2.0",
+  "scripts": {
+    "compact": "compact compile +0.31.1 src/nominee.compact managed",
+    "leakcheck": "python3 tools/leakcheck.py"
+  }
+}

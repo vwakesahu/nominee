@@ -21,7 +21,7 @@
 | # | Task | Est. | Depends | Notes |
 |---|---|---:|---|---|
 | T0 | Repo scaffold: npm workspaces `nominee-contract/`, `nominee-cli/`, `nominee-web/`, `test/`; root package `nominee`; CLI binary `nominee` (demo runs as `nominee demo`). Apache-2.0 LICENSE. **`midnightntwrk` GitHub topic** (rules gate). | 0.5 | — | Copy the workspace layout from `example-zkloan`. |
-| T1 | **🔴 GATE — resolve the shielded exit path (A1b).** Get `sendShielded` working from a contract. Blocker: contract `ZswapChainState.firstFree = 0` → `invalid index into sparse merkle tree`. | 1.0 | T0 | Post D11 question 3 in Discord **on day 1**, in parallel. Harness already exists: `probe/runner/src/release.ts`. |
+| T1 | **🔴 GATE — resolve the shielded exit path (A1b).** Get `sendShielded` working from a contract. Blocker: contract `ZswapChainState.firstFree = 0` → `invalid index into sparse merkle tree`. | 1.0 | T0 | Post D11 question 3 in Discord **on day 1**, in parallel. Harness already exists: `research/experiments/custody-probe/runner/src/release.ts`. |
 
 ### T1 outcome → branch
 
@@ -40,7 +40,7 @@
 
 | # | Task | Est. | Depends | Notes |
 |---|---|---:|---|---|
-| T2 | Port `final/nominee.compact` into `nominee-contract/src`, vendor `schnorr.compact` from `example-zkloan`. | 0.25 | T0 | Already compiles: 10 circuits, max k=15, 97,628 rows, 40 MB keys, 19.2 s. |
+| T2 | Port `nominee-contract/src/nominee.compact` into `nominee-contract/src`, vendor `schnorr.compact` from `example-zkloan`. | 0.25 | T0 | Already compiles: 10 circuits, max k=15, 97,628 rows, 40 MB keys, 19.2 s. |
 | T3 | Owner registry: `register`, `heartbeat` with depth-16 membership. | 0.5 | T2 | Heartbeat is `H(sk, willRoot)` — prover never sees will contents. |
 | T4 | `updateWill` + `resolve` + `graceSeconds` plumbing. **Seconds, not ms.** | 0.5 | T3 | A2: indexer reports ms; `blockTime*` takes seconds. |
 | T5 | `guardianResolve` 2-of-3 and 3-of-5, strictly-increasing ids. | 0.5 | T3 | 3,356 / 4,876 rows. Cheapest real feature — ship it. |
@@ -54,7 +54,7 @@
 
 | # | Task | Est. | Depends | Notes |
 |---|---|---:|---|---|
-| T9 | Simulator harness + Merkle helper using the **contract's own hashers**. | 0.5 | T2 | **Reuse `a3/test/merkle.ts` and `a3/test/multiheir.test.ts` verbatim — already written and passing 7/7.** |
+| T9 | Simulator harness + Merkle helper using the **contract's own hashers**. | 0.5 | T2 | **Reuse `research/experiments/multiheir/test/merkle.ts` and `research/experiments/multiheir/test/multiheir.test.ts` verbatim — already written and passing 7/7.** |
 | T10 | Per-circuit happy paths: register, heartbeat, update, resolve, guardian, probate, duress. | 0.75 | T3–T6 | |
 | T11 | Negative tests: early claim, double claim, wrong heir, wrong share, stale heartbeat, stale qualification, single-guardian, duplicate guardian, bad PIN. | 0.75 | T10 | 6 of these already pass in `a3`. |
 | T12 | **Leak test** — `leaktest.py` against deployed serialized state, **high-entropy values + positive controls**. | 0.25 | T10 | B5: small ints (1, 3) collide with structural bytes. Blind or use 128-bit randoms. |
@@ -66,7 +66,7 @@
 
 | # | Task | Est. | Depends | Notes |
 |---|---|---:|---|---|
-| T14 | CLI: deploy + all circuit calls, **with the `Custom(170)` rebuild-and-re-prove retry loop**. | 1.0 | T7 | **Reuse `probe/runner/src/{wallet,providers,keys,netid}.ts`** — proven working. Retry is non-optional. |
+| T14 | CLI: deploy + all circuit calls, **with the `Custom(170)` rebuild-and-re-prove retry loop**. | 1.0 | T7 | **Reuse `research/experiments/custody-probe/runner/src/{wallet,providers,keys,netid}.ts`** — proven working. Retry is non-optional. |
 | T15 | Local devnet scripts (`standalone.yml` + funding), documented in the README. | 0.25 | T14 | Genesis seed `0x00…01`, funded, syncs in ~1 s. |
 | T16 | **Preprod deployment**: faucet, DUST registration, full scenario, record contract address + tx hashes + block heights in `deployments/preprod.json`. | 0.75 | T14 | Faucet `midnight-tmnight-preprod.nethermind.dev`. Copy onepledge's deployment-record format — judges can verify it. |
 
@@ -108,10 +108,10 @@
 
 | Source | What to take | Saves |
 |---|---|---|
-| `a3/test/` | Merkle helper + 7 passing multi-heir tests | **~1 d** |
-| `probe/runner/src/` | wallet, providers, keys, netid, **170-retry loop** | **~1 d** |
+| `research/experiments/multiheir/test/` | Merkle helper + 7 passing multi-heir tests | **~1 d** |
+| `research/experiments/custody-probe/runner/src/` | wallet, providers, keys, netid, **170-retry loop** | **~1 d** |
 | `example-zkloan` | `schnorr.compact` polyfill, UI wallet/private-state wiring | **~1 d** |
 | `onepledge/web` | Indexer read/decode pattern, deployment-record format | **~0.5 d** |
-| `final/` | The contract itself + `leakcheck.py` | **~1.5 d** |
+| `nominee-contract/` | The contract itself + `leakcheck.py` | **~1.5 d** |
 
 **~5 engineer-days of the 14.5 are already written and verified in this validation directory.**

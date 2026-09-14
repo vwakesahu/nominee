@@ -24,7 +24,7 @@ The Midnight-native half of the idea, by contrast, **compiles and is cheap** —
 
 The page at `app.akindo.io/wave-hacks/jaMZjqPOBsLXvjdG` is a client-rendered Next.js shell (`__NEXT_DATA__.props.pageProps` is `{}`). Plain fetch returns nothing useful. I recovered the real data by extracting the API base from the JS bundle (`pages/_app-c2d4ed58a89b8789.js`, hook `useFetchWaveHack`) and calling the public REST endpoint directly.
 
-**Endpoint:** `GET https://api.akindo.io/public/wave-hacks/jaMZjqPOBsLXvjdG` → HTTP 200, 23,660 bytes. Saved to `raw/wavehack.json`.
+**Endpoint:** `GET https://api.akindo.io/public/wave-hacks/jaMZjqPOBsLXvjdG` → HTTP 200, 23,660 bytes. Saved to `research/evidence/wavehack.json`.
 The `?tab=overview|products|rules` variants are **client-side only** — they change no server response; all tab content lives in the single JSON payload above.
 
 | Claim | Verdict | Evidence | Confidence |
@@ -47,7 +47,7 @@ The `?tab=overview|products|rules` variants are **client-side only** — they ch
 | Communication | **10** | "Evaluates the clarity and structure of the video presentation and slide deck." |
 | Business Development & Viability | **5** | "Evaluates target audience awareness, market potential, and adoption path." |
 
-**⚠️ Rubric discrepancy (flagged).** The rules link a "Midnight Buildathon Judging Rubric" Google Doc. I exported it (`raw/rubric.txt`, 7,183 bytes) and it is a **different rubric**: Product Leadership 20 pts, Backend Engineering 20, Frontend & UX 15, Quality Assurance 15, (Education) 15, Business Development & Viability 15 — total 100, "each domain is scored independently by its expert judge." This does **not** match the 40/15/15/15/10/5 split on the page. **Verdict: VERIFIED discrepancy.** Confidence: High. Which one binds is unresolved — worth asking in Discord.
+**⚠️ Rubric discrepancy (flagged).** The rules link a "Midnight Buildathon Judging Rubric" Google Doc. I exported it (`research/evidence/rubric.txt`, 7,183 bytes) and it is a **different rubric**: Product Leadership 20 pts, Backend Engineering 20, Frontend & UX 15, Quality Assurance 15, (Education) 15, Business Development & Viability 15 — total 100, "each domain is scored independently by its expert judge." This does **not** match the 40/15/15/15/10/5 split on the page. **Verdict: VERIFIED discrepancy.** Confidence: High. Which one binds is unresolved — worth asking in Discord.
 
 **Submission requirements (verbatim, rules §6):**
 - "A link to a publicly accessible **GitHub repository**"
@@ -70,7 +70,7 @@ The `?tab=overview|products|rules` variants are **client-side only** — they ch
 
 No explicit "what we don't want" section exists beyond the anti-fork language.
 
-**Official Rules PDF — PARTIALLY VERIFIED.** Downloaded from the Drive link: 8 pages, 238,097 bytes, `sha256 = 3400b47ae39d7701134af685e24a206059a1e68b811d0e8f84317aeec2e88d22` (`raw/rules.pdf`). Text is in embedded subset fonts with custom encoding; my extraction attempts returned only font tables, not prose. **To verify:** open the PDF manually, or run `pdftotext` (poppler). The on-page rules explicitly self-describe as "a summary" and state "In case of any discrepancy, the Official Rules prevail" — so anything decision-critical (especially the prior-work rule) should be read from the PDF directly.
+**Official Rules PDF — PARTIALLY VERIFIED.** Downloaded from the Drive link: 8 pages, 238,097 bytes, `sha256 = 3400b47ae39d7701134af685e24a206059a1e68b811d0e8f84317aeec2e88d22` (`research/evidence/rules.pdf`). Text is in embedded subset fonts with custom encoding; my extraction attempts returned only font tables, not prose. **To verify:** open the PDF manually, or run `pdftotext` (poppler). The on-page rules explicitly self-describe as "a summary" and state "In case of any discrepancy, the Official Rules prevail" — so anything decision-critical (especially the prior-work rule) should be read from the PDF directly.
 
 ### A2. RFS page — both ideas confirmed
 
@@ -500,7 +500,7 @@ KAAMOS also documents the same authentication gap: *"Authentication uses `ZswapC
 
 Borrower posts a bond at origination and must submit a ZK health proof every epoch before a deadline. Proof shows `collateral × price ≥ principal × threshold` without revealing any term. Miss the deadline → anyone calls `flagDefault` → bond slashes, collateral claim opens.
 
-I built and measured exactly this on the live toolchain (contract in `btests/lending31.compact`): `openLoan` 1,071 rows, `proveHealthy` 1,340 rows, `flagDefault` 373 rows. Total keygen 3.2 s, 1.3 MB of keys. **This works today.**
+I built and measured exactly this on the live toolchain (contract in `research/experiments/compact-limits/lending31.compact`): `openLoan` 1,071 rows, `proveHealthy` 1,340 rows, `flagDefault` 373 rows. Total keygen 3.2 s, 1.3 MB of keys. **This works today.**
 
 - **Leaks:** proof *timing and existence* (an epoch-aligned heartbeat); the *fact* of a missed proof; anything you disclose to make the proof checkable (the price attestation timestamp, at minimum). Over many epochs, the pattern of "proved early vs. proved at the last second" is a side channel on how close to the threshold the borrower is.
 - **Griefable:** the borrower can always prove healthy right up until they can't — there is no early warning, so the lender learns of distress only at default. A borrower near the edge can also strategically time proofs around favourable oracle ticks.

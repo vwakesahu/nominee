@@ -5,7 +5,7 @@
 **Audience:** an engineer implementing this from scratch.
 **Target:** Compact toolchain **0.31.1** (language 0.23.0, ledger-8.0.2, runtime 0.16.0) — the version Preview, Preprod and Mainnet run. Midnight.js **4.1.1**, wallet SDK **1.2.0**, proof server **8.1.0**, ledger-v8 **8.1.0**. Do **not** use 0.34.0: nothing here needs it and no live network accepts it.
 
-Reference contract: `final/nominee.compact` (compiles clean, 10 circuits, max k=15, 97,628 rows, 40 MB keys, 19.2 s keygen).
+Reference contract: `nominee-contract/src/nominee.compact` (compiles clean, 10 circuits, max k=15, 97,628 rows, 40 MB keys, 19.2 s keygen).
 
 ---
 
@@ -64,7 +64,7 @@ One **shared registry contract** serves many owners. This is deliberate: a contr
 | `totalValue()`, `executorId()`, `probateBlind()`, `envelopeCipher()` | | executor |
 | `pin()`, `decoyRoot()` | `Uint<16>`, `MerkleTreeDigest` | owner |
 
-**Rule, enforced and verified:** every secret is a **witness**. No circuit argument carries a secret — circuit arguments are public. `final/leakcheck.py` verifies this against the ZKIR; run it in CI.
+**Rule, enforced and verified:** every secret is a **witness**. No circuit argument carries a secret — circuit arguments are public. `nominee-contract/tools/leakcheck.py` verifies this against the ZKIR; run it in CI.
 
 ---
 
@@ -94,7 +94,7 @@ One **shared registry contract** serves many owners. This is deliberate: a contr
 - `merkleTreePathRoot` returns **`MerkleTreeDigest`**, not `Bytes<32>`. Store roots as `MerkleTreeDigest` and compare `.field`.
 - You **cannot assign a new root to a ledger `MerkleTree`**. Keep the root in a `MerkleTreeDigest` field and verify paths explicitly — that is what makes atomic root replacement possible in `updateWill`.
 - Depth 16 costs ~31 rows/level over depth 8. Use 16 (65,536 heirs) and stop thinking about it.
-- Build paths off-chain with the **contract's own hashing methods** (`_persistentHash_0`, `_merkleTreePathRoot_0`, `_degradeToTransient_0`, `_transientHash_0`) so roots match by construction. Reimplementing the hash chain is how you get a "not a beneficiary" you cannot debug. See `a3/test/merkle.ts`.
+- Build paths off-chain with the **contract's own hashing methods** (`_persistentHash_0`, `_merkleTreePathRoot_0`, `_degradeToTransient_0`, `_transientHash_0`) so roots match by construction. Reimplementing the hash chain is how you get a "not a beneficiary" you cannot debug. See `research/experiments/multiheir/test/merkle.ts`.
 - Leaf binding: `leaf = persistentHash([heirSecret, persistentHash(share)])`. Binding the **share into the leaf** is what stops an heir claiming more than the will allotted — a different share is a different leaf, and it is not in the tree.
 
 ---

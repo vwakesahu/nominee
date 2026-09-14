@@ -8,6 +8,11 @@ The model is self-validating: max referenced var == total vars - 1 in all
 circuits (slack 0), so the numbering is uniquely determined.
 """
 import json, glob, os, sys
+
+# Directory holding the compiled ZKIR. Defaults to ../managed/zkir relative to
+# this script, which is where `compact compile src/nominee.compact managed` puts it.
+ZKIR_DIR = sys.argv[1] if len(sys.argv) > 1 else os.path.join(
+    os.path.dirname(os.path.abspath(__file__)), os.pardir, 'managed', 'zkir')
 NONPROD = {'declare_pub_input','pi_skip','constrain_bits','constrain_to_boolean','assert'}
 def arity(op):
     if op in NONPROD: return 0
@@ -15,7 +20,11 @@ def arity(op):
 
 bad = 0
 print(f"{'CIRCUIT':<22} {'priv':>5} {'pub':>5} {'vars':>6}  RESULT")
-for f in sorted(glob.glob('managed/zkir/*.zkir')):
+files = sorted(glob.glob(os.path.join(ZKIR_DIR, '*.zkir')))
+if not files:
+    print(f'no .zkir found in {ZKIR_DIR}\nrun:  cd nominee-contract && compact compile +0.31.1 src/nominee.compact managed')
+    sys.exit(2)
+for f in files:
     d = json.load(open(f)); ins = d['instructions']; ni = d.get('num_inputs', 0)
     c = ni; src = {}
     for i, x in enumerate(ins):

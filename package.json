@@ -1,0 +1,17 @@
+{
+  "name": "nominee",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Add a nominee to your crypto. Nobody learns who.",
+  "homepage": "https://nominee.world",
+  "license": "Apache-2.0",
+  "type": "module",
+  "workspaces": [
+    "nominee-contract"
+  ],
+  "scripts": {
+    "compact": "cd nominee-contract && compact compile +0.31.1 src/nominee.compact managed",
+    "leakcheck": "python3 nominee-contract/tools/leakcheck.py",
+    "test": "npm --prefix research/experiments/multiheir test"
+  }
+}
