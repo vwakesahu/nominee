@@ -1,0 +1,12 @@
+{
+ "props": {
+  "pageProps": {}
+ },
+ "page": "/wave-hacks/[waveHackId]",
+ "query": {},
+ "buildId": "NtqiIKlkB-1V-BP4m7yGs",
+ "nextExport": true,
+ "autoExport": true,
+ "isFallback": false,
+ "scriptLoader": []
+}

@@ -1,0 +1,4 @@
+pragma language_version >= 0.26;
+import CompactStandardLibrary;
+export ledger v: Opaque<'string'>;
+export circuit f(): [] { }

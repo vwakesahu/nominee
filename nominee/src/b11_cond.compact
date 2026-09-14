@@ -1,0 +1,13 @@
+pragma language_version >= 0.23;
+import CompactStandardLibrary;
+export ledger beneficiaries: MerkleTree<8, Bytes<32>>;
+witness heirSecret(): Bytes<32>;
+witness unlockDate(): Uint<64>;
+witness heirPath(l: Bytes<32>): MerkleTreePath<8, Bytes<32>>;
+export circuit claimAfter(): [] {
+  const sk = heirSecret();
+  const d  = unlockDate();
+  const leaf = persistentHash<Vector<2, Bytes<32>>>([sk, persistentHash<Uint<64>>(d)]);
+  assert(beneficiaries.checkRoot(disclose(merkleTreePathRoot<8, Bytes<32>>(heirPath(leaf)))), "not a beneficiary");
+  assert(blockTimeGte(disclose(d)), "bequest not yet unlocked");
+}

@@ -1,0 +1,6 @@
+pragma language_version >= 0.26;
+import CompactStandardLibrary;
+export ledger sink: Boolean;
+witness pk(): Secp256k1Point;
+witness sg(): Secp256k1EcdsaSignature;
+export circuit f(m: Bytes<32>): [] { sink.write(disclose(secp256k1EcdsaVerify(m, sg(), pk()))); }

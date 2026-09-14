@@ -1,0 +1,4 @@
+pragma language_version >= 0.26;
+import CompactStandardLibrary;
+export ledger sink: Bytes<32>;
+export circuit f(x: Bytes<65537>): [] { sink.write(disclose(persistentHash<Bytes<65537>>(x))); }

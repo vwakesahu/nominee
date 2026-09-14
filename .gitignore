@@ -1,0 +1,35 @@
+# dependencies
+node_modules/
+
+# generated Compact output — regenerate with `compact compile +0.31.1`
+managed/
+out/
+**/managed-a2/
+
+# proving keys are large and reproducible
+*.prover
+*.verifier
+keys/
+
+# third-party repositories cloned for prior-art review.
+# These are other people's code with their own git history and licences.
+# Re-clone with the list in VALIDATION_NOMINEE.md / VALIDATION_REPORT.md.
+priorart/
+
+# local run artifacts
+*.log
+a1-results.json
+a1-hold-results.json
+.DS_Store
+
+# local devnet funding config (contains test mnemonics)
+accounts.json
+
+# third-party minified bundle, downloaded only to extract the AKINDO API path.
+# The extracted evidence is raw/wavehack.json.
+raw/pages__app-*.js
+raw/pages_wave-hacks*.js
+raw/akindo_page.html
+
+# generated ZKIR from calibration runs
+**/out_*/

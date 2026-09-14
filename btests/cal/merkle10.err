@@ -1,0 +1,22 @@
+Exception: merkle10.compact line 15 char 21:
+  potential witness-value disclosure must be declared but is not:
+    witness value potentially disclosed:
+      the return value of witness findPath at line 7 char 1
+    nature of the disclosure:
+      ledger operation might disclose a hash of the witness value
+    via this path through the program:
+      the binding of path at line 13 char 9
+      the argument to merkleTreePathRoot at line 15 char 32
+      the argument to checkRoot at line 15 char 21
+    nature of the disclosure:
+      ledger operation might disclose a hash of the boolean value of the witness value
+    via this path through the program:
+      the binding of path at line 13 char 9
+      the argument to merkleTreePathRoot at line 15 char 32
+      the argument to checkRoot at line 15 char 21
+    nature of the disclosure:
+      ledger operation might disclose a hash of a modulus of a hash of the witness value
+    via this path through the program:
+      the binding of path at line 13 char 9
+      the argument to merkleTreePathRoot at line 15 char 32
+      the argument to checkRoot at line 15 char 21

@@ -1,0 +1,30 @@
+pragma language_version >= 0.26;
+import CompactStandardLibrary;
+
+struct LoanTerms {
+  principal: Uint<64>;
+  rateBps: Uint<16>;
+  liqThresholdBps: Uint<16>;
+  lender: Bytes<32>;
+}
+
+export ledger cellV: Cell<Field>;
+export ledger counterV: Counter;
+export ledger mapV: Map<Bytes<32>, Field>;
+export ledger setV: Set<Bytes<32>>;
+export ledger mtV: MerkleTree<10, Bytes<32>>;
+export ledger hmtV: HistoricMerkleTree<10, Bytes<32>>;
+export ledger structV: LoanTerms;
+export ledger listV: List<Field>;
+
+witness secretTerms(): LoanTerms;
+
+export circuit useAll(k: Bytes<32>): [] {
+  const t = secretTerms();
+  counterV.increment(1);
+  cellV.write(disclose(t.principal as Field));
+  mapV.insert(disclose(k), disclose(t.rateBps as Field));
+  setV.insert(disclose(k));
+  mtV.insert(disclose(k));
+  hmtV.insert(disclose(k));
+}

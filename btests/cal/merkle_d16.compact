@@ -1,0 +1,13 @@
+pragma language_version >= 0.26;
+import CompactStandardLibrary;
+export ledger commitments: MerkleTree<16, Bytes<32>>;
+export ledger nullifiers: Set<Bytes<32>>;
+witness findPath(cm: Bytes<32>): MerkleTreePath<16, Bytes<32>>;
+witness secret(): Bytes<32>;
+export circuit proveMembership(): [] {
+  const s = secret();
+  const cm = persistentHash<Bytes<32>>(s);
+  const path = findPath(cm);
+  assert(commitments.checkRoot(disclose(merkleTreePathRoot<16, Bytes<32>>(path))), "not a member");
+  nullifiers.insert(disclose(persistentHash<Bytes<32>>(s)));
+}

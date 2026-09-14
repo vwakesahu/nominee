@@ -1,0 +1,8 @@
+pragma language_version >= 0.23;
+import CompactStandardLibrary;
+export ledger color: Bytes<32>;
+export circuit mintToSelf(amount: Uint<64>, nonce: Bytes<32>): [] {
+  const c = mintShieldedToken(pad(32,"nominee"), disclose(amount), disclose(nonce),
+              right<ZswapCoinPublicKey, ContractAddress>(kernel.self()));
+  color = c.color;
+}

@@ -1,0 +1,3 @@
+pragma language_version >= 0.26;
+import CompactStandardLibrary;
+export circuit probe(): [] { const z = persistentHash; }

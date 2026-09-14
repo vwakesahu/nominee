@@ -1,0 +1,8 @@
+pragma language_version >= 0.23;
+import CompactStandardLibrary;
+export ledger held: ShieldedCoinInfo;
+export circuit depositNative(nonce: Bytes<32>, v: Uint<128>): [] {
+  const coin = ShieldedCoinInfo { nonce: disclose(nonce), color: nativeToken(), value: disclose(v) };
+  receiveShielded(coin);
+  held = coin;
+}

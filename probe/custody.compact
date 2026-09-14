@@ -1,0 +1,40 @@
+pragma language_version >= 0.23;
+import CompactStandardLibrary;
+
+// A1 probe: can a Compact contract custody value on the live network?
+// Three circuits in ONE contract so a single deploy, wallet, DUST state and
+// block window covers all three and the token operation is the only variable.
+
+export ledger bumps:            Uint<64>;
+export ledger shieldedDeposits: Uint<64>;
+export ledger unshieldedDeposits: Uint<64>;
+export ledger heldShielded:     ShieldedCoinInfo;
+
+constructor() {
+  bumps = 0 as Uint<64>;
+  shieldedDeposits = 0 as Uint<64>;
+  unshieldedDeposits = 0 as Uint<64>;
+}
+
+// CONTROL — ledger write only, no token operation.
+export circuit bump(): [] {
+  bumps = (bumps + (1 as Uint<64>)) as Uint<64>;
+}
+
+// SUBJECT 1 — shielded custody (the question Nominee depends on).
+export circuit depositShielded(coin: ShieldedCoinInfo): [] {
+  receiveShielded(disclose(coin));
+  heldShielded = disclose(coin);
+  shieldedDeposits = (shieldedDeposits + (1 as Uint<64>)) as Uint<64>;
+}
+
+// SUBJECT 2 — unshielded custody (reproduces privoice / servicedesk #117).
+export circuit depositUnshielded(color: Bytes<32>, amount: Uint<128>): [] {
+  receiveUnshielded(disclose(color), disclose(amount));
+  unshieldedDeposits = (unshieldedDeposits + (1 as Uint<64>)) as Uint<64>;
+}
+
+// EXIT PATH — release shielded value to another party's coin public key.
+export circuit releaseShielded(qual: QualifiedShieldedCoinInfo, to: ZswapCoinPublicKey, amount: Uint<128>): [] {
+  sendShielded(disclose(qual), left<ZswapCoinPublicKey, ContractAddress>(disclose(to)), disclose(amount));
+}

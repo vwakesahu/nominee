@@ -1,0 +1,18 @@
+pragma language_version >= 0.23;
+import CompactStandardLibrary;
+import "schnorr" prefix Schnorr_;
+export ledger guardians: Map<Uint<16>, JubjubPoint>;
+export ledger resolved: Boolean;
+export ledger deathAttested: Counter;
+witness gSig0(): Schnorr_SchnorrSignature;
+witness gSig1(): Schnorr_SchnorrSignature;
+export circuit resolveEarly(gid0: Uint<16>, gid1: Uint<16>): [] {
+  const msg: Vector<4, Field> = [1 as Field, 0 as Field, 0 as Field, 0 as Field];
+  assert(guardians.member(disclose(gid0)), "unknown guardian");
+  Schnorr_schnorrVerify<4>(msg, gSig0(), guardians.lookup(disclose(gid0)));
+  assert(guardians.member(disclose(gid1)), "unknown guardian");
+  Schnorr_schnorrVerify<4>(msg, gSig1(), guardians.lookup(disclose(gid1)));
+  assert(disclose(gid0) < disclose(gid1), "ids must strictly increase");
+  resolved = true;
+  deathAttested.increment(1);
+}

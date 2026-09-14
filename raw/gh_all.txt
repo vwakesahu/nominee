@@ -1,0 +1,439 @@
+2026-03-06	bricktowers/midnight-identity	Brick Towers Identity Verification on Midnight Network
+2026-03-07	1momoh/night-trade-bot	🌙 Terminal bot that monitors $NIGHT price and auto-executes buys/sells via PancakeSwap V2.
+2026-03-07	cadalt0/midnighttokencontract	trying compact 
+2026-03-07	devrelaicom/midnight-local-devnet	CLI and MCP server for managing local Docker based Midnight Network devnet
+2026-03-07	Edgxtech/pdm-demo-app	Private Data Management (PDM) Demo App. Showing a trusted and secure data liquid architecture based on the Midnight Distributed Ledger.
+2026-03-07	ItzPlausible/cosmic-commons-cooperative	Public Repo-for C3 Alliance Projects
+2026-03-07	MichaelDi555X/midnightntwrk	compact
+2026-03-07	Olanetsoft/equityshield	EquityShield changes how startup employees verify their equity value during job negotiations. Using Midnight Network's zero-knowledge proof technology, professionals can prove claims about their equity (like having over $500k vested) without revealing actual values, company details, or violating NDAs.
+2026-03-07	seyiademola147-netizen/Ademola.github.io	Visual Storytelling Portfolio ..Developer tooling built for the Midnight Network using Compact.
+2026-03-07	spo-kissa/midnight-preview-indexer	Midnight Explorer Preview Original Indexer
+2026-03-07	spo-kissa/mn-explorer-preview	mn-explorer.net - Midnight Explorer for Preview Network
+2026-03-09	bochaco/ataulfo	Ataulfo is a decentralized application (dApp) for creating and managing a Real World Asset (RWA) marketplace on the Midnight blockchain. It provides both a command-line interface (CLI) and a graphical user interface (GUI) for interacting with a deployed Ataulfo smart contract..
+2026-03-10	adityad25101-tech/midnight_NFT_royalty_private	
+2026-03-11	fredericosanntana/dpo2u-midnight-compliance	Privacy-preserving compliance attestation system built on Midnight Network with ZK proofs and self-funding via $NIGHT/$DUST
+2026-03-11	fredericosanntana/dpo2u-midnight-relayer	DPO2U Midnight Relayer — Cross-chain compliance relay for Midnight Network with ZK proofs
+2026-03-11	midnames/vc-examples	
+2026-03-11	nel349/midnight-bank	A zero-knowledge banking application built on Midnight demonstrating private transfers, encrypted balances, and selective disclosure.
+2026-03-11	nel349/midnight-mobile-connector	
+2026-03-11	nel349/midnight-pay	Midnight Pay protocol
+2026-03-11	nel349/MidnightDrive	File system for midnight
+2026-03-11	nel349/zkSalaria	zkSalaria is a privacy-preserving payroll and income proof system that turns income verification into a marketplace. 
+2026-03-12	carthagexlabs/zk-tanit-id	Zero-Knowledge Proof framework for privacy-preserving identity attestation, inspired by Tunisia’s digital sovereignty challenges.
+2026-03-12	Ronexlemon/MidNight	
+2026-03-12	sevryn-labs/midnight-escrow	A privacy-preserving escrow contract built on the Midnight Network
+2026-03-12	tusharpamnani/midnight-todo	
+2026-03-14	greyw0rks/midnight-private-voting	
+2026-03-14	sevryn-labs/pUSD-protocol	pUSD is a privacy-preserving collateralized lending protocol built on the Midnight Network.
+2026-03-14	sevryn-labs/Veracis	LMSR is a prediction market protocol using the Logarithmic Market Scoring Rule for automated market making and information aggregation.
+2026-03-19	htlabs-xyz/nocturne	A self-custodial browser extension wallet for the Midnight Network — privacy-preserving blockchain powered by zero-knowledge proofs.
+2026-03-19	midnames/sdk	Name service for Midnight Network
+2026-03-22	cadalt0/MidNightDocs	
+2026-03-22	midnames/midnight-zk	
+2026-03-22	sevryn-labs/midnight-bonding-curve	A privacy-preserving AMM with zkp
+2026-03-25	nel349/midnight-starship	A Galaga-style game with a privacy-first on-chain leaderboard. Built as a reference for connecting browser DApps to the Midnight wallet CLI via midnight serve.
+2026-03-27	statera-protocol/hydra-stake-protocol	A Privacy-First Liquid Staking Dapp built on the Midnight Blockchain
+2026-03-28	JAlbertCode/midnight-tip-jar	
+2026-04-07	cadalt0/NIGHTFORGE	Nightforge is a development environment to compile, deploy, and operate Midnight contracts.
+2026-04-08	foxytanuki/compact-vscode	VSCode Language support for Compact smart contract language (Midnight network)
+2026-04-10	subc0der/midnight-cloak	Zero-knowledge identity verification infrastructure for Midnight
+2026-04-15	bishalnium/MidHealth	MidHealth is a decentralized application that lets doctors issue healthcare credentials (e.g. vaccination records) and patients prove their status — all without revealing any private medical data. Built on Midnight's zero-knowledge blockchain, only cryptographic hashes and ZK proofs ever touch the chain. 
+2026-04-15	fireblocks/midnight-glacier-drop-sdk	Midnight Glacier Drop Fireblocks SDK 
+2026-04-15	foxytanuki/midnight-sandbox	midnight.network hands-on notes
+2026-04-15	greenplanetsolarsystems-hue/Midnight-Network-Research	midnightntwrk  
+2026-04-15	Kali-Decoder/midnight-dapps	midnight-dapps
+2026-04-15	Kali-Decoder/Midnight-Devs--Blog	Midnight(Devs)-Blog
+2026-04-15	Kali-Decoder/Midnight-Dice-Roll	Midnight Dice Roll
+2026-04-15	koulkou/-midnightntwrk-compact	This project integrates with the Midnight Network.
+2026-04-15	Luxion-Labs/REAP	
+2026-04-15	redyacore91/test-repo1	
+2026-04-15	thinkshake/SENQ	SENQ is a hyperlocal prediction market with privacy data x weighted bets. Built on Avalanche. Powered by JPYC.
+2026-04-15	tusharpamnani/midnight-coinflip	A full stack dapp that shows how a system can generate randomness without requiring trust, the outcome is locked before the user makes a choice and later verified on-chain.
+2026-04-15	tusharpamnani/midnight-hello-world	working code as per 26th March 2026
+2026-04-15	tusharpamnani/midnight-programs-list	Collection of Midnight programs to learn
+2026-04-15	tusharpamnani/midnight-quadratic-voting	A CLI-based Zero-Knowledge Quadratic Voting system that lets users express strength of preference privately, built on Midnight’s Compact language.
+2026-04-15	tusharpamnani/midnight-wallet-kit-demo	A fully interactive demo showcasing midnight-wallet-kit in a Next.js App Router project.
+2026-04-15	tusharpamnani/mn-scaffold	Scaffold Midnight projects from midnight-club
+2026-04-15	Yaziddj/midnight-ai-agent	AI Agent connected to Midnight Network blockchain - Built on Midnight Network
+2026-04-15	zivana-labs/zivana-midnight	Compact smart contracts for the Zivana Protocol on Midnight, shielded covenants, ZK proofs, and selective disclosure logic.
+2026-04-16	Kosh-Finance/kosh	All your finance. One place. Zero exposure.
+2026-04-17	Olanetsoft/hello-world-compact	
+2026-04-20	midnames/passport-circuits	
+2026-04-22	BWtake/midnight-research-notes	Research notes and ecosystem observations about the Midnight Network.
+2026-04-23	0xAtelerix/pintent	
+2026-04-28	tusharpamnani/midnight-wallet-kit	Production-grade wallet integration kit for the Midnight Network.
+2026-05-01	bricktowers/midnight-local-network	Brick Towers Midnight Local Test Network
+2026-05-01	hkedia/shadow-poll	Anonymous Voting using Midnight
+2026-05-02	bricktowers/midnight-seabattle	Brick Towers Sea Battle Game on Midnight Network
+2026-05-06	jsierrax/Haiti-Telemed	Offline-first telemedicine MVP for Haiti: encrypted Iagon storage + Cardano CIP-83 on-chain anchors (no PHI on-chain).
+2026-05-12	effectstream/dust-to-dust	Midnight game #2
+2026-05-13	statera-protocol/statera-protocol-midnight	An over-collateralized stablecoin protocol built on the Midnight blockchain
+2026-05-18	Olanetsoft/compact-playground	Compile Compact smart contracts in the browser. Built for Learn Compact.
+2026-05-19	kingmunz1994-lgtm/night-markets	Night Markets — Zero-Knowledge Global Marketplace  Buy anything. From anywhere. Leave no trace.  🌑 This project is built on the Midnight Network. 🔗 This project integrates with the Midnight Network. 🛠 This project extends the Midnight Network with additional developer tooling.What is Night Markets? Night Markets is a privacy-first global market
+2026-05-25	0xstrong/AnchorZK	
+2026-05-25	1NickPappas/compact-lsp	Language Server Protocol (LSP) implementation for Compact smart contract language (Midnight network) – diagnostics, completion, hover, go-to-definition, references, rename, and more
+2026-05-25	AlphaCompute/vera-report-midnight-contract	Vera.Report: Midnight Contract
+2026-05-25	Ameerabdulaleem/Midnight_Contract_State_Accounting_Vs_UTXO_Tokens	Compact implementations comparing contract state accounting and UTXO token models for on chain value transfer on Midnight. Includes both patterns plus a hybrid approach with practical recommendations.
+2026-05-25	Ameerabdulaleem/midnight_network_selective_disclosure_patterns	Compact code examples demonstrating selective disclosure patterns including disclose usage safe vs unsafe disclosure domain separated hashing and a privacy audit checklist for Midnight smart contracts.
+2026-05-25	codeBigInt/midnight-simplified-tutorial-dapps	Youtube Midnight Blockchain DApp tutorial series
+2026-05-25	fairway-global/kaamos-otc	Trustless ADA ⇄ USDC atomic swaps between Cardano and Midnight Network. ZK contracts (Compact) + Aiken/PlutusV3 + HTLC. Bidirectional, no bridge, no custodian. Uniswap-style UI.
+2026-05-25	FarseenSh/witness	WITNESS — cryptographic receipts for AI outputs on Midnight Network. ZK-attested compliance receipts for every AI inference, with selective disclosure for audits.
+2026-05-25	fredericosanntana/midnight-doctor	Pre-flight check for Midnight Network projects: catches version mismatches, duplicate ledgers, broken configs before silent debugging.
+2026-05-25	fredericosanntana/midnight-hello-world	End-to-end Midnight Network hello world: Compact contract → compile → deploy → call. Reference target for midnight-doctor.
+2026-05-25	gianalarcon/M-pay	Shielded Multisig wallet on Midnight 
+2026-05-25	Invariants0/zera	ZERA — A privacy-preserving asset marketplace enabling verifiable ownership, controlled access, and trustless digital asset distribution using zero-knowledge proofs.
+2026-05-25	JAlbertCode/zk-leaderboard	
+2026-05-25	kaleababayneh/kaamos	midnight.finance
+2026-05-25	kingmunz1994-lgtm/night-biz	Night Biz — ZK business tiers and credentials on Midnight Network
+2026-05-25	kingmunz1994-lgtm/night-fun	ZK Token Launchpad on Midnight — pump.fun but your buys are invisible
+2026-05-25	kingmunz1994-lgtm/night-hub	Night Hub — central landing page for the Night ecosystem on Midnight
+2026-05-25	kingmunz1994-lgtm/night-id	ZK Identity on Midnight — prove anything about yourself, share nothing
+2026-05-25	kingmunz1994-lgtm/night-lend	ZK Lending on Midnight — private collateral, on-chain rates
+2026-05-25	kingmunz1994-lgtm/night-poker	ZK Poker Room on Midnight Network
+2026-05-25	kingmunz1994-lgtm/night-save	ZK Savings Vault on Midnight — earn yield with private health factors
+2026-05-25	kingmunz1994-lgtm/night-store	Night Store — Night ecosystem merch shop powered by NIGHT tokens
+2026-05-25	kingmunz1994-lgtm/night-work	ZK Task Marketplace on Midnight — earn NIGHT tokens for verifiable work
+2026-05-25	lukedev45/Midnight-Project	Creating an anonymous whistleblower forum using Midnights Zero-knowledge Proof protocols
+2026-05-25	malc3om/vox-chain	VoxChain is a privacy-first civic oracle built on the Midnight Network that combines zero-knowledge proofs with AI-driven civic intelligence. It solves the fundamental civic transparency paradox by enabling users to prove voting eligibility without compromising personal privacy.
+2026-05-25	monty0007/workproof-midnight	A work verification and proof-of-work tracking application
+2026-05-25	nicola-mazzoletti/midnight-sudoku	Simple ZKP Sudoku inspired by the example featured in Proving Nothing by Charles Hoskinson.
+2026-05-25	OCD-Labs/GenV	Cooking the next-generation of Yield Vaults
+2026-05-25	OCD-Labs/GenV-app	
+2026-05-25	OCD-Labs/GenV-specs	Documents detailing the necessary GenV components and implementation decisions about them.
+2026-05-25	oluwatobiss/zip-midnight-mlh-202605-hack	ZIP is a purpose-built application for the Midnight Network that enables you to generate a cryptographic proof of humanity and present it to any application, without exposing your private data.
+2026-05-25	projectilx42-tech/midnight-hackathon-recaptcha	Our concept based on midnight network that could possibly replace ReCaptcha and Cloudflare!
+2026-05-25	proofofplate/dawn1	Easy to start midnight repo
+2026-05-25	sandipndev/cocoa-monster	Private Polymarket on Midnight Network. Submission for MLH x Midnight Hackathon.
+2026-05-25	Saurabhkohli8476/ghostwrite-midnight-hackathon	Privacy-first cover letter generator with AI and Midnight blockchain receipts. Built for the Midnight x MLH Hackathon.
+2026-05-25	tusharpamnani/midnight-nft-launchpad	A fully functional NFT Launchpad that bridges a Next.js Web UI with the Midnight.js SDK, featuring an independent factory pattern for scalable minting.
+2026-05-25	umadhatri/shadowvault	
+2026-05-25	WeryZebra-Yue/UnRedacted	Anonymous whistleblowing built on zero-knowledge proofs. Verified insiders expose corruption without revealing identity. AI scrubs identifying details. Reports stored permanently on Midnight network.
+2026-05-26	midnightntwrk/midnight-node-cli	A CLI tool for easily running Midnight Network development nodes
+2026-05-28	bricktowers/midnight-rwa	Brick Towers Real World Assets on Midnight Network
+2026-05-29	midnightntwrk/compact-tree-sitter	tree-sitter bindings for the Compact language
+2026-05-29	midnightntwrk/compact-zed	Zed extension for the Compact Language
+2026-05-29	tusharpamnani/ObscuraFinance	multi vault yeild protocol on midnight network (submitted to MLH hackathon)
+2026-06-10	nstanford5/example-battleship-simple	
+2026-06-17	ahmadrrrtx/shieldhire	Anonymous Resume Verification on Midnight Network — MLH Hackathon 2026
+2026-06-18	no-witness-labs/midday-sdk	Midday-SDK is the go-to, next-gen library for building on the Midnight blockchain. Everything you need, transactions, data, wallets in one clean TypeScript ready package.
+2026-06-20	0xfdbu/midnight-apps	Midnight DApps: A curated showcase of Zero-Knowledge, privacy-first applications.
+2026-06-24	nite-framework/nite-api	A dynamic contract api wrapper for midnight compact smart contracts
+2026-06-25	a-singh09/zk.ly	zk.ly - Zealy, but proof-first
+2026-06-25	hbrazier01/Airlog	Verifiable aircraft maintenance ledger built with Midnight Compact smart contracts.
+2026-06-25	nightpay/nightpay	Anonymous community bounties for AI agents. Midnight ZK proofs + Masumi settlement + Cardano finality.
+2026-06-27	0xfdbu/midnight-dapp-connect	A minimal Midnight Network reference demonstrating browser wallet connection (Lace / 1AM) and CLI transaction flows.
+2026-06-27	0xfdbu/midnight-shielded-token	A complete shielded token DApp on the Midnight Network
+2026-06-27	0xfdbu/midnight-unshielded-token	A Midnight Network stablecoin DApp with unshielded token operations.
+2026-06-27	Gutopro/nightroom	
+2026-06-27	Kali-Decoder/midnight-tokens	midnight-tokens
+2026-06-27	NorthStarDEX/Midnight-Token-Registry	On-chain metadata registry for Midnight tokens.
+2026-06-27	nstanford5/compact-hello-world	
+2026-06-27	tusharpamnani/Midnight-Skills	Knowledge skills for AI agents building on Midnight Network
+2026-06-28	manueltarouca/worldid-bridge	Privacy-preserving World ID → did:midnight DID binding on the Midnight Network: prove unique personhood (World ID Orb), bind it to a self-sovereign DID, enforce one-human-one-DID on-chain via a Compact contract.
+2026-06-28	nstanford5/example-private-party	
+2026-06-28	nstanford5/example-raffle	
+2026-06-28	nstanford5/example-roulette	
+2026-06-30	CjDabrow/night-check	Privacy-preserving audit attestation registry on Midnight (Compact contract + web auditor + deploy CLI)
+2026-06-30	OpenZeppelin/midnight-apps	A collection of starter dapps on Midnight Network
+2026-07-06	tomiin/midnight-anon-vote	Anonymous one-person-one-vote on Midnight, in Compact. A nullifier (hash of a secret key) blocks double-voting while keeping the voter's identity off-chain — honest about what's public vs private.
+2026-07-06	tomiin/midnight-kitties-modern	A CryptoKitties-style NFT for Midnight, rebuilt on the current Compact compiler after the original went stale on retired testnet-02. Mint, transfer, buy/sell, and breed kitties with pseudonymous ownership.
+2026-07-07	0xfdbu/privamedai	PrivaMedAI - Zero-Knowledge Medical Credentials on Midnight Network
+2026-07-07	fredericosanntana/dpo2u-midnight	DPO2U Self-Funding Protocol on Midnight Network — autonomous fee distribution with ZK proofs for compliance agents
+2026-07-08	SpyCrypto/AutoDiscovery	A Midnight-based, geographically compliant template for attaining full and legal discovery for a variety of court applications. GeoOracle Auto Compliance: build once, comply everywhere.
+2026-07-09	apestchanker/Zplunk	
+2026-07-09	solkem/edgechain	EdgeChain - AI-powered privacy-preserving microclimate intelligence for smallholder agriculture, built on Midnight's zero-knowledge infrastructure.
+2026-07-11	tusharpamnani/Compact-Book	A structured, example-driven reference for learning Compact
+2026-07-12	tomiin/midnight-health-access	Privacy-first medical records on Midnight, in Compact. Test results stay encrypted off-chain; the contract enforces who can see them — the assigned doctor with patient consent for routine care, and an audited emergency break-glass when a patient can't consent.
+2026-07-12	tusharpamnani/midnight-skills-private-party	A privacy-preserving party RSVP application on Midnight Network — attendees RSVP privately, then cross the privacy boundary when checking in with an unshielded NIGHT entry fee.
+2026-07-14	effectstream/kachina-colosseum	Player vs player on-chain battle game built on the Midnight blockchain
+2026-07-16	DpacJones/midnight-nft	
+2026-07-16	Olanetsoft/compact-by-example	Learn Midnight's Compact language through practical examples.
+2026-07-17	Olanetsoft/learn-compact	Learn Compact programming language
+2026-07-18	Tech-Expansion/midnight-explorer-web	This repository is a blockchain explorer designed for the Midnight network, providing users with real-time insights into transactions, blocks, and contract activities on the confidential Cardano partner chain.
+2026-07-20	nstanford5/compact-testbed	
+2026-07-20	zkos-labs/kredz	
+2026-07-21	0xshae/midnight-playground	Local playground for Midnight Compact contracts - run a full node, indexer, and proof server via Docker, fund your Lace wallet, and deploy without testnets or faucets.
+2026-07-21	1NickPappas/compact.vim	Vim/Neovim plugin for Compact smart contract language (Midnight network) – syntax highlighting, tree-sitter support, and smart indentation
+2026-07-21	kaleababayneh/moonray	
+2026-07-21	kuiralabs/kuira-vault-android	M-of-N multisig confidential treasury on Midnight — Android dApp built on the Kuira SDK (deposit, propose, approve, execute; chain-truth reads; multi-device Connect)
+2026-07-21	subc0der/midnight-authenticator	Zero-knowledge TOTP authenticator for Midnight blockchain
+2026-07-21	tomiin/midnight-cli-wallet	From-scratch CLI wallet for the Midnight network — addresses, sync, NIGHT/DUST balances, DUST registration, and real transfers. Runs on Preprod, Preview, or a local devnet. Midnight Academy capstone.
+2026-07-21	tusharpamnani/midnight-local-example	A privacy-preserving reserve auction on Midnight Network (undeployed network example)
+2026-07-21	vynride/Provenance	Use Midnight ZK proofs to prove your AI model passed safety evaluations without revealing the scores, the test set, or the model.
+2026-07-22	kuiralabs/example-bboard-android	BBoard — an on-chain bulletin board for Midnight, built on the Kuira Android SDK.
+2026-07-22	kuiralabs/midnight-kicks	
+2026-07-22	LeandroBenitez1998/midnight-lease-dapp	Midnight Network lease dApp — ZK rental registry with Compact smart contracts
+2026-07-24	Meylicya/Midnight-Ai-scam-Detector	
+2026-07-24	tusharpamnani/midnight-allowlist	A CLI-based Zero-Knowledge Allowlist system that lets users prove membership in a set without revealing their identity, built on Midnight's Compact contract language.
+2026-07-27	nstanford5/example-private-auction-reserve	
+2026-07-29	anynomousfriend/VeilBook-Shielded-Intent-Matching-Engine	Shielded intent-matching on Midnight. Veilbook uses ZKPs to match orders while keeping prices, sizes, and identities fully private. Features a Next.js dashboard, a specialized CLI, and a local proof-generation infrastructure.
+2026-07-29	midnightntwrk/midnight-dust-generator	Midnight Dust Generator example implementation
+2026-07-29	Olanetsoft/example-dust-sponsorship	A working example of fee sponsorship on Midnight.
+2026-07-30	0xSHKWON/midnight-anon-vote	Anonymous membership voting on the Midnight Network — ZK Merkle-proof eligibility with per-proposal nullifiers, written in Compact
+2026-07-30	cyunwook/shieldedtab-contract	
+2026-07-30	Dood-Labs-One-Home/one-home-private-passport	Privacy-first credential verification built with Midnight for the July 2026 Midnight Hackathon.
+2026-07-30	HarshS1611/ghost-credit	
+2026-07-30	imraghavojha/midnight-bloom	
+2026-07-30	KaranSinghBisht/nightpool	🏆 Overall Winner @ MLH Midnight Hackathon 2026 — a dark-pool OTC desk + sealed-bid batch auction on Midnight. Hidden orders, ZK-proven settlement, trades an auditor can verify on demand.
+2026-07-30	mashharuki/midnight-prediction-market-sample-app	Midnight Prediction Market sample dApp
+2026-07-30	nstanford5/audit-attestations-poc	
+2026-07-30	nstanford5/example-usdcx	
+2026-07-30	nstanford5/stagenet-q2	
+2026-07-30	ThunderRoar/MatchLock	Midnight / MLH Hackathon Winner
+2026-07-30	tomiin/midnames-profile-viewer	A Midnames-powered dApp: resolve a .night domain and display its on-chain profile. Built for the Midnames Zealy quest.
+2026-07-30	tomiin/midnight-bboard-capstone	Track A capstone: a multi-post bulletin board DApp written in Compact on the Midnight network, extending the official example-bboard so a board can hold many posts, each owned by its poster.
+2026-07-30	tusharpamnani/midnight-skills-counter-dapp	full stack counter dapp generated by midnight skills
+2026-07-31	txpipe-shop/compact-native-scripts	Custom Compact contracts for Midnight
+2026-08-01	efekrbas/midnight-sealed-bid-auction	
+2026-08-01	efekrbas/MidnightShield	
+2026-08-01	nstanford5/shielded-chips	
+2026-08-02	efekrbas/midnight-anonpass	
+2026-08-03	codeBigInt/veil-credit-scoring	A cross-chain credit scoring protocol built on midnight and CKB for DeFi ecosystems
+2026-08-03	Olanetsoft/midnight-mcp	Midnight MCP server giving AI assistants access to Midnight blockchain — search contracts, analyze code, explore docs
+2026-08-04	RemyAde/PoFI	Proof of Freelance Income uses Midnight's smart contracts to let freelancers instantly verify specific earnings to third parties using zero-knowledge proofs, protecting sensitive transaction data without requiring any signups or wallets from the verifier.
+2026-08-04	zkos-labs/sigil	
+2026-08-05	tusharpamnani/midnight-skills-private-reserve-auction	A privacy-preserving reserve auction on Midnight Network 
+2026-08-05	x0lg0n/wrangler	A decentralized application (dApp) on the Midnight Network that enables anonymous, mathematically verifiable feedback submission using Zero-Knowledge Proofs (ZKPs).
+2026-08-06	aditya-jha033/ProofScholar	Privacy-Preserving Scholarship Verification on the Midnight Network
+2026-08-06	DancinParrot/midnight-hackathon-26	🏆 Overall Winner @ MLH Midnight Hackathon July 2026 - ProveNow enables anyone to crypto-graphically verify point-of-sale (POS) transactions using zero-knowledge proofs on Midnight while preserving privacy. 
+2026-08-07	debansh001/MidnightPass	Midnight Pass is built fundamentally around a privacy-first model, giving users absolute control over what data is public and what remains private.  Public State vs Private Witnes
+2026-08-07	thisisouvik/ZKAuction	ZKAuction solves this by leveraging the zero-knowledge (ZK) data protection capabilities. By utilizing ZK smart contracts
+2026-08-08	Gabosawn/phantomVerum	Corruption reports with reversible anonymity on Midnight. The whistleblower proves they are an insider without revealing who they are — and can prove authorship later, only to the authority they choose.
+2026-08-08	tomiin/bahamas-2026-private-poll	midnightntwrk and compact
+2026-08-08	tomiin/midnight-allowlist-token	Built on Midnight (dApps, contracts, or tooling that run directly on Midnight): "This project is built on the Midnight Network."
+2026-08-08	tomiin/threshold	Prove you are allowed in without saying who you are. Privacy-preserving age and eligibility verification with 2-of-3 government attestation and user-held self-exclusion, written in Compact on the Midnight network.
+2026-08-09	mzf11125/midnight_agent_skills	7 modular agent skills for building on Midnight Network's zero-knowledge blockchain
+2026-08-09	nufi-official/nufi	A Web3 crypto wallet for Solana, Cardano, Ethereum, EVMs, SVMs and Flow.
+2026-08-11	nicolasLuduena/witness-fitness	 Prove real Strava workouts with ZK privacy: sealed wagers, streaks, and badges, without revealing health data or linking wallets.
+2026-08-11	sleepydogo/keep	KEEP Protocol (Keyed Evidence Exchange Platform) & WARD (Wallet for Access Rights and Data)
+2026-08-12	midnightntwrk/midnight-node-docker	Run a Midnight validator using podman/docker
+2026-08-12	midnightntwrk/night-token-distribution	Night Token Distribution
+2026-08-13	adityas1309/midnight_trail	Midnight Trail is a privacy-native forest game where players register a runner, complete missions, and move shielded assets through Midnight Preprod.
+2026-08-13	Ansh-Sonkusare/midnight-extension	
+2026-08-13	ClaudiaMetz/zkCheck	An adaptable, privacy-preserving eligibility engine for selection processes, demonstrated via scholarship applications.
+2026-08-13	claudiohermida/hack-bsas-ak-poker	ZK Showdown Poker on Midnight — prove your hand's rank without revealing a card
+2026-08-13	elzanetoide32/midnight_vet	
+2026-08-13	francokir/proofmatch	
+2026-08-13	jikaidoko/midnight-hackathon-ba	
+2026-08-13	mdlog/alibi	Prove your agent refused an order — without revealing the order, the leash, or where the leash sits. A privacy-first dApp on Midnight.
+2026-08-13	NachoEstevo/mailproof	Turn emails into private proofs. Prove a claim from an authenticated DKIM email on Midnight without revealing the email.
+2026-08-13	PrescriptionZero/prescriptionZero	
+2026-08-13	redyacore91/kuira-compact-contract	Compact contract built on Midnight Network
+2026-08-13	SanFlan/adepe	
+2026-08-13	santiagogallero/MedLicence	
+2026-08-13	tomiin/checkroot-transcript-probe	Reproduction harness showing that HistoricMerkleTree.checkRoot publishes its result to the public transcript in Compact, and how to restructure so it does not.
+2026-08-13	tomiin/compact-circuit-costs	What actually costs rows in a Compact circuit, measured
+2026-08-13	tomiin/kuira-starter-friction-log	Running the Kuira Android SDK starter with an AI agent, from a machine with nothing Android installed. Seven friction points, three of them plugin bugs found via the kuiraDoctor recipe.
+2026-08-13	tomiin/merkle-leaf-binding-probe	merkleTreePathRoot hashes the path's own leaf, so an unbound membership check admits anyone
+2026-08-13	tomiin/midnight-rxlimit	Cross-pharmacy controlled-substance dispensing limits with no central database of who filled what. Single-use prescription tokens plus a private per-period quota, written in Compact on the Midnight Network for the Kuira Android SDK.
+2026-08-13	Walter185/express-voting.midnight	
+2026-08-14	midnightntwrk/example-counter	This repository is archived and no longer maintained. The counter example was a Compact contract and a CLI environment to deploy and interact with the contract that can be used as a template to start building on Midnight
+2026-08-14	midnightntwrk/midnight-leaderboard	A Midnight leaderboard example DApp
+2026-08-14	tomiin/midnight-doorman	Prove you are over 21 at the door, on-device, without showing anyone your ID
+2026-08-15	Jc-asastu/asfalia	Proof of Solvency that expires — private solvency attestation on Midnight
+2026-08-16	midnightntwrk/example-locker	Example Locker DApp
+2026-08-17	arunnadarasa/zealymidnight	StreetRail — privacy-preserving streetwear + choreography rights on Midnight Local Undeployed
+2026-08-17	efekrbas/Midnight-ZK-Judge	
+2026-08-17	midnightntwrk/example-battleship	Example Battleship DApp
+2026-08-17	midnightntwrk/midnight-tip-jar	A Midnight tip jar example DApp
+2026-08-17	midnightntwrk/setup-compact-action	Github Action for installing Compact compiler
+2026-08-18	midnightntwrk/midnight-architecture	Architecture documents for Midnight
+2026-08-18	peteski22/pci-infra	Infrastructure orchestration for PCI development and testing
+2026-08-18	peteski22/pci-zkp	Layer 4: Zero-knowledge proof circuits for privacy-preserving verification
+2026-08-18	redyacore91/kuira-android-dapp	Android dApp built on Midnight Network using Kuira SDK
+2026-08-18	sleepydogo/midnight-prover-ios	
+2026-08-18	SoumyaEXE/Among-Midnight	
+2026-08-18	yaswanth810/midnight-expense-vault	
+2026-08-19	aditi9274/web3-certificate-verification	A Web3 security tool that analyzes crypto websites, wallet interactions, and smart contracts for phishing and malicious behavior.
+2026-08-19	akshatprogrammer-byte/zkPayroll	zkPayroll is a decentralized payroll verification system built on the Midnight blockchain that enables companies to publicly prove fair compensation practices without exposing individual employee salaries.
+2026-08-19	bhavinpaliwal85-best/NoReveal-	NoReveal is a privacy-preserving decentralized credit platform built on the Midnight blockchain. It enables users to prove their creditworthiness without revealing sensitive financial information such as transaction history, account balance, or personal financial records..
+2026-08-19	chauhanmahirajsingh-alt/blockchain	
+2026-08-19	gajendrapushkarna001/software-details-management	
+2026-08-19	gungunjain654-netizen/private-job-verification	
+2026-08-19	harshitmistry8/Decentralized-Identity-DID-	
+2026-08-19	harshitshrimali17/voting-system	midnight private party
+2026-08-19	hitesh1709/smart-hospital-management-system	midnight private party
+2026-08-19	hiteshsolanki9122006-lgtm/voting_system	midnight private party
+2026-08-19	iqxssie/ProofPass	
+2026-08-19	itspranayjain/MIdnight-project	
+2026-08-19	Jatinnagda14/Private-Voting-System	Midnight is a secure and privacy-focused online voting system that allows verified users to participate in elections while keeping their individual votes private. The system provides voter authentication, one-person-one-vote enforcement, candidate management, anonymous ballots, election scheduling, and result management .
+2026-08-19	keshavsoliwal911-netizen/midnight_blockchain	
+2026-08-19	khushikhatwani13/Anonymous_complaint_system	Anonymous Complaint System is a privacy-focused platform where students or users can submit complaints about issues such as harassment, infrastructure, faculty concerns, bullying, facilities, or other campus problems without revealing their identity publicly.
+2026-08-19	lakshit0205-stack/Private-Healthcare-Eligibility	
+2026-08-19	marker36/Private-DAO-voting	
+2026-08-19	marker36/Private-gaming-assets	
+2026-08-19	midnightntwrk/example-nft-contracts	Example NFT contracts for Midnight
+2026-08-19	ojasvinimehta/ojasvini_portfolio	
+2026-08-19	PadamSinghRajpurohit/project	
+2026-08-19	pr4kash18/Private-DAO-Voting	
+2026-08-19	shubhtailor419-jpg/SilentBallot	VeilVote is a privacy-preserving decentralized voting platform built on the Midnight Blockchain. It allows eligible users to cast votes privately while maintaining verifiable election results and preventing double voting.
+2026-08-19	tusharpamnani/midnight-skills-payment-dapp	demo payment dapp built using midnight skills
+2026-08-21	midnightntwrk/example-kitties	An Example DApp for Kitties
+2026-08-21	midnightntwrk/midnight-dapp-connector-api	API enabling DApps to interact with wallet software while controlling data access and security.
+2026-08-21	midnightntwrk/midnight-wallet	Midnight's wallet core development
+2026-08-23	nel349/midnight-wallet-cli-hub	A standalone CLI wallet for the Midnight blockchain. Manage wallets, check balances, transfer NIGHT tokens, and run a local development network — all from the terminal.
+2026-08-23	ODATANO/NIGHTGATE-MCP	MCP server that lets AI agents use NIGHTGATE, the Midnight blockchain attestation layer: anchor documents, prove zero-knowledge predicates over hidden fields, manage disclosure grants, verify everything against live contract state, and poll async jobs.
+2026-08-24	ceciliagalvaoo/Attesta	A living registry of reusable compliance attestations on Midnight — confirm a partner's compliance check is still valid without ever receiving the underlying document.
+2026-08-24	Kanasjnr/midnight-cast	Read-only developer CLI for Midnight (cast for Midnight)
+2026-08-24	midnightntwrk/midnight-wallet-dapp	Midnight wallet dapp
+2026-08-24	midnightntwrk/upload-sarif-github-action	Uploads SARIF files to Checkmarx
+2026-08-25	eddalabs/midnight-contracts	Contracts
+2026-08-25	himanshu748/veilpass	Privacy-first eligibility proofs built with Midnight Compact for the AKINDO Buildathon.
+2026-08-25	ligeroinc/ligero-prover	Post-Quantum zkVM
+2026-08-25	midnightntwrk/compact	Compact Releases
+2026-08-25	midnightntwrk/example-bboard	The bboard example is a Compact contract, a CLI environment and a UI built with React to deploy and interact with the contract that can be used as a template to start building on Midnight
+2026-08-25	midnightntwrk/example-private-party	Example Private Party DApp
+2026-08-25	midnightntwrk/example-shielded-chips	An Example Shielded Chips DApp
+2026-08-25	webisoftSoftware/1AM-app-registery	
+2026-08-26	priyalraut703/shadowvoice	Anonymous student feedback DApp on Midnight using zero-knowledge proofs to verify enrollment while keeping complaint identity private.
+2026-08-26	SpyCrypto/nightforce-intelligence	The Private Spy AI Operations Center for Midnight Nightforce Agents posting base
+2026-08-26	UvRoxx/midnight-agent-skills	
+2026-08-27	DpacJones/selkie-usdm-escrow	Selkie .. a private USDM escrow on Midnight. Whoever proves knowledge of the secret takes the funds.
+2026-08-27	DpacJones/tidal-usdm-transfer	Tidal .. USDM cross-chain transfers between Cardano and Midnight over VIA Labs messaging
+2026-08-27	igabhix001/vantage	Privacy-preserving credit exposure verification oracle on Midnight Network. Enables microfinance borrowers to mathematically prove RBI regulatory compliance in zero-knowledge without revealing loan amounts, lenders, or Aadhaar PII.
+2026-08-27	mdlog/zk-sentinel	Prove a trading strategy cleared a public risk bar on custodian-vouched data, without revealing the strategy or the returns series. Built on Midnight.
+2026-08-27	midnightntwrk/midnight-local-dev	Midnight local development environment
+2026-08-27	redyacore91/usdm-payments-dapp	Privacy-preserving USDM payments DApp built on Midnight Network using Compact smart contracts
+2026-08-27	redyacore91/usdm-transfer-frontend	USDM cross-chain transfer interface built with VIA Labs bridge SDK
+2026-08-28	ANPAN27/MidPilot	A privacy-first AI agent that plans real-world tasks, estimates budgets, and executes payments securely through Midnight—with policy-controlled, user-approved spending.
+2026-08-28	bricktowers/midnight-proof-server	Brick Towers Midnight Network ZK (Zero-Knowledge) Proof Server
+2026-08-28	codeBigInt/fundagoal	Campaign Funding DApp built on Midnight Blockchain
+2026-08-28	midnightntwrk/dApp-idea-board	A repository for contributors of Midnight project.
+2026-08-28	thirdbase1/veilboard	Veilboard: a Midnight-native contribution eligibility protocol for grants, residencies, and maintainer stipends. Proves a builder cleared a published threshold without publishing the builder.
+2026-08-28	tusharpamnani/midnight-skills-anonymous-voting	
+2026-08-29	tomiin/tender-usdm	A web app for moving the USDM stablecoin between the Cardano and Midnight test networks, and a look at why the token arrives on Midnight publicly visible rather than private.
+2026-08-30	ADAvault/midnight-skill	Claude Code skill for writing and testing Compact smart contracts on Midnight
+2026-08-30	EchoForge-Dev/EchoCert_Midnight_Demo	EchoCert on Midnight — prove one field of a diploma, reveal nothing else. MLH Midnight Hackathon 2026, Integrate Midnight track.
+2026-08-30	khushal1512/face-tokens	zk facial attestation and verification using midnight
+2026-08-30	pawsitivegames/midnight-usdm-mission-control	
+2026-08-30	PhiBao/candor	Verified, unlinkable compensation truth — privacy-first comp benchmarking on Midnight Network (Compact). Midnight Buildathon Wave 1.
+2026-08-30	tisya05/Nomi	A savings game where your progress is public and your money never is. Zero-knowledge savings proofs on Midnight — a credit record before you have a credit score.
+2026-08-31	1clawAI/midnight	Policy-gated agent signing + on-chain ZK audit anchor for Midnight. Apache-2.0. Built for Midnight Wave Hacks.
+2026-08-31	Amarni1/Canado-midnight-frontend	USDM Cross-Chain Transfer Portal between Cardano and Midnight Network, powered by VIA Labs SDK & VIA Scan
+2026-08-31	CjDabrow/usdm-bridge-frontend	Web front-end for native USDM transfers between Cardano and Midnight (VIA Labs cross-chain messaging)
+2026-08-31	CoderRahul01/scopeproof	An agent (or any actor spending against a budget) submits a proof that a given action's cost fits inside its remaining budget, without ever revealing the cost or the budget on chain.
+2026-08-31	Emmanuellsensai/anonymous-whispers	
+2026-08-31	ErickRomeroDev/embedded-wallet-shielded-token	
+2026-08-31	gentaadelarm/usdm-transfer-frontend	USDM bridge frontend for Cardano and Midnight.
+2026-08-31	hsay123/MatkaNight_	
+2026-08-31	nite-framework/nite-zk-profiler	Midnight ZK Circuit Profiler for Proving Cost
+2026-08-31	sociapbr/vaxzk-preprod	Your immunization passport, always with you.
+2026-08-31	thisisouvik/VeriHealth	Proving health facts with absolute cryptographic certainty. Sharing zero medical data.
+2026-08-31	wolf1276/ZEKURA	Privacy-preserving exchange on Midnight — orders committed on-chain, matched confidentially off-chain, settled on-chain.
+2026-09-01	Aashim-Limbu/openodds	Private parimutuel betting on Midnight — everyone watches the odds, no one watches the people
+2026-09-01	dStorageTech/dstorage	Privacy-first data layer for dApps — client-side encryption + decentralised storage + on-chain coordination in a single SDK.
+2026-09-01	efekrbas/zkpay-midnight	
+2026-09-01	JAlbertCode/example-mip-0014	
+2026-09-01	Kali-Decoder/Midnight-Skills	Midnight-Skills
+2026-09-01	kuiralabs/kuira-midnight-ffi	also aka kuira-crypto-ffi
+2026-09-01	Legatia/midnight-lamp	
+2026-09-01	midnightntwrk/create-mn-app	Open-source package to improve developer onboarding for Midnight Network
+2026-09-01	midnightntwrk/example-zkloan	An Example DApp for ZKLoans
+2026-09-01	nel349/solana-anonboard	Anonymous bulletin board that proves the right to post with a zero-knowledge membership circuit on Midnight, while posts are stored publicly and gaslessly on Solana, linked by an EffectStream sync node.
+2026-09-02	annatchijova/velo	Zero-knowledge attestation for forensic verdicts on Midnight — a forensic expert seals evidence locally and proves a verdict is legitimate (with Daubert-style corroboration rules enforced as circuit constraints) without ever exposing the underlying evidence on-chain.
+2026-09-02	apestchanker/midnight-agent-did-manager	Research project for agent DIDs and verifiable credentials on Midnight
+2026-09-02	CjDabrow/midnight-private-invoices	Private invoices on Midnight: amounts and counterparties stay private, settlement is public. USDM payments.
+2026-09-02	mzf11125/midnight-mobile-sdk	
+2026-09-02	pawsitivegames/midnight-usdm-invoice-relay	
+2026-09-02	Yash11778/Midnight-	
+2026-09-03	0xfdbu/midnight-attestation-dapp	A Midnight Network credential attestation DApp with privacy-preserving ZK proofs.
+2026-09-03	Bratipah/awesome-midnight	A centralized, community-maintained directory of Midnight Network projects and contributors.
+2026-09-03	gentaadelarm/midnight-usdm-invoice	
+2026-09-03	Gutopro/BrowseMe	
+2026-09-03	midnightntwrk/midnight-template-repo	
+2026-09-03	nokto-protocol/nokto	
+2026-09-03	seekdaseek/datum	Zero-knowledge solvency attestation: proves a lending book covers its debt at realisable exit prices, not oracle marks, without publishing any position. Built in Compact for Midnight.
+2026-09-03	trinnode/clearscope	ClearScope is a privacy preserving console for selective disclosure on Midnight Network with holder wallet verifier dashboard issuer portal and governance registry plus license based access control bearer session authentication and zero knowledge proof checks for age KYC and jurisdiction without exposing private data
+2026-09-03	zsofimajor/aliit-builder-hub	Central place for all information for Aliit Builders. All relevant info can be found on the website.
+2026-09-04	Bratipah/Crosschain-Dao	A two-way Cardano ↔ Midnight DAO governance protocol with crosschain messaging with Via
+2026-09-04	EchoForge-Dev/EchoMKB	Midnight Network knowledge for coding agents — searched live from docs.midnight.network on every use, with cited URLs and a version-drift report. npx skills add EchoForge-Dev/EchoMKB
+2026-09-04	midnightntwrk/servicedesk	Service Desk for Midnight
+2026-09-04	tomiin/midnight-sealed-bid-commit-reveal	Treasure Tide Bids — a sealed-bid tender register on Midnight. Bids are committed as hashes, so nobody, the issuing agency included, can read an amount before the reveal phase opens, and a losing bid stays private forever. Includes the demo recording, the threat model, and the gaps left open.
+2026-09-04	tusharpamnani/midnight-allowlist-demo	
+2026-09-05	midnightntwrk/midnight-expert	AI tooling support (Claude)
+2026-09-06	laurenelee/midnight-ecosystem-tracker	Midnight Network ecosystem discovery dashboard - tracks GitHub repos across 6 search strategies to feed the Electric Capital developer report pipeline
+2026-09-06	UnityNodes/Candor	Privacy-preserving proof-of-liabilities on Midnight - prove reserves cover liabilities without revealing any customer balance.
+2026-09-07	AC1706-67/midnight-id	Portable anonymous credential system on Midnight — ZK check-ins and third-party verification without identity exposure
+2026-09-07	aditya-jha033/ShadowArena	Hidden-Information Gaming with Verifiable Stakes on Blockchain
+2026-09-07	debansh001/PrivateInfer	Secure, Trustless Off-Chain AI Inference Powered by Midnight Preview Network's Zero-Knowledge Proofs.
+2026-09-07	harshkas4na/midnight-health-factor-proof	Private Health-Factor Proof on Midnight (Compact) — Wave 1, Midnight 1st Buildathon
+2026-09-07	hbrazier01/Pilotlog	A lightweight GA focused pilot logbook engine with currency tracking and compliance aware records.
+2026-09-07	midnightntwrk/midnight-zk	Midnight ZK
+2026-09-07	nelsonksh/umbra	Blind evaluation on Midnight: submit -> blind grade -> provable reveal. Midnight Buildathon Wave 1.
+2026-09-07	TeleBlockDev/PrivateLab	Privacy-preserving laboratory result verification powered by Midnight.
+2026-09-07	tmdry4530/driftmate-midnight	DriftMate — privacy-preserving AI character portfolio mandates powered by Midnight
+2026-09-08	0xAtelerix/sdk	
+2026-09-08	Ansh-Sonkusare/zk-ballot	
+2026-09-08	commun-platform/sadako	
+2026-09-08	gitanshswarnkar27-dotcom/Crypto-Subscription-Protocol	A decentralized crypto subscription protocol that enables users to make automated recurring payments using smart contracts. Users can subscribe, manage, pause, or cancel services directly from their crypto wallets with transparent, secure, and programmable on-chain payments.
+2026-09-08	IdcuqS07/Proof-of-Healing	ZK mental health & habit tracker on Midnight Network
+2026-09-08	jayteemoney/aegis	
+2026-09-08	lolaaimar/govfund	Democratic, decentralized governance for public funds.
+2026-09-08	midnightntwrk/midnight-sdk	Midnight SDK - managed by terraform
+2026-09-08	ODATANO/NIGHTPASS	EU Battery Passport (Reg. 2023/1542) consumer app: SAP CAP service with three disclosure tiers, backed by Midnight ZK attestations via @odatano/nightgate
+2026-09-08	tomiin/privoice	Private invoices on Midnight. Only a hash of the invoice goes on chain, so the amount and the counterparty stay private while settlement stays publicly verifiable. USDM moves at the application layer — contract custody is rejected by the node today, and the repo includes the experiment that proves it.
+2026-09-08	VINPassport/.github	VINPassport organisation profile
+2026-09-09	bochaco/dmarket	A decentralized e-commerce marketplace that utilizes a three-party escrow system on the Midnight Network, incorporating asymmetric encryption and zero-knowledge proofs (zk-proofs) to ensure robust user privacy and security.
+2026-09-09	bochaco/vaxzk	VaxZK is a DApp on the Midnight Network that lets health authorities issue vaccine certificates and lets users prove vaccination status without exposing sensitive personal data.
+2026-09-09	dStorageTech/dstorage-docs	The dStorage Tech documentation
+2026-09-09	efekrbas/midnight-sealed-bid-marketplace	
+2026-09-09	LFDT-Minokawa/compact	The Compact programming language
+2026-09-09	Manohar1067/usdm-private-invoice	yashs project blockchain
+2026-09-09	midnightntwrk/example-hello-world	An Example Hello World DApp
+2026-09-09	NoctisZone/Noctis	Noctis Zone — Privacy Focused token launchpad on Midnight + Other Chains
+2026-09-09	oluwatobiss/quote-otd	Prove your authorization to publish without revealing your private creator identity.
+2026-09-09	OpenZeppelin/compact-tools	A monorepo for collecting all the shared Compact tools
+2026-09-09	rmarquesc/vero-demo	Vero — verifiable credibility layer built with Midnight
+2026-09-09	thirdbase1/quietpay-midnight	
+2026-09-09	VINPassport/VINPassport	A Digital Circularity Vehicle Passport built on Midnight's zero-knowledge blockchain.  Prove what a vehicle is. Reveal only what the asker is entitled to see. Reg (EU) 2026/1738.
+2026-09-10	Blocktek-Radio/Blocktek-midnight	
+2026-09-10	chrispalaskas/dust-dice-contract	Dust Dice — a Yahtzee-style dice game on Midnight: Compact contracts, TypeScript mirrors and witnesses, independent game verifier, protocol docs. Local devnet/testnet only.
+2026-09-10	girume1/privatepredict	A privacy-preserving football prediction dApp built with Midnight, Compact, and TypeScript.
+2026-09-10	midnightntwrk/midnight-indexer	Midnight Indexer
+2026-09-10	midnightntwrk/midnight-ledger	This repository contains the implementation of Midnight's ledger, as well as documents specifying its behaviour. It defines the transaction structure and state of Midnight, as well as providing Rust and WASM TypeScript APIs to interact with it.
+2026-09-10	OpenZeppelin/compact-contracts	OpenZeppelin Contracts written in Compact for Midnight
+2026-09-10	yashannadate/DUSTify	
+2026-09-11	0xNexuz/aletheia	Privacy-first aid eligibility proofs without exposing personal data
+2026-09-11	efekrbas/midnight-dark-pool-dex	
+2026-09-11	effectstream/effectstream	Cross Chain Abstraction Orchestrator
+2026-09-11	GauravKarakoti/WhisperScore	
+2026-09-11	midnightntwrk/midnight-awesome-dapps	Midnight Awesome Dapps
+2026-09-11	midnightntwrk/midnight-improvement-proposals	Midnight Improvement Proposals (MIPs)
+2026-09-11	midnightntwrk/midnight-js	Midnight JS
+2026-09-11	midnightntwrk/midnight-node	Bringing rational privacy to blockchain
+2026-09-11	nel349/midnight-wallet-cli	A standalone git-style CLI wallet for the Midnight blockchain.
+2026-09-11	ODATANO/NIGHTGATE	A CAP-based OData V4 gateway to the Midnight privacy chain, providing confidential on-chain data access and privacy-preserving transaction execution to any enterprise system
+2026-09-11	PugarHuda/senyap	Sealed-quote RFQ on Midnight. Makers commit binding quotes the chain cannot read; takers prove best execution. Losing prices are never published.
+2026-09-11	robertocarlous/Shadow-Payroll	Shadow Payroll is a privacy-preserving payroll and revenue-split application built on Midnight Network
+2026-09-11	Turnless/kymider	Privacy-first loan underwriting on Midnight. Borrowers prove net worth and debt-to-income clear a lender's bar with zero-knowledge proofs, without revealing the figures. Live console runs the real compiled contracts in your browser.
+2026-09-12	blockend-dev/warden	
+2026-09-12	Emmanuellsensai/redress-app	Privacy-preserving claims infrastructure for fintech on Midnight — encrypted evidence, AI-issued verdicts, on-chain audit trail.
+2026-09-12	Jennycruzy/Thirdmark	
+2026-09-12	maxalexweber1/AGENT_MS	M₳X: autonomous Midnight City agent as a NIGHTGATE API showcase
+2026-09-12	milesdevx/TrueMile	Privacy-preserving vehicle history verification on Midnight. Sellers prove accident, mileage, and service claims without exposing full VIN history — buyers unlock full detail only after committing a deposit. Built with Compact, Next.js, and the Midnight TypeScript SDK.
+2026-09-12	mmahut/nightfrost	Lean Midnight indexer
+2026-09-12	nymtech/nym	Nym provides strong network-level privacy against sophisticated end-to-end attackers, and anonymous transactions using blinded, re-randomizable, decentralized credentials.
+2026-09-13	agenticfinance-dev/RentProof	Privacy-first rental eligibility verification powered by Midnight. RentProof lets tenants prove they meet a landlord’s financial threshold without revealing their underlying financial information.
+2026-09-13	alanturingisomorphy688/MIDNIGHT	Optimize CS2 play with a Windows desktop companion for overlays, profiles, and local settings
+2026-09-13	AustinChris1/Equilux	Employee-verifiable pay-equity proofs on Midnight: prove the gender pay gap report came from the complete, co-signed payroll without revealing a salary. Compact contract, ZK circuits, live demo.
+2026-09-13	farouk-allani/amana	Portable private repayment history on Midnight. Prove a record earned at one lender to a lender who will never see it.
+2026-09-13	Fuuaad05/midnight-private-dao	Privacy-oriented DAO governance built on Midnight using Compact, private state, witnesses, and proposal-specific nullifiers.
+2026-09-13	M4N4N22/Kachis	
+2026-09-13	mashharuki/midnight-rps-sample-app	Midnight RPS sample dApp
+2026-09-13	mhizer-fatai/shade402	Private, rule-controlled x402 payments for AI agents on Midnight
+2026-09-13	midnightntwrk/midnight-docs	Source for the official Midnight developer documentation site (docs.midnight.network), built with Docusaurus.
+2026-09-13	moyedx3/blindfold	Unlockable content with private payments on Midnight. Midnight Korea Hackathon 2026.
+2026-09-13	pplmaverick/midnight-private-auction	Sealed-bid auction DApp on Midnight Network using Compact private state and ZK proofs
+2026-09-13	Sammy949/freeboard	Prove your DeFi position is solvent without revealing it: zero-knowledge solvency proofs on Midnight, with in-circuit Schnorr attestation
+2026-09-13	TacitPay/TacitPay	Private invoicing and settlement on Midnight. Private by default, provable on demand.
+2026-09-13	WeOwnHealth/trials	ZK clinical-trial matching on Midnight. Patients prove eligibility as one bit (e.g. cholesterol at or below 200) - no lab values disclosed on-ledger. Trial criteria public, biomarkers private witnesses, consent scoped, time-bound, revocable. Compact dual-ledger. 🤝 Let's collab!! Grab a time slot on Yonks calendar => https://cal.com/yonks/health
+2026-09-13	zarkbns/condition	Privacy-preserving parametric insurance on Midnight. Public policies, private claims and public proof of fair settlement.
+2026-09-14	adetyaz/coindrafts-mn	Fantasy crypto drafting game — draft tokens, compete head-to-head, race the market.
+2026-09-14	commun-platform/midnight_buildathons_bacchili	
+2026-09-14	elon00/qmoosa-deep-tech-ai-quantum-platform	QMOOSA - Full-stack deep-technology company platform for AI Agentics, Quantum Computing, Blockchain, Cryptography, and Frontier Systems
+2026-09-14	hwdeboer1977/midnight-polisZK	
+2026-09-14	julianariel/m402	Private agentic payments on Midnight — x402 with the payment amount held as a zero-knowledge witness
+2026-09-14	Kshot3000/Cardano-Midnight-Qwen-Builder	Cardano + Midnight ecosystem apps by the Qwen Builder agent: agent escrow, live network monitors, privacy dashboards. Built 24/7. Built for #Midnight and #Cardano.
+2026-09-14	let-the-dreamers-rise/blindside	A real-world hidden-target tag game on Midnight. The chain never learns who tagged whom, and the pot can always leave the contract.
+2026-09-14	OoJae/onepledge	One pledge per receivable, across rival lenders, without any lender seeing another's book. Built on Midnight.
+2026-09-14	Ritik200238/quietbooks	Private B2B invoicing, settlement and selective audit on Midnight. Compact contract, selective-disclosure audit envelopes, and a web interface wired end to end.

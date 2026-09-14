@@ -1,0 +1,14 @@
+pragma language_version >= 0.23;
+import CompactStandardLibrary;
+export ledger hits: Uint<64>;
+constructor() { hits = 0 as Uint<64>; }
+// blockTimeGte(t): "chain time >= t".  t=now_ms discriminates ms vs seconds.
+export circuit assertAfter(t: Uint<64>): [] {
+  assert(blockTimeGte(disclose(t)), "chain time is before t");
+  hits = (hits + (1 as Uint<64>)) as Uint<64>;
+}
+// blockTimeLt(t): "chain time < t"
+export circuit assertBefore(t: Uint<64>): [] {
+  assert(blockTimeLt(disclose(t)), "chain time is at or after t");
+  hits = (hits + (1 as Uint<64>)) as Uint<64>;
+}

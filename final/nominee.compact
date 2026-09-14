@@ -1,0 +1,161 @@
+pragma language_version >= 0.23;
+import CompactStandardLibrary;
+import "schnorr" prefix Schnorr_;
+
+// ===========================================================================
+// NOMINEE — final architecture, compiled on toolchain 0.31.1 (live nets).
+// nominee.world — add a nominee to your crypto. Nobody learns who.
+//
+// SHARED REGISTRY: one contract serves many owners. A heartbeat proves
+// membership in the owner set, so an observer sees "someone checked in",
+// not "Alice checked in". Per-owner slots are keyed by an opaque owner tag.
+//
+// Every private value arrives through a `witness`. No circuit argument
+// carries a secret (verified by the ZKIR private-var leak check).
+// ===========================================================================
+
+export ledger ownerSet:       MerkleTreeDigest;              // root of registered owners
+export ledger lastSeen:       Map<Bytes<32>, Uint<64>>;      // ownerTag -> last heartbeat
+export ledger graceSeconds:   Uint<64>;
+export ledger vaultRoot:      Map<Bytes<32>, MerkleTreeDigest>; // ownerTag -> beneficiary root
+export ledger resolvedVault:  Set<Bytes<32>>;                // ownerTags that have resolved
+export ledger spent:          Set<Bytes<32>>;                // per-heir nullifiers
+export ledger guardians:      Map<Uint<16>, JubjubPoint>;
+export ledger heldCoin:       Map<Bytes<32>, ShieldedCoinInfo>; // ownerTag -> outstanding coin
+export ledger probateOpened:  Map<Bytes<32>, Bytes<32>>;     // ownerTag -> envelope commitment
+export ledger willVersion:    Map<Bytes<32>, Uint<64>>;
+
+// ---- private inputs (all witnesses) ---------------------------------------
+witness ownerSecret():   Bytes<32>;
+witness willRoot():      Bytes<32>;   // commitment to the will; contents never enter the circuit
+witness ownerPath(leaf: Bytes<32>): MerkleTreePath<16, Bytes<32>>;
+witness newWillRoot():   Bytes<32>;
+witness newVaultRoot():  MerkleTreeDigest;
+witness heirSecret():    Bytes<32>;
+witness heirShare():     Uint<128>;
+witness heirPath(leaf: Bytes<32>): MerkleTreePath<16, Bytes<32>>;
+witness spendCoin():     QualifiedShieldedCoinInfo;
+witness gSig0():         Schnorr_SchnorrSignature;
+witness gSig1():         Schnorr_SchnorrSignature;
+witness gSig2():         Schnorr_SchnorrSignature;
+witness totalValue():    Uint<128>;
+witness executorId():    Bytes<32>;
+witness probateBlind():  Bytes<32>;
+witness envelopeCipher():Bytes<32>;
+witness pin():           Uint<16>;
+witness decoyRoot():     MerkleTreeDigest;
+
+// The owner's public tag: stable per owner, unlinkable to any wallet.
+circuit ownerTag(sk: Bytes<32>, wr: Bytes<32>): Bytes<32> {
+  return persistentHash<Vector<3, Bytes<32>>>([pad(32, "nominee:owner:v1"), sk, wr]);
+}
+
+// 1. Register: owner joins the shared registry.
+export circuit register(): [] {
+  const sk = ownerSecret(); const wr = willRoot();
+  const tag = ownerTag(sk, wr);
+  const leaf = persistentHash<Vector<2, Bytes<32>>>([sk, wr]);
+  assert(ownerSet.field == disclose(merkleTreePathRoot<16, Bytes<32>>(ownerPath(leaf))).field, "not a registered owner");
+  lastSeen.insert(disclose(tag), 0 as Uint<64>);
+  willVersion.insert(disclose(tag), 0 as Uint<64>);
+}
+
+// 2. Heartbeat: proves membership + knowledge of the will root. The prover
+//    never touches the will CONTENTS — only its root — so a compromised
+//    prover learns a 32-byte root, not the beneficiaries.
+export circuit heartbeat(now: Uint<64>): [] {
+  const sk = ownerSecret(); const wr = willRoot();
+  const leaf = persistentHash<Vector<2, Bytes<32>>>([sk, wr]);
+  assert(ownerSet.field == disclose(merkleTreePathRoot<16, Bytes<32>>(ownerPath(leaf))).field, "not a registered owner");
+  assert(blockTimeGte(disclose(now)), "timestamp in the future");
+  lastSeen.insert(disclose(ownerTag(sk, wr)), disclose(now));
+}
+
+// 3. Deposit shielded value into the vault. PROVEN to work on-chain (A1).
+export circuit deposit(coin: ShieldedCoinInfo): [] {
+  const sk = ownerSecret(); const wr = willRoot();
+  receiveShielded(disclose(coin));
+  heldCoin.insert(disclose(ownerTag(sk, wr)), disclose(coin));
+}
+
+// 4. Rewrite the will. Old and new contents both stay private.
+export circuit updateWill(): [] {
+  const sk = ownerSecret(); const wr = willRoot();
+  const tag = disclose(ownerTag(sk, wr));
+  assert(lastSeen.member(tag), "unknown owner");
+  vaultRoot.insert(tag, disclose(newVaultRoot()));
+  willVersion.insert(tag, (willVersion.lookup(tag) + 1) as Uint<64>);
+}
+
+// 5. Permissionless resolution once the grace period lapses.
+export circuit resolve(tag: Bytes<32>, deadline: Uint<64>): [] {
+  assert(lastSeen.member(disclose(tag)), "unknown owner");
+  assert(disclose(deadline) == (lastSeen.lookup(disclose(tag)) + graceSeconds) as Uint<64>, "bad deadline");
+  assert(blockTimeGte(disclose(deadline)), "grace not elapsed");
+  resolvedVault.insert(disclose(tag));
+}
+
+// 6. M-of-N guardians short-circuit the grace period (2-of-3 shape).
+export circuit guardianResolve2of3(tag: Bytes<32>, g0: Uint<16>, g1: Uint<16>): [] {
+  const msg: Vector<4, Field> = [1 as Field, 0 as Field, 0 as Field, 0 as Field];
+  assert(disclose(g0) < disclose(g1), "guardian ids must strictly increase");
+  assert(guardians.member(disclose(g0)), "unknown guardian");
+  assert(guardians.member(disclose(g1)), "unknown guardian");
+  Schnorr_schnorrVerify<4>(msg, gSig0(), guardians.lookup(disclose(g0)));
+  Schnorr_schnorrVerify<4>(msg, gSig1(), guardians.lookup(disclose(g1)));
+  resolvedVault.insert(disclose(tag));
+}
+
+// 6b. 3-of-5 shape.
+export circuit guardianResolve3of5(tag: Bytes<32>, g0: Uint<16>, g1: Uint<16>, g2: Uint<16>): [] {
+  const msg: Vector<4, Field> = [1 as Field, 0 as Field, 0 as Field, 0 as Field];
+  assert(disclose(g0) < disclose(g1), "ids must strictly increase");
+  assert(disclose(g1) < disclose(g2), "ids must strictly increase");
+  assert(guardians.member(disclose(g0)), "unknown guardian");
+  assert(guardians.member(disclose(g1)), "unknown guardian");
+  assert(guardians.member(disclose(g2)), "unknown guardian");
+  Schnorr_schnorrVerify<4>(msg, gSig0(), guardians.lookup(disclose(g0)));
+  Schnorr_schnorrVerify<4>(msg, gSig1(), guardians.lookup(disclose(g1)));
+  Schnorr_schnorrVerify<4>(msg, gSig2(), guardians.lookup(disclose(g2)));
+  resolvedVault.insert(disclose(tag));
+}
+
+// 7. An heir claims. Share is private; nullifier prevents a second claim.
+export circuit claim(tag: Bytes<32>, heirKey: ZswapCoinPublicKey): [] {
+  assert(resolvedVault.member(disclose(tag)), "vault not resolved");
+  const sk = heirSecret(); const share = heirShare();
+  const leaf = persistentHash<Vector<2, Bytes<32>>>([sk, persistentHash<Uint<128>>(share)]);
+  assert(vaultRoot.lookup(disclose(tag)).field
+         == disclose(merkleTreePathRoot<16, Bytes<32>>(heirPath(leaf))).field, "not a beneficiary");
+  const nf = persistentHash<Vector<2, Bytes<32>>>([pad(32, "nominee:nf:v1"), sk]);
+  assert(!spent.member(disclose(nf)), "already claimed");
+  spent.insert(disclose(nf));
+  const q = spendCoin();
+  const outstanding = heldCoin.lookup(disclose(tag));
+  assert(disclose(q.nonce) == outstanding.nonce, "stale coin qualification");
+  assert(disclose(q.value) == outstanding.value, "stale coin value");
+  assert(disclose(share) <= outstanding.value, "share exceeds remaining");
+  const res = sendShielded(disclose(q),
+                           left<ZswapCoinPublicKey, ContractAddress>(disclose(heirKey)),
+                           disclose(share));
+  heldCoin.insert(disclose(tag), res.change.value);
+}
+
+// 8. Scoped probate disclosure: prove the opened figures match the vault.
+export circuit openProbate(tag: Bytes<32>, vaultCommit: Bytes<32>): [] {
+  const v = totalValue(); const ex = executorId(); const b = probateBlind();
+  const c = persistentHash<Vector<3, Bytes<32>>>([persistentHash<Uint<128>>(v), ex, b]);
+  assert(disclose(vaultCommit) == disclose(c), "figures do not match the vault commitment");
+  probateOpened.insert(disclose(tag), disclose(persistentHash<Vector<2, Bytes<32>>>([envelopeCipher(), c])));
+}
+
+// 9. Duress: a PIN selects the real or decoy will. The circuit never says which.
+export circuit resolveUnderPin(tag: Bytes<32>, realCommit: Bytes<32>, decoyCommit: Bytes<32>): [] {
+  const sk = ownerSecret(); const p = pin();
+  const c = persistentHash<Vector<3, Bytes<32>>>([sk, persistentHash<Uint<16>>(p), willRoot()]);
+  const isReal  = (c == disclose(realCommit));
+  const isDecoy = (c == disclose(decoyCommit));
+  assert(disclose(isReal || isDecoy), "bad pin");
+  vaultRoot.insert(disclose(tag), disclose(decoyRoot()));
+  resolvedVault.insert(disclose(tag));
+}

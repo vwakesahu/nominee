@@ -1,0 +1,5 @@
+pragma language_version >= 0.26;
+import CompactStandardLibrary;
+export ledger sink: Bytes<20>;
+witness pk(): Secp256k1Point;
+export circuit f(): [] { sink.write(disclose(secp256k1EthereumAddress(pk()))); }

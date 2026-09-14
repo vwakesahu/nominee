@@ -1,0 +1,142 @@
+﻿Midnight Hackathon Judging Rubric
+Purpose: Identify well-rounded founders and teams capable of turning their projects into viable products or businesses.
+Each domain is scored independently by its expert judge.
+Total: 100 Points
+________________
+
+
+1. Product Leadership (Team Lead / Product Owner) — 20 pts
+Skill Checked
+	Evaluation Question
+	Scoring Scale
+	Problem Definition & Relevance
+	Has the team clearly identified a real problem or need that the product addresses?
+	0 = No clear problem 1 = Vague 2 = Some clarity 3 = Clear problem 4 = Strongly defined 5 = Evident real-world relevance
+	Vision & Direction
+	Is there a clear vision for what the product is becoming or how it fits into the ecosystem?
+	0 = No vision 1 = Incoherent 2 = Partially defined 3 = Clear direction 4 = Strategic 5 = Inspiring, ecosystem-aligned
+	Execution Planning
+	Did the team demonstrate clear planning, milestones, or division of work?
+	0 = None 1 = Minimal 2 = Some structure 3 = Organized 4 = Well-structured 5 = Excellent coordination
+	Product Fit with Network
+	Does the project make meaningful use of Midnight’s core capabilities (privacy, ZK, selective disclosure, data protection)?
+	0 = None 1 = Token only 2 = Minor integration 3 = Moderate use 4 = Strong use 5 = Deeply aligned
+	Presentation Clarity
+	Was the problem, solution, and demo presented clearly to non-technical audiences?
+	0 = Unclear 1 = Minimal explanation 2 = Partly understandable 3 = Clear 4 = Very clear 5 = Excellent articulation
+	Total: /20 pts
+________________
+
+
+2. Backend Engineering (Smart Contract / Infrastructure) — 20 pts
+Skill Checked
+	Evaluation Question
+	Scoring Scale
+	Functional Depth
+	Does the backend include real logic (contracts, APIs, compute) rather than mockups?
+	0 = None 1 = Basic placeholders 2 = Partially implemented 3 = Functional prototype 4 = Fully functional 5 = Complete and stable
+	Code Quality & Structure
+	Is the code modular, readable, and maintainable?
+	0 = Poor 1 = Messy 2 = Partially organized 3 = Structured 4 = Clean 5 = Excellent standards
+	Integration & Decentralization
+	Does it effectively use decentralized tools (e.g., storage, oracles)?
+	0 = None 1 = Minimal 2 = Some use 3 = Integrated 4 = Strongly integrated 5 = Seamless use of multiple decentralized components
+	Error Handling / Reliability
+	Does the backend handle edge cases, validation, or fallback gracefully?
+	0 = None 1 = Unstable 2 = Limited handling 3 = Reliable demo 4 = Robust 5 = Production-ready reliability
+	Documentation in Codebase
+	Are setup instructions, comments, or basic docs provided for reproducibility?
+	0 = None 1 = Minimal 2 = Partial 3 = Clear enough to follow 4 = Complete 5 = Fully reproducible with examples
+	Total: /20 pts
+________________
+
+
+3. Frontend & User Experience (Interface Developer) — 15 pts
+Skill Checked
+	Evaluation Question
+	Scoring Scale
+	Working Interface
+	Does the UI function end-to-end without breaking?
+	0 = Not working 1 = Barely functional 2 = Some flow 3 = Fully usable 4 = Smooth 5 = Polished
+	Usability & Navigation
+	Is the experience intuitive for a first-time user?
+	0 = Confusing 1 = Basic 2 = Some logic 3 = Understandable 4 = Easy to use 5 = Seamless
+	Design Cohesion
+	Is there visual or thematic consistency (branding, layout, color, typography)?
+	0 = None 1 = Unstyled 2 = Some style 3 = Cohesive 4 = Professional 5 = Outstanding
+	Interactivity & Responsiveness
+	Do inputs, callbacks, or real-time updates work properly?
+	0 = None 1 = Buggy 2 = Basic functionality 3 = Responsive 4 = Smooth 5 = Excellent responsiveness
+	User Feedback & Validation
+	Does the interface handle errors or confirmations clearly (e.g., success/failure messages)?
+	0 = None 1 = Poor feedback 2 = Some 3 = Clear enough 4 = Consistent 5 = Excellent
+	Total: /15 pts
+________________
+
+
+4. Quality Assurance (Testing & Functionality) — 15 pts
+Skill Checked
+	Evaluation Question
+	Scoring Scale
+	Stability Under Use
+	Did the project run reliably during demo or repeated trials?
+	0 = Failed 1 = Unstable 2 = Some stability 3 = Works 4 = Reliable 5 = Highly stable
+	Completeness of Core Features
+	Are all main features functional and integrated?
+	0 = Incomplete 1 = Few working 2 = Half complete 3 = Functional core 4 = Complete 5 = Fully integrated
+	Bug Resolution & Debugging
+	Evidence of testing, debugging, or iteration before demo?
+	0 = None 1 = Minimal 2 = Some 3 = Clear effort 4 = Well-tested 5 = Thorough QA process
+	Demo Readiness
+	Was the system demo-ready (runs without external setup or failure)?
+	0 = Not demoable 1 = Requires major fixes 2 = Difficult setup 3 = Works with guidance 4 = Smooth demo 5 = Plug-and-play
+	Version Control Use
+	Are commits structured, collaborative, and documented?
+	0 = None 1 = Minimal 2 = Few commits 3 = Organized 4 = Clear history 5 = Excellent collaboration trail
+	Total: /15 pts
+________________
+
+
+5. Communication & Marketing — 15 pts
+Skill Checked
+	Evaluation Question
+	Scoring Scale
+	Messaging Clarity
+	Can an audience quickly understand what the product does and why it matters?
+	0 = Unclear 1 = Weak 2 = Some clarity 3 = Clear 4 = Compelling 5 = Instantly clear
+	Public Presentation / Demo Pitch
+	Did the team present confidently and coherently within the allotted time?
+	0 = None 1 = Poor 2 = Basic 3 = Clear 4 = Strong 5 = Excellent pitch delivery
+	Visual or Media Support
+	Did the team prepare visuals, slides, or assets that effectively communicate the idea?
+	0 = None 1 = Minimal 2 = Some 3 = Clear visuals 4 = Professional 5 = Outstanding
+	Community Engagement
+	Did the team post, share, or communicate their work with the broader community?
+	0 = None 1 = Minimal 2 = Some awareness 3 = Shared publicly 4 = Engaging content 5 = Wide reach / creative engagement
+	Educational Clarity
+	Could others learn about Midnight or its features from their presentation?
+	0 = No educational value 1 = Minimal 2 = Partial 3 = Clear 4 = Informative 5 = Great educational example
+	Total: /15 pts
+________________
+
+
+6. Business Development & Viability — 15 pts
+Skill Checked
+	Evaluation Question
+	Scoring Scale
+	Market Understanding
+	Is there a clear definition of who the user or customer is?
+	0 = None 1 = Vague 2 = Some target 3 = Clear audience 4 = Validated audience 5 = Well-researched
+	Go-to-Market or Adoption Plan
+	Did the team outline how people would use or access this product post-hackathon?
+	0 = None 1 = Minimal 2 = Rough idea 3 = Practical plan 4 = Strategic 5 = Executable roadmap
+	Partnership or Ecosystem Fit
+	Does the project add value to the Midnight ecosystem or integrate with other tools?
+	0 = None 1 = Weak 2 = Some 3 = Clear fit 4 = Strong alignment 5 = Direct ecosystem synergy
+	Monetization or Sustainability
+	Has the team considered how it could sustain or grow long-term?
+	0 = None 1 = Weak 2 = Some 3 = Clear idea 4 = Feasible 5 = Viable model
+	Scalability & Impact Potential
+	Could this idea create real impact or evolve into a viable company?
+	0 = Not viable 1 = Unlikely 2 = Some potential 3 = Moderate 4 = Strong 5 = High impact potential
+	Total: /15 pts

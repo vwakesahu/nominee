@@ -1,0 +1,54 @@
+pragma language_version >= 0.23;
+import CompactStandardLibrary;
+
+// A3: multi-heir claim sequence. Variant B — the contract stores the
+// OUTSTANDING coin in ledger state after each claim, so the next claimant
+// does not need off-chain discovery of the change coin.
+
+export ledger beneficiaries: MerkleTreeDigest;
+export ledger spent:         Set<Bytes<32>>;
+export ledger resolved:      Boolean;
+export ledger outstanding:   ShieldedCoinInfo;     // the current change coin
+export ledger claimCount:    Counter;
+
+constructor(root: MerkleTreeDigest) {
+  beneficiaries = disclose(root);
+  resolved = false;
+}
+
+witness heirSecret():   Bytes<32>;
+witness heirShare():    Uint<128>;
+witness heirPath(leaf: Bytes<32>): MerkleTreePath<16, Bytes<32>>;
+witness outstandingQual(): QualifiedShieldedCoinInfo;  // qualification of `outstanding`
+
+export circuit deposit(coin: ShieldedCoinInfo): [] {
+  receiveShielded(disclose(coin));
+  outstanding = disclose(coin);
+}
+
+export circuit resolveNow(): [] { resolved = true; }
+
+export circuit claim(heirKey: ZswapCoinPublicKey): [] {
+  assert(resolved, "not resolved");
+  const sk    = heirSecret();
+  const share = heirShare();
+  const leaf  = persistentHash<Vector<2, Bytes<32>>>([sk, persistentHash<Uint<128>>(share)]);
+  assert(beneficiaries.field == disclose(merkleTreePathRoot<16, Bytes<32>>(heirPath(leaf))).field, "not a beneficiary");
+  const nf = persistentHash<Vector<2, Bytes<32>>>([pad(32, "nominee:nf:v1"), sk]);
+  assert(!spent.member(disclose(nf)), "already claimed");
+  spent.insert(disclose(nf));
+
+  const q = outstandingQual();
+  // the qualification must correspond to the coin the contract currently holds
+  assert(disclose(q.nonce) == outstanding.nonce, "stale coin qualification");
+  assert(disclose(q.color) == outstanding.color, "wrong coin");
+  assert(disclose(q.value) == outstanding.value, "stale coin value");
+  assert(disclose(share) <= outstanding.value, "share exceeds remaining");
+
+  const res = sendShielded(disclose(q),
+                           left<ZswapCoinPublicKey, ContractAddress>(disclose(heirKey)),
+                           disclose(share));
+  // record the change coin so the NEXT heir can find it from ledger state alone
+  outstanding = res.change.value;
+  claimCount.increment(1);
+}

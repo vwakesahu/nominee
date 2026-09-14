@@ -1,0 +1,25 @@
+pragma language_version >= 0.23;
+import CompactStandardLibrary;
+export ledger beneficiaries: MerkleTree<16, Bytes<32>>;
+export ledger spent: Set<Bytes<32>>;
+export ledger resolved: Boolean;
+
+witness heirSecret(): Bytes<32>;
+witness heirShare(): Uint<128>;
+witness heirPath(leaf: Bytes<32>): MerkleTreePath<16, Bytes<32>>;
+witness vaultCoin(): QualifiedShieldedCoinInfo;
+
+export circuit claim(heirKey: ZswapCoinPublicKey): [] {
+  assert(resolved, "vault not resolved");
+  const sk    = heirSecret();
+  const share = heirShare();
+  // leaf commits to (heir identity, their share) so shares are fixed at will-writing time
+  const leaf  = persistentHash<Vector<2, Bytes<32>>>([sk, persistentHash<Uint<128>>(share)]);
+  const path  = heirPath(leaf);
+  assert(beneficiaries.checkRoot(disclose(merkleTreePathRoot<16, Bytes<32>>(path))), "not a beneficiary");
+  // per-heir nullifier prevents double claim, reveals nothing about which heir
+  const nf = persistentHash<Vector<2, Bytes<32>>>([pad(32, "nominee:nf:v1"), sk]);
+  assert(!spent.member(disclose(nf)), "already claimed");
+  spent.insert(disclose(nf));
+  sendShielded(disclose(vaultCoin()), left<ZswapCoinPublicKey, ContractAddress>(disclose(heirKey)), disclose(share));
+}

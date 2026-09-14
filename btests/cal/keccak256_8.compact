@@ -1,0 +1,15 @@
+pragma language_version >= 0.26;
+import CompactStandardLibrary;
+export ledger sink: Bytes<32>;
+export circuit f(x: Bytes<32>): [] {
+  const h0 = x;
+  const h1 = keccak256<Bytes<32>>(h0);
+  const h2 = keccak256<Bytes<32>>(h1);
+  const h3 = keccak256<Bytes<32>>(h2);
+  const h4 = keccak256<Bytes<32>>(h3);
+  const h5 = keccak256<Bytes<32>>(h4);
+  const h6 = keccak256<Bytes<32>>(h5);
+  const h7 = keccak256<Bytes<32>>(h6);
+  const h8 = keccak256<Bytes<32>>(h7);
+  sink.write(disclose(h8));
+}

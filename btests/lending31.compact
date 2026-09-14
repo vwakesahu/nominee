@@ -1,0 +1,40 @@
+pragma language_version >= 0.23;
+import CompactStandardLibrary;
+
+struct Terms {
+  principal:      Uint<64>;
+  rateBps:        Uint<16>;
+  liqThreshBps:   Uint<16>;
+  lenderPk:       Bytes<32>;
+  collateral:     Uint<64>;
+  nonce:          Bytes<32>;
+}
+
+export ledger loanCommits:  Map<Bytes<32>, Field>;
+export ledger healthProofs: Map<Bytes<32>, Uint<64>>;
+export ledger defaulted:    Set<Bytes<32>>;
+
+witness terms(loanId: Bytes<32>): Terms;
+witness priceAtt(): [Uint<64>, Uint<64>];
+
+export circuit openLoan(loanId: Bytes<32>): [] {
+  const t = terms(loanId);
+  loanCommits.insert(disclose(loanId), disclose(transientHash<Terms>(t)));
+}
+
+export circuit proveHealthy(loanId: Bytes<32>, deadline: Uint<64>): [] {
+  const t = terms(loanId);
+  assert(loanCommits.member(disclose(loanId)), "unknown loan");
+  assert(loanCommits.lookup(disclose(loanId)) == disclose(transientHash<Terms>(t)), "commit mismatch");
+  const [price, ts] = priceAtt();
+  const lhs = t.collateral * price * 10000;
+  const rhs = t.principal * t.liqThreshBps;
+  assert(disclose(lhs >= rhs), "undercollateralised");
+  assert(blockTimeLt(disclose(deadline)), "too late");
+  healthProofs.insert(disclose(loanId), disclose(ts));
+}
+
+export circuit flagDefault(loanId: Bytes<32>, deadline: Uint<64>): [] {
+  assert(blockTimeGte(disclose(deadline)), "not yet due");
+  defaulted.insert(disclose(loanId));
+}

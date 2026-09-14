@@ -1,0 +1,17 @@
+pragma language_version >= 0.26;
+import CompactStandardLibrary;
+
+// Verify an Ethereum ECDSA signature in-circuit AND derive the Ethereum address
+// from the recovered public key. Mirrors the "prove I control an ETH address" flow.
+export ledger lastAddr: Bytes<20>;
+
+witness ethPubKey(): Secp256k1Point;
+witness ethSig(): Secp256k1EcdsaSignature;
+
+export circuit proveEthControl(msgHash: Bytes<32>): [] {
+  const pk = ethPubKey();
+  const sig = ethSig();
+  assert(secp256k1EcdsaVerify(msgHash, sig, pk), "bad sig");
+  const addr = secp256k1EthereumAddress(pk);
+  lastAddr.write(disclose(addr));
+}

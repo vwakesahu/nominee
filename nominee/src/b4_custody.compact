@@ -1,0 +1,16 @@
+pragma language_version >= 0.23;
+import CompactStandardLibrary;
+export ledger held: ShieldedCoinInfo;
+export ledger funded: Boolean;
+
+export circuit deposit(coin: ShieldedCoinInfo): [] {
+  receiveShielded(disclose(coin));
+  held = disclose(coin);
+  funded = true;
+}
+
+// Claimant supplies the qualification (Merkle index) discovered off-chain.
+export circuit claim(qual: QualifiedShieldedCoinInfo, heirKey: ZswapCoinPublicKey, amount: Uint<128>): [] {
+  assert(funded, "not funded");
+  sendShielded(disclose(qual), left<ZswapCoinPublicKey, ContractAddress>(disclose(heirKey)), disclose(amount));
+}

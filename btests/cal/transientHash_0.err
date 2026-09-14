@@ -1,0 +1,7 @@
+Exception: transientHash_0.compact line 6 char 23:
+  no compatible function named persistentHash is in scope at this call
+    one function is incompatible with the supplied argument types
+      supplied argument types:
+        (Bytes<32>)
+      declared argument types for function at <standard library>:
+        (Field)

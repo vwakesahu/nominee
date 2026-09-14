@@ -1,0 +1,91 @@
+pragma language_version >= 0.23;
+import CompactStandardLibrary;
+import "schnorr" prefix Schnorr_;
+
+// ---------------------------------------------------------------------------
+// Nominee — add a nominee to your crypto. Nobody learns who.
+// PUBLIC  : one will commitment, a beneficiary Merkle root, lastSeen, flags,
+//           spent-nullifier set, guardian keys.
+// PRIVATE : the will contents, heir identities, per-heir shares, owner secret.
+// ---------------------------------------------------------------------------
+
+export ledger willCommit:      Bytes<32>;
+export ledger beneficiaries:   MerkleTree<16, Bytes<32>>;
+export ledger lastSeen:        Uint<64>;
+export ledger graceSeconds:    Uint<64>;
+export ledger resolved:        Boolean;
+export ledger spent:           Set<Bytes<32>>;
+export ledger guardians:       Map<Uint<16>, JubjubPoint>;
+export ledger vaultCoin:       ShieldedCoinInfo;
+export ledger willVersion:     Counter;
+export ledger probateEnvelope: Bytes<32>;
+
+witness ownerSecret():   Bytes<32>;
+witness willContents():  Bytes<32>;
+witness newWill():       Bytes<32>;
+witness newRoot():       Bytes<32>;
+witness heirSecret():    Bytes<32>;
+witness heirShare():     Uint<128>;
+witness heirPath(leaf: Bytes<32>): MerkleTreePath<16, Bytes<32>>;
+witness spendCoin():     QualifiedShieldedCoinInfo;
+witness gSig0():         Schnorr_SchnorrSignature;
+witness gSig1():         Schnorr_SchnorrSignature;
+
+circuit ownerCommit(sk: Bytes<32>, w: Bytes<32>): Bytes<32> {
+  return persistentHash<Vector<2, Bytes<32>>>([sk, w]);
+}
+
+// 1. Owner funds the vault with a shielded coin.
+export circuit deposit(coin: ShieldedCoinInfo): [] {
+  receiveShielded(disclose(coin));
+  vaultCoin = disclose(coin);
+}
+
+// 2. Periodic proof of life. Reveals nothing but the timestamp.
+export circuit heartbeat(now: Uint<64>): [] {
+  assert(willCommit == disclose(ownerCommit(ownerSecret(), willContents())), "not owner");
+  assert(blockTimeGte(disclose(now)), "timestamp in future");
+  lastSeen = disclose(now);
+}
+
+// 3. Owner rewrites the will. Contents never revealed.
+export circuit updateWill(): [] {
+  const sk = ownerSecret();
+  assert(willCommit == disclose(ownerCommit(sk, willContents())), "not owner");
+  willCommit    = disclose(ownerCommit(sk, newWill()));
+  beneficiaries.resetToDefault();
+  willVersion.increment(1);
+}
+
+// 4. Permissionless resolution once the grace period lapses.
+export circuit resolve(deadline: Uint<64>): [] {
+  assert(disclose(deadline) == (lastSeen + graceSeconds) as Uint<64>, "bad deadline");
+  assert(blockTimeGte(disclose(deadline)), "grace not elapsed");
+  resolved = true;
+}
+
+// 5. M-of-N guardians short-circuit the grace period.
+export circuit guardianResolve(g0: Uint<16>, g1: Uint<16>): [] {
+  const msg: Vector<4, Field> = [1 as Field, 0 as Field, 0 as Field, 0 as Field];
+  assert(disclose(g0) < disclose(g1), "ids must strictly increase");
+  assert(guardians.member(disclose(g0)), "unknown guardian");
+  assert(guardians.member(disclose(g1)), "unknown guardian");
+  Schnorr_schnorrVerify<4>(msg, gSig0(), guardians.lookup(disclose(g0)));
+  Schnorr_schnorrVerify<4>(msg, gSig1(), guardians.lookup(disclose(g1)));
+  resolved = true;
+}
+
+// 6. An heir claims. Share stays private; nullifier prevents a second claim.
+export circuit claim(heirKey: ZswapCoinPublicKey): [] {
+  assert(resolved, "vault not resolved");
+  const sk    = heirSecret();
+  const share = heirShare();
+  const leaf  = persistentHash<Vector<2, Bytes<32>>>([sk, persistentHash<Uint<128>>(share)]);
+  assert(beneficiaries.checkRoot(disclose(merkleTreePathRoot<16, Bytes<32>>(heirPath(leaf)))), "not a beneficiary");
+  const nf = persistentHash<Vector<2, Bytes<32>>>([pad(32, "nominee:nf:v1"), sk]);
+  assert(!spent.member(disclose(nf)), "already claimed");
+  spent.insert(disclose(nf));
+  sendShielded(disclose(spendCoin()),
+               left<ZswapCoinPublicKey, ContractAddress>(disclose(heirKey)),
+               disclose(share));
+}

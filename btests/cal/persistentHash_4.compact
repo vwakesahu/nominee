@@ -1,0 +1,11 @@
+pragma language_version >= 0.26;
+import CompactStandardLibrary;
+export ledger sink: Bytes<32>;
+export circuit f(x: Bytes<32>): [] {
+  const h0 = x;
+  const h1 = persistentHash<Bytes<32>>(h0);
+  const h2 = persistentHash<Bytes<32>>(h1);
+  const h3 = persistentHash<Bytes<32>>(h2);
+  const h4 = persistentHash<Bytes<32>>(h3);
+  sink.write(disclose(h4));
+}

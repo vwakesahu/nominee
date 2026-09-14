@@ -1,0 +1,4 @@
+pragma language_version >= 0.23;
+import CompactStandardLibrary;
+export ledger q: QualifiedShieldedCoinInfo;
+export circuit f(c: QualifiedShieldedCoinInfo): [] { q = disclose(c); }

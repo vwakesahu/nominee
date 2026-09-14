@@ -1,0 +1,7 @@
+pragma language_version >= 0.23;
+import CompactStandardLibrary;
+export ledger held: ShieldedCoinInfo;
+export circuit deposit(coin: ShieldedCoinInfo): [] {
+  receiveShielded(disclose(coin));
+  held = disclose(coin);
+}

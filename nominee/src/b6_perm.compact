@@ -1,0 +1,10 @@
+pragma language_version >= 0.23;
+import CompactStandardLibrary;
+export ledger lastSeen: Uint<64>;
+export ledger grace: Uint<64>;
+export ledger resolved: Boolean;
+export circuit resolve(deadline: Uint<64>): [] {
+  assert(disclose(deadline) == (lastSeen + grace) as Uint<64>, "bad deadline");
+  assert(blockTimeGte(disclose(deadline)), "grace not elapsed");
+  resolved = true;
+}

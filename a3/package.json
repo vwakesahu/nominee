@@ -1,0 +1,23 @@
+{
+  "name": "nominee-multiheir-tests",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@midnight-ntwrk/compact-runtime": "0.16.0",
+    "@midnight-ntwrk/midnight-js-protocol": "4.1.1",
+    "@midnight-ntwrk/ledger-v8": "8.1.0"
+  },
+  "devDependencies": {
+    "vitest": "^2.1.8",
+    "typescript": "^5.8.3"
+  },
+  "overrides": {
+    "@midnight-ntwrk/onchain-runtime-v3": "3.0.0"
+  },
+  "description": "Add a nominee to your crypto. Nobody learns who.",
+  "homepage": "https://nominee.world",
+  "license": "Apache-2.0"
+}

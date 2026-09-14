@@ -1,0 +1,10 @@
+pragma language_version >= 0.23;
+import CompactStandardLibrary;
+export ledger held: ShieldedCoinInfo;
+witness heirShare(): Uint<128>;
+witness heirQual(): QualifiedShieldedCoinInfo;
+export circuit claimPrivate(heirKey: ZswapCoinPublicKey): [] {
+  const amt = heirShare();
+  const q   = heirQual();
+  sendShielded(disclose(q), left<ZswapCoinPublicKey, ContractAddress>(disclose(heirKey)), disclose(amt));
+}

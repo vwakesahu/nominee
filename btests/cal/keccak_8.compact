@@ -1,0 +1,14 @@
+pragma language_version >= 0.26;
+import CompactStandardLibrary;
+export circuit f(x: Bytes<32>): Bytes<32> {
+  let h = x;
+  h = keccak256<Bytes<32>>(h);
+  h = keccak256<Bytes<32>>(h);
+  h = keccak256<Bytes<32>>(h);
+  h = keccak256<Bytes<32>>(h);
+  h = keccak256<Bytes<32>>(h);
+  h = keccak256<Bytes<32>>(h);
+  h = keccak256<Bytes<32>>(h);
+  h = keccak256<Bytes<32>>(h);
+  return h;
+}
