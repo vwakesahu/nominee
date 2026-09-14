@@ -33,11 +33,13 @@ That is only possible because of two Midnight properties together: a **shielded 
 git clone https://github.com/vwakesahu/nominee && cd nominee
 npm install
 docker compose up -d          # local Midnight devnet: node, indexer, proof server
-npx nominee demo              # the full story, ~2 minutes
 npm test                      # 33 simulator tests
+npx nominee doctor            # check devnet, proof server, contract build
 ```
 
-`npx nominee doctor` checks the devnet, proof server and contract build before you start.
+`npx nominee demo` runs the full story. On-chain execution is opt-in
+(`NOMINEE_LIVE=1`) while the deploy path is being finished — see
+[Known issues](#known-issues).
 
 You do **not** need the Compact toolchain — `contract/out/` (proving keys and generated bindings) is committed.
 
@@ -52,6 +54,7 @@ You do **not** need the Compact toolchain — `contract/out/` (proving keys and 
 | ZKIR leak check | 8/10 clean, 2 by design | `test/privacy/leakcheck.py` |
 | blockTime units | Resolved: **seconds** | `validation/VALIDATION_FINAL.md` §A2 |
 | Shielded payout | Wave 2 | `validation/VALIDATION_FINAL.md` §A1b — precise diagnosis |
+| CLI deploy path | in progress | see Known issues below |
 | Preprod deployment | Wave 2 | |
 | Frontend | Wave 2 | |
 | Probate disclosure | Wave 3 | circuit compiled, 11,270 rows |
@@ -117,6 +120,29 @@ Named here because a judge will find them anyway, and because the validation fou
 - **A long hospital stay executes the will.** Guardians are safety-critical, not a nice-to-have.
 - **Lace has no plugin mechanism** — Nominee is its own DApp that wallets connect to, not a wallet feature.
 - **Legally this is a transfer mechanism, not a will.** Lead with the probate-disclosure feature, not the privacy feature.
+
+## Known issues
+
+**`deployContract` from the CLI fails with a wasm class-identity error.**
+
+The generated contract imports `@midnight-ntwrk/compact-runtime`, while
+`@midnight-ntwrk/midnight-js-protocol` (pulled in by the wallet and provider
+layer) carries a second copy of the same wasm bindings. With both in the graph,
+a `ContractState` built by one instance is rejected by the other:
+
+```
+'contractState' parameter ContractState (...) has unexpected type
+expected instance of ContractMaintenanceAuthority
+```
+
+Established by experiment, not guesswork: dependency versions match the working
+probe exactly, there is a single copy of each package on disk, and the same code
+fails inside the probe's own `node_modules` — while the probe itself still
+deploys. Importing the same module through two different specifiers is enough to
+reproduce it.
+
+The simulator path is unaffected: it loads only `compact-runtime`, which is why
+all 33 tests pass and the demo tells the whole story today.
 
 ## Roadmap
 

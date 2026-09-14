@@ -6,6 +6,13 @@
 // proof and the ledger are absent.
 import { Buffer } from 'node:buffer';
 import { randomBytes } from 'node:crypto';
+// NOTE: the generated contract imports '@midnight-ntwrk/compact-runtime', so
+// everything that touches a ContractState must come from that same specifier.
+// '@midnight-ntwrk/midnight-js-protocol' carries a second copy of the wasm
+// bindings; loading both puts two instances in the graph and a ContractState
+// built by one is rejected by the other:
+//   'contractState' parameter ContractState (...) has unexpected type
+// That is the open issue behind the simulator path in the CLI.
 import {
   createCircuitContext, createConstructorContext, sampleContractAddress,
 } from '@midnight-ntwrk/compact-runtime';
