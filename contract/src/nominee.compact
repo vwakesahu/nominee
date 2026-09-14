@@ -45,6 +45,24 @@ witness envelopeCipher():Bytes<32>;
 witness pin():           Uint<16>;
 witness decoyRoot():     MerkleTreeDigest;
 
+// ---- construction -----------------------------------------------------
+// The owner cohort and the guardian set are fixed at deploy. The deployer
+// builds the owner Merkle tree off chain and passes only its root, so the
+// chain never sees the membership list -- only its commitment.
+constructor(
+  initialOwnerSet: MerkleTreeDigest,
+  grace: Uint<64>,
+  g0: JubjubPoint,
+  g1: JubjubPoint,
+  g2: JubjubPoint
+) {
+  ownerSet     = disclose(initialOwnerSet);
+  graceSeconds = disclose(grace);
+  guardians.insert(0, disclose(g0));
+  guardians.insert(1, disclose(g1));
+  guardians.insert(2, disclose(g2));
+}
+
 // The owner's public tag: stable per owner, unlinkable to any wallet.
 circuit ownerTag(sk: Bytes<32>, wr: Bytes<32>): Bytes<32> {
   return persistentHash<Vector<3, Bytes<32>>>([pad(32, "nominee:owner:v1"), sk, wr]);

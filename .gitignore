@@ -6,10 +6,18 @@ managed/
 out/
 **/managed-a2/
 
-# proving keys are large and reproducible
+# ...EXCEPT the product contract's build, which is committed on purpose so a
+# judge can run the CLI without installing the Compact toolchain.
+!contract/out/
+!contract/out/**
+
+# proving keys are large and reproducible — except the product contract's
 *.prover
 *.verifier
 keys/
+!contract/out/keys/
+!contract/out/keys/*.prover
+!contract/out/keys/*.verifier
 
 # third-party repositories cloned for prior-art review.
 # These are other people's code with their own git history and licences.
