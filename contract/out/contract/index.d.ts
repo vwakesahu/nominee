@@ -212,9 +212,12 @@ export declare class Contract<PS = any, W extends Witnesses<PS> = Witnesses<PS>>
   initialState(context: __compactRuntime.ConstructorContext<PS>,
                initialOwnerSet_0: { field: bigint },
                grace_0: bigint,
-               g0_0: __compactRuntime.JubjubPoint,
-               g1_0: __compactRuntime.JubjubPoint,
-               g2_0: __compactRuntime.JubjubPoint): __compactRuntime.ConstructorResult<PS>;
+               g0x_0: bigint,
+               g0y_0: bigint,
+               g1x_0: bigint,
+               g1y_0: bigint,
+               g2x_0: bigint,
+               g2y_0: bigint): __compactRuntime.ConstructorResult<PS>;
 }
 
 export declare function ledger(state: __compactRuntime.StateValue | __compactRuntime.ChargedState): Ledger;

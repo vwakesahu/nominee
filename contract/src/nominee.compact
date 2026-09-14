@@ -49,18 +49,22 @@ witness decoyRoot():     MerkleTreeDigest;
 // The owner cohort and the guardian set are fixed at deploy. The deployer
 // builds the owner Merkle tree off chain and passes only its root, so the
 // chain never sees the membership list -- only its commitment.
+// Guardian keys arrive as coordinate pairs, not as JubjubPoint values: a
+// JubjubPoint is a wasm-backed object, and handing one to deployContract as a
+// constructor argument corrupts the deploy path. Plain Fields cross the
+// boundary cleanly and the point is rebuilt here, in circuit.
 constructor(
   initialOwnerSet: MerkleTreeDigest,
   grace: Uint<64>,
-  g0: JubjubPoint,
-  g1: JubjubPoint,
-  g2: JubjubPoint
+  g0x: Field, g0y: Field,
+  g1x: Field, g1y: Field,
+  g2x: Field, g2y: Field
 ) {
   ownerSet     = disclose(initialOwnerSet);
   graceSeconds = disclose(grace);
-  guardians.insert(0, disclose(g0));
-  guardians.insert(1, disclose(g1));
-  guardians.insert(2, disclose(g2));
+  guardians.insert(0, constructJubjubPoint(disclose(g0x), disclose(g0y)));
+  guardians.insert(1, constructJubjubPoint(disclose(g1x), disclose(g1y)));
+  guardians.insert(2, constructJubjubPoint(disclose(g2x), disclose(g2y)));
 }
 
 // The owner's public tag: stable per owner, unlinkable to any wallet.

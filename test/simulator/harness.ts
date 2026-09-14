@@ -10,7 +10,7 @@ import {
 } from '@midnight-ntwrk/compact-runtime';
 import { Contract, ledger, type Ledger } from '../../contract/out/contract/index.js';
 import {
-  SparseTree, guardianKeypair, heirLeaf, ownerLeaf, ownerTag,
+  SparseTree, guardianKeypair, guardianPk, heirLeaf, ownerLeaf, ownerTag,
   type GuardianKey,
 } from '../../cli/src/crypto.js';
 import { makeWitnesses, OWNER_DEPTH, HEIR_DEPTH, type Heir, type Owner, type PrivateState } from '../../cli/src/witnesses.js';
@@ -78,9 +78,7 @@ export class Vault {
       createConstructorContext(ps, sampleContractAddress()),
       this.ownerTree.digest(),
       grace,
-      this.guardianKeys[0].pk,
-      this.guardianKeys[1].pk,
-      this.guardianKeys[2].pk,
+      ...this.guardianKeys.flatMap((k) => [k.x, k.y]),
     );
     this.ctx = createCircuitContext(
       sampleContractAddress(), init.currentZswapLocalState,

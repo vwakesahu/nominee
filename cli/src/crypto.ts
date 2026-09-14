@@ -8,6 +8,7 @@
 // runtime: scalars >= L are rejected ("failed to decode for built-in type
 // EmbeddedFr"), and s*G == A + c*P holds for s = (r + c*x) mod L.
 import { randomBytes } from 'node:crypto';
+import { constructJubjubPoint, jubjubPointX, jubjubPointY } from '@midnight-ntwrk/compact-runtime';
 
 /** Jubjub subgroup order. */
 export const JUBJUB_ORDER =
@@ -128,11 +129,25 @@ const randScalar = (): bigint => {
   return v === 0n ? 1n : v;
 };
 
-export interface GuardianKey { sk: bigint; pk: JubjubPoint }
+/**
+ * Guardian keys are stored as PLAIN COORDINATES, never as live wasm objects.
+ *
+ * A wasm-bindgen value is consumed when it is passed into another wasm call.
+ * The deploy path hands the private state to the SDK *and* passes guardian
+ * points as constructor arguments, so a shared live object is moved by the
+ * first use and the second use reads a dangling pointer — which surfaces far
+ * away as "expected instance of ContractMaintenanceAuthority". Rebuilding the
+ * point on each access keeps every use independent.
+ */
+export interface GuardianKey { sk: bigint; x: bigint; y: bigint }
+
+/** A fresh JubjubPoint for this key. Never cache the result. */
+export const guardianPk = (k: GuardianKey): JubjubPoint => constructJubjubPoint(k.x, k.y);
 
 export function guardianKeypair(c: Hasher): GuardianKey {
   const sk = randScalar();
-  return { sk, pk: c._ecMulGenerator_0(sk) };
+  const p = c._ecMulGenerator_0(sk);
+  return { sk, x: jubjubPointX(p), y: jubjubPointY(p) };
 }
 
 /** The challenge the circuit will recompute, and its 248-bit reduction. */
@@ -157,7 +172,7 @@ export function schnorrChallenge(
 export function schnorrSign(c: Hasher, key: GuardianKey, msg: bigint[]): SchnorrSignature {
   const r = randScalar();
   const announcement = c._ecMulGenerator_0(r);
-  const { cTruncated } = schnorrChallenge(c, announcement, key.pk, msg);
+  const { cTruncated } = schnorrChallenge(c, announcement, guardianPk(key), msg);
   const response = (r + cTruncated * key.sk) % JUBJUB_ORDER;
   return { announcement, response };
 }

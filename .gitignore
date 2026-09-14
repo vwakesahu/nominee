@@ -41,3 +41,10 @@ raw/akindo_page.html
 
 # generated ZKIR from calibration runs
 **/out_*/
+
+# CLI run artifacts
+demo.log
+deployments/devnet.json
+
+# level private-state stores (runtime artifacts)
+**/midnight-level-db/

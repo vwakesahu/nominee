@@ -62,12 +62,21 @@ export interface PrivateState {
 const ZERO32 = new Uint8Array(32);
 const ZERO_DIGEST = { field: 0n };
 
+/** A mutable handle the CLI can steer between circuit calls. */
+export interface StateRef { ps: PrivateState }
+
 /**
  * Build the witness object the generated Contract requires. The contract
  * validates that every declared witness is present, so all of them are here
  * even when a given command only exercises a few.
+ *
+ * When `ref` is supplied the witnesses read from it instead of the context's
+ * private state. The live SDK owns the private state it threads through calls,
+ * so this is how the CLI switches which owner it is acting as. The simulator
+ * passes no ref and threads state normally.
  */
-export function makeWitnesses(hasher: any) {
+export function makeWitnesses(hasher: any, ref?: StateRef): any {
+  const st = (ctx: any): PrivateState => (ref ? ref.ps : ctx.privateState);
   const ownerTreeOf = (ps: PrivateState) =>
     ps.ownerTree ??
     (ps.ownerTree = new SparseTree(hasher, OWNER_DEPTH,
@@ -91,49 +100,49 @@ export function makeWitnesses(hasher: any) {
     getSchnorrReduction: (ctx: any, cFull: bigint) =>
       [ctx.privateState, schnorrReduction(cFull)] as [PrivateState, [bigint, bigint]],
 
-    ownerSecret: (ctx: any) => [ctx.privateState, ctx.privateState.owner.secret],
-    willRoot:    (ctx: any) => [ctx.privateState, ctx.privateState.owner.willRoot],
+    ownerSecret: (ctx: any) => [ctx.privateState, st(ctx).owner.secret],
+    willRoot:    (ctx: any) => [ctx.privateState, st(ctx).owner.willRoot],
 
     ownerPath: (ctx: any, leaf: Uint8Array) => {
-      const ps: PrivateState = ctx.privateState;
+      const ps: PrivateState = st(ctx);
       const tree = ownerTreeOf(ps);
       const i = ps.cohort.findIndex(
         (o) => Buffer.compare(Buffer.from(ownerLeaf(hasher, o.secret, o.willRoot)), Buffer.from(leaf)) === 0,
       );
       if (i < 0) throw new Error('ownerPath: leaf is not in the registered cohort');
-      return [ps, { leaf, path: tree.pathFor(i) as Entry[] }];
+      return [ctx.privateState, { leaf, path: tree.pathFor(i) as Entry[] }];
     },
 
-    newVaultRoot: (ctx: any) => [ctx.privateState, ctx.privateState.newVaultRoot ?? ZERO_DIGEST],
-    decoyRoot:    (ctx: any) => [ctx.privateState, ctx.privateState.decoyRoot ?? ZERO_DIGEST],
+    newVaultRoot: (ctx: any) => [ctx.privateState, st(ctx).newVaultRoot ?? ZERO_DIGEST],
+    decoyRoot:    (ctx: any) => [ctx.privateState, st(ctx).decoyRoot ?? ZERO_DIGEST],
 
-    heirSecret: (ctx: any) => [ctx.privateState, ctx.privateState.heirs[ctx.privateState.activeHeir].secret],
-    heirShare:  (ctx: any) => [ctx.privateState, ctx.privateState.heirs[ctx.privateState.activeHeir].share],
+    heirSecret: (ctx: any) => [ctx.privateState, st(ctx).heirs[st(ctx).activeHeir].secret],
+    heirShare:  (ctx: any) => [ctx.privateState, st(ctx).heirs[st(ctx).activeHeir].share],
 
     heirPath: (ctx: any, leaf: Uint8Array) => {
-      const ps: PrivateState = ctx.privateState;
+      const ps: PrivateState = st(ctx);
       const tree = heirTreeOf(ps);
       const i = ps.heirs.findIndex(
         (h) => Buffer.compare(Buffer.from(heirLeaf(hasher, h.secret, h.share)), Buffer.from(leaf)) === 0,
       );
       if (i < 0) throw new Error('heirPath: leaf is not a beneficiary');
-      return [ps, { leaf, path: tree.pathFor(i) as Entry[] }];
+      return [ctx.privateState, { leaf, path: tree.pathFor(i) as Entry[] }];
     },
 
     spendCoin: (ctx: any) => [
       ctx.privateState,
-      ctx.privateState.spendCoin ?? { nonce: ZERO32, color: ZERO32, value: 0n, mt_index: 0n },
+      st(ctx).spendCoin ?? { nonce: ZERO32, color: ZERO32, value: 0n, mt_index: 0n },
     ],
 
-    gSig0: (ctx: any) => [ctx.privateState, sig(ctx.privateState, 0)],
-    gSig1: (ctx: any) => [ctx.privateState, sig(ctx.privateState, 1)],
-    gSig2: (ctx: any) => [ctx.privateState, sig(ctx.privateState, 2)],
+    gSig0: (ctx: any) => [ctx.privateState, sig(st(ctx), 0)],
+    gSig1: (ctx: any) => [ctx.privateState, sig(st(ctx), 1)],
+    gSig2: (ctx: any) => [ctx.privateState, sig(st(ctx), 2)],
 
-    totalValue:     (ctx: any) => [ctx.privateState, ctx.privateState.totalValue],
-    executorId:     (ctx: any) => [ctx.privateState, ctx.privateState.executorId],
-    probateBlind:   (ctx: any) => [ctx.privateState, ctx.privateState.probateBlind],
-    envelopeCipher: (ctx: any) => [ctx.privateState, ctx.privateState.envelopeCipher],
+    totalValue:     (ctx: any) => [ctx.privateState, st(ctx).totalValue],
+    executorId:     (ctx: any) => [ctx.privateState, st(ctx).executorId],
+    probateBlind:   (ctx: any) => [ctx.privateState, st(ctx).probateBlind],
+    envelopeCipher: (ctx: any) => [ctx.privateState, st(ctx).envelopeCipher],
 
-    pin: (ctx: any) => [ctx.privateState, ctx.privateState.pin],
+    pin: (ctx: any) => [ctx.privateState, st(ctx).pin],
   };
 }
