@@ -9,15 +9,19 @@
   :root {
     --bg:     #08080C;
     --ink:    #F4F4F2;
-    --muted:  #8B8B96;
+    --soft:   #B9B9C2;
+    --muted:  #7E7E8A;
     --line:   #23232C;
     --accent: #6366F1;
+    --green:  #6EE7A8;
+    --amber:  #E0A547;
   }
 
   body {
     font-family: "Inter", -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
     background: var(--bg);
     color: var(--ink);
+    font-feature-settings: "ss01";
   }
   .slide {
     width: 1280px; height: 720px;
@@ -30,72 +34,50 @@
   }
   .slide:last-child { page-break-after: auto; break-after: auto; }
 
-  .mark {
-    position: absolute; top: 44px; left: 104px;
-    font-size: 12px; letter-spacing: .16em; text-transform: uppercase;
-    color: var(--muted); font-weight: 500;
-  }
-  .logo {
-    position: absolute; top: 38px; right: 104px;
-    height: 20px; opacity: .8;
-  }
-  .num {
-    position: absolute; bottom: 44px; right: 104px;
-    font-size: 12px; color: #4A4A55; font-variant-numeric: tabular-nums;
-  }
-  .foot {
-    position: absolute; bottom: 44px; left: 104px;
-    font-size: 13px; color: var(--muted);
-  }
+  .logo { position: absolute; top: 40px; right: 104px; height: 19px; opacity: .75; }
+  .num  { position: absolute; bottom: 44px; right: 104px; font-size: 13px; color: #45454F; }
+  .foot { position: absolute; bottom: 44px; left: 104px; font-size: 14px; color: var(--muted); }
 
-  h1   { font-size: 94px; line-height: 1.0;  font-weight: 600; letter-spacing: -.038em; }
-  h2   { font-size: 54px; line-height: 1.14; font-weight: 600; letter-spacing: -.026em; }
-  .sub { font-size: 26px; line-height: 1.5;  color: #B9B9C2; font-weight: 400; }
-  .big { font-size: 124px; font-weight: 600; letter-spacing: -.045em; line-height: 1; }
-  .mid { margin: auto 0; }
-  .rule { height: 1px; background: var(--line); margin: 36px 0; }
-  .mono { font-family: "SF Mono", ui-monospace, Menlo, monospace; font-size: 17px; color: var(--muted); }
+  h1  { font-size: 96px; line-height: 1.0;  font-weight: 600; letter-spacing: -.04em; }
+  h2  { font-size: 54px; line-height: 1.14; font-weight: 600; letter-spacing: -.028em; }
+  h3  { font-size: 34px; line-height: 1.2;  font-weight: 600; letter-spacing: -.022em; }
+  .sub  { font-size: 26px; line-height: 1.5; color: var(--soft); font-weight: 400; }
+  .big  { font-size: 126px; font-weight: 600; letter-spacing: -.045em; line-height: 1; }
+  .mid  { margin: auto 0; }
+  .rule { height: 1px; background: var(--line); margin: 34px 0; }
   .accent { color: var(--accent); }
+  .cmd { font-size: 19px; color: var(--muted); }
 
-  /* slide 3: three short verdicts, editorial not tabular */
-  .verdict { display: flex; gap: 72px; margin-top: 8px; }
-  .verdict div { flex: 1; }
-  .who   { font-size: 21px; font-weight: 600; margin-bottom: 9px; }
-  .what  { font-size: 18px; line-height: 1.5; color: var(--muted); }
-
-  /* slide 4: numbers, not a table */
-  .stats { display: flex; gap: 88px; margin-bottom: 12px; }
-  .stat .n { font-size: 66px; font-weight: 600; letter-spacing: -.03em; line-height: 1.05; }
-  .stat .l { font-size: 17px; color: var(--muted); margin-top: 8px; line-height: 1.45; }
-
-  /* slide 3: component stack */
-  .stack { display: flex; flex-direction: column; gap: 22px; }
-  .layer { display: flex; align-items: center; gap: 26px; }
-  .ltag { width: 84px; font-size: 12px; letter-spacing: .14em; text-transform: uppercase;
-          color: #5A5A66; text-align: right; flex-shrink: 0; }
-  .boxes { display: flex; gap: 14px; flex: 1; }
-  .box { flex: 1; border: 1px solid var(--line); border-radius: 7px; padding: 17px 18px; background: #0D0D14; }
-  .box b { display: block; font-size: 19px; font-weight: 600; letter-spacing: -.01em; }
-  .box span { display: block; font-size: 14px; color: var(--muted); margin-top: 5px; }
-  .box.hi { border-color: #3A3A6B; background: #101024; }
+  /* component stack */
+  .stack { display: flex; flex-direction: column; gap: 18px; margin-top: 40px; }
+  .layer { display: flex; align-items: center; gap: 24px; }
+  .ltag  { width: 96px; font-size: 17px; color: var(--muted); text-align: right; flex-shrink: 0; }
+  .boxes { display: flex; gap: 13px; flex: 1; }
+  .box   { flex: 1; border: 1px solid var(--line); border-radius: 8px; padding: 16px 18px; background: #0D0D14; }
+  .box b { display: block; font-size: 19px; font-weight: 600; letter-spacing: -.012em; }
+  .box span { display: block; font-size: 15px; color: var(--muted); margin-top: 4px; }
+  .box.hi   { border-color: #3A3A6B; background: #101024; }
   .box.hi b { color: #C7C7FF; }
 
-  /* slide 4: flow */
-  .flow { display: flex; align-items: stretch; gap: 10px; }
-  .step { flex: 1; border-radius: 7px; padding: 18px 16px; border: 1px solid var(--line); background: #0D0D14; }
-  .step b { display: block; font-size: 20px; font-weight: 600; }
-  .step span { display: block; font-size: 14px; color: var(--muted); margin-top: 6px; line-height: 1.4; }
-  .step i { display: block; font-style: normal; font-size: 11px; letter-spacing: .12em;
-            text-transform: uppercase; margin-top: 13px; }
-  .step.live i { color: #6EE7A8; }
-  .step.sim  { border-color: #4A3A18; background: #14100A; }
-  .step.sim i { color: #E0A547; }
-  .arr { align-self: center; color: #3A3A45; font-size: 22px; }
+  /* flow */
+  .flow { display: flex; align-items: stretch; gap: 9px; margin-top: 40px; }
+  .step { flex: 1; border-radius: 8px; padding: 17px 16px; border: 1px solid var(--line); background: #0D0D14; }
+  .step b { display: block; font-size: 20px; font-weight: 600; letter-spacing: -.012em; }
+  .step span { display: block; font-size: 15px; color: var(--muted); margin-top: 5px; line-height: 1.4; }
+  .step i { display: block; font-style: normal; font-size: 14px; margin-top: 12px; }
+  .step.live i { color: var(--green); }
+  .step.sim    { border-color: #4A3A18; background: #14100A; }
+  .step.sim i  { color: var(--amber); }
+  .arr { align-self: center; color: #3A3A45; font-size: 20px; }
+
+  /* numbers */
+  .stats { display: flex; gap: 92px; }
+  .stat .n { font-size: 64px; font-weight: 600; letter-spacing: -.035em; line-height: 1.05; }
+  .stat .l { font-size: 17px; color: var(--muted); margin-top: 6px; line-height: 1.45; }
 </style>
 
 <!-- 1 ─────────────────────────────────────────────────────────── -->
 <section class="slide">
-  <div class="mark">Nominee</div>
   <img class="logo" src="assets/midnight-logo.png">
   <div class="mid">
     <h1>Add a nominee<br>to your crypto.</h1>
@@ -107,7 +89,6 @@
 
 <!-- 2 ─────────────────────────────────────────────────────────── -->
 <section class="slide">
-  <div class="mark">The problem</div>
   <img class="logo" src="assets/midnight-logo.png">
   <div class="mid">
     <div class="big">$68.7B</div>
@@ -124,58 +105,56 @@
 
 <!-- 3 ─────────────────────────────────────────────────────────── -->
 <section class="slide">
-  <div class="mark">What the demo runs on</div>
   <img class="logo" src="assets/midnight-logo.png">
   <div class="mid">
+    <h3>What the demo runs on</h3>
     <div class="stack">
       <div class="layer">
-        <div class="ltag">yours</div>
+        <div class="ltag">ours</div>
         <div class="boxes">
-          <div class="box hi"><b>nominee</b><span>CLI, 6 commands</span></div>
-          <div class="box hi"><b>nominee.compact</b><span>10 circuits, k=15</span></div>
-          <div class="box hi"><b>schnorr.compact</b><span>M-of-N guardians</span></div>
+          <div class="box hi"><b>nominee</b><span>command line, six commands</span></div>
+          <div class="box hi"><b>nominee.compact</b><span>ten circuits, max k=15</span></div>
+          <div class="box hi"><b>schnorr.compact</b><span>guardian signatures</span></div>
         </div>
       </div>
       <div class="layer">
-        <div class="ltag">midnight</div>
+        <div class="ltag">Midnight</div>
         <div class="boxes">
-          <div class="box"><b>proof server</b><span>8.1.0, local only</span></div>
-          <div class="box"><b>node</b><span>1.0.0</span></div>
-          <div class="box"><b>indexer</b><span>4.3.3</span></div>
-          <div class="box"><b>compact</b><span>0.31.1 toolchain</span></div>
+          <div class="box"><b>Proof server</b><span>8.1.0, always local</span></div>
+          <div class="box"><b>Node</b><span>1.0.0</span></div>
+          <div class="box"><b>Indexer</b><span>4.3.3</span></div>
+          <div class="box"><b>Compact</b><span>0.31.1 toolchain</span></div>
         </div>
       </div>
       <div class="layer">
-        <div class="ltag">proof</div>
+        <div class="ltag">evidence</div>
         <div class="boxes">
-          <div class="box"><b>leakcheck.py</b><span>ZKIR scan</span></div>
-          <div class="box"><b>vitest</b><span>33 tests</span></div>
-          <div class="box"><b>devnet.json</b><span>tx receipts</span></div>
+          <div class="box"><b>Leak scanner</b><span>reads the compiled circuits</span></div>
+          <div class="box"><b>Vitest</b><span>33 tests</span></div>
+          <div class="box"><b>Receipts</b><span>every transaction hash</span></div>
         </div>
       </div>
     </div>
-    <div class="mono" style="margin-top:34px">
-      docker compose up -d &nbsp;&amp;&amp;&nbsp; ./run-devnet.sh
-    </div>
+    <div class="cmd" style="margin-top:36px">Two commands from a fresh clone, no toolchain to install.</div>
   </div>
   <div class="num">3</div>
 </section>
 
 <!-- 4 ─────────────────────────────────────────────────────────── -->
 <section class="slide">
-  <div class="mark">What the demo does</div>
   <img class="logo" src="assets/midnight-logo.png">
   <div class="mid">
+    <h3>What the demo does</h3>
     <div class="flow">
-      <div class="step live"><b>deposit</b><span>shielded coin in</span><i>on chain</i></div>
+      <div class="step live"><b>Deposit</b><span>shielded coin in</span><i>on chain</i></div>
       <div class="arr">›</div>
-      <div class="step live"><b>heartbeat</b><span>proof of life</span><i>on chain</i></div>
+      <div class="step live"><b>Heartbeat</b><span>proof of life</span><i>on chain</i></div>
       <div class="arr">›</div>
-      <div class="step live"><b>silence</b><span>grace lapses</span><i>on chain</i></div>
+      <div class="step live"><b>Silence</b><span>grace lapses</span><i>on chain</i></div>
       <div class="arr">›</div>
-      <div class="step live"><b>resolve</b><span>anyone can call</span><i>on chain</i></div>
+      <div class="step live"><b>Resolve</b><span>anyone can call</span><i>on chain</i></div>
       <div class="arr">›</div>
-      <div class="step sim"><b>claim</b><span>nominee takes share</span><i>simulator</i></div>
+      <div class="step sim"><b>Claim</b><span>nominee takes share</span><i>simulator</i></div>
     </div>
     <div class="rule"></div>
     <div class="stats">
@@ -183,10 +162,10 @@
       <div class="stat"><div class="n">3</div><div class="l">attacks tried,<br>all refused</div></div>
       <div class="stat"><div class="n accent">0</div><div class="l">secrets reaching<br>public state</div></div>
     </div>
-    <div class="sub" style="margin-top:30px; max-width:1000px; font-size:23px">
+    <div class="sub" style="margin-top:32px; max-width:1000px; font-size:23px">
       Money goes in on chain. Money coming out is the one piece still to land.
     </div>
   </div>
-  <div class="foot">Apache-2.0 &nbsp;·&nbsp; github.com/vwakesahu/nominee</div>
+  <div class="foot">github.com/vwakesahu/nominee</div>
   <div class="num">4</div>
 </section>
