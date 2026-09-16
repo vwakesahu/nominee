@@ -16,7 +16,7 @@ import {
   LiveSession, SimSession, buildCast, makeHasher, makeHeir, randKey, describeErr,
 } from '../session.js';
 import { DEMO_GRACE_SECONDS } from '../config.js';
-import { emptyDeployment, save, type TxRecord } from '../state.js';
+import { emptyDeployment, save, DEPLOYMENTS_PATH, type TxRecord } from '../state.js';
 import {
   nowSeconds, stepRegister, stepDeposit, stepHeartbeat, stepUpdateWill,
   stepResolve, stepGuardianResolve, simClaim, simAttack,
@@ -223,7 +223,7 @@ export async function demo() {
     txs: accepted, control: 'REJECTED',
   });
   console.log();
-  note(`Transaction record written to deployments/devnet.json`);
+  note(`Transaction record written to ${DEPLOYMENTS_PATH.replace(process.cwd() + '/', '')}`);
   if (live) { note(`Contract: ${live.address}`); await live.close(); }
   console.log();
 }

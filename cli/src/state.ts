@@ -3,9 +3,10 @@
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { NETWORK } from './config.js';
 
 const ROOT = resolve(fileURLToPath(new URL('../..', import.meta.url)));
-export const DEPLOYMENTS_PATH = resolve(ROOT, 'deployments/devnet.json');
+export const DEPLOYMENTS_PATH = resolve(ROOT, `deployments/${NETWORK === 'undeployed' ? 'devnet' : NETWORK}.json`);
 
 export interface TxRecord {
   circuit: string;
@@ -27,7 +28,7 @@ export interface Deployment {
 
 export function emptyDeployment(): Deployment {
   return {
-    network: 'local-devnet',
+    network: NETWORK === 'undeployed' ? 'local-devnet' : NETWORK,
     toolchain: '0.31.1',
     contractAddress: null,
     graceSeconds: 60,

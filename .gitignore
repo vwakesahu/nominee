@@ -51,3 +51,4 @@ cli/dist/
 live.log
 addr.log
 .testnet-seed
+.testnet-mnemonic
