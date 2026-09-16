@@ -67,6 +67,30 @@
   .stats { display: flex; gap: 88px; margin-bottom: 12px; }
   .stat .n { font-size: 66px; font-weight: 600; letter-spacing: -.03em; line-height: 1.05; }
   .stat .l { font-size: 17px; color: var(--muted); margin-top: 8px; line-height: 1.45; }
+
+  /* slide 3: component stack */
+  .stack { display: flex; flex-direction: column; gap: 22px; }
+  .layer { display: flex; align-items: center; gap: 26px; }
+  .ltag { width: 84px; font-size: 12px; letter-spacing: .14em; text-transform: uppercase;
+          color: #5A5A66; text-align: right; flex-shrink: 0; }
+  .boxes { display: flex; gap: 14px; flex: 1; }
+  .box { flex: 1; border: 1px solid var(--line); border-radius: 7px; padding: 17px 18px; background: #0D0D14; }
+  .box b { display: block; font-size: 19px; font-weight: 600; letter-spacing: -.01em; }
+  .box span { display: block; font-size: 14px; color: var(--muted); margin-top: 5px; }
+  .box.hi { border-color: #3A3A6B; background: #101024; }
+  .box.hi b { color: #C7C7FF; }
+
+  /* slide 4: flow */
+  .flow { display: flex; align-items: stretch; gap: 10px; }
+  .step { flex: 1; border-radius: 7px; padding: 18px 16px; border: 1px solid var(--line); background: #0D0D14; }
+  .step b { display: block; font-size: 20px; font-weight: 600; }
+  .step span { display: block; font-size: 14px; color: var(--muted); margin-top: 6px; line-height: 1.4; }
+  .step i { display: block; font-style: normal; font-size: 11px; letter-spacing: .12em;
+            text-transform: uppercase; margin-top: 13px; }
+  .step.live i { color: #6EE7A8; }
+  .step.sim  { border-color: #4A3A18; background: #14100A; }
+  .step.sim i { color: #E0A547; }
+  .arr { align-self: center; color: #3A3A45; font-size: 22px; }
 </style>
 
 <!-- 1 ─────────────────────────────────────────────────────────── -->
@@ -100,31 +124,38 @@
 
 <!-- 3 ─────────────────────────────────────────────────────────── -->
 <section class="slide">
-  <div class="mark">Everyone else makes you choose</div>
+  <div class="mark">What the demo runs on</div>
   <img class="logo" src="assets/midnight-logo.png">
   <div class="mid">
-    <div class="verdict">
-      <div>
-        <div class="who">Sarcophagus</div>
-        <div class="what">Publishes who inherits, when, and every time you check in.</div>
+    <div class="stack">
+      <div class="layer">
+        <div class="ltag">yours</div>
+        <div class="boxes">
+          <div class="box hi"><b>nominee</b><span>CLI, 6 commands</span></div>
+          <div class="box hi"><b>nominee.compact</b><span>10 circuits, k=15</span></div>
+          <div class="box hi"><b>schnorr.compact</b><span>M-of-N guardians</span></div>
+        </div>
       </div>
-      <div>
-        <div class="who">Bitcoin timelock</div>
-        <div class="what">Hides it until they claim. Then the script tells everyone.</div>
+      <div class="layer">
+        <div class="ltag">midnight</div>
+        <div class="boxes">
+          <div class="box"><b>proof server</b><span>8.1.0, local only</span></div>
+          <div class="box"><b>node</b><span>1.0.0</span></div>
+          <div class="box"><b>indexer</b><span>4.3.3</span></div>
+          <div class="box"><b>compact</b><span>0.31.1 toolchain</span></div>
+        </div>
       </div>
-      <div>
-        <div class="who">Casa, Coinbase</div>
-        <div class="what">Keeps it quiet by telling a company instead.</div>
+      <div class="layer">
+        <div class="ltag">proof</div>
+        <div class="boxes">
+          <div class="box"><b>leakcheck.py</b><span>ZKIR scan</span></div>
+          <div class="box"><b>vitest</b><span>33 tests</span></div>
+          <div class="box"><b>devnet.json</b><span>tx receipts</span></div>
+        </div>
       </div>
     </div>
-    <div class="rule"></div>
-    <h2 style="max-width:1000px">Nominee tells <span class="accent">nobody</span>.</h2>
-    <div class="sub" style="margin-top:24px; max-width:960px">
-      Deposit, name your nominees, check in now and then. Stop checking in and the
-      vault opens. Each nominee proves they belong and takes their share.
-    </div>
-    <div class="mono" style="margin-top:22px">
-      the chain sees: a vault exists &nbsp;·&nbsp; a heartbeat stopped &nbsp;·&nbsp; N anonymous claims
+    <div class="mono" style="margin-top:34px">
+      docker compose up -d &nbsp;&amp;&amp;&nbsp; ./run-devnet.sh
     </div>
   </div>
   <div class="num">3</div>
@@ -132,24 +163,30 @@
 
 <!-- 4 ─────────────────────────────────────────────────────────── -->
 <section class="slide">
-  <div class="mark">What is actually built</div>
+  <div class="mark">What the demo does</div>
   <img class="logo" src="assets/midnight-logo.png">
   <div class="mid">
-    <div class="stats">
-      <div class="stat"><div class="n">10</div><div class="l">Compact circuits,<br>compiled on 0.31.1</div></div>
-      <div class="stat"><div class="n">9</div><div class="l">transactions accepted<br>on a real node</div></div>
-      <div class="stat"><div class="n">33</div><div class="l">simulator tests,<br>most of them attacks</div></div>
-      <div class="stat"><div class="n accent">0</div><div class="l">secrets reaching<br>public state</div></div>
+    <div class="flow">
+      <div class="step live"><b>deposit</b><span>shielded coin in</span><i>on chain</i></div>
+      <div class="arr">›</div>
+      <div class="step live"><b>heartbeat</b><span>proof of life</span><i>on chain</i></div>
+      <div class="arr">›</div>
+      <div class="step live"><b>silence</b><span>grace lapses</span><i>on chain</i></div>
+      <div class="arr">›</div>
+      <div class="step live"><b>resolve</b><span>anyone can call</span><i>on chain</i></div>
+      <div class="arr">›</div>
+      <div class="step sim"><b>claim</b><span>nominee takes share</span><i>simulator</i></div>
     </div>
     <div class="rule"></div>
-    <h2 style="max-width:1020px; font-size:44px">Payout is not live yet.<br>Deposit is.</h2>
-    <div class="sub" style="margin-top:22px; max-width:980px">
-      We know exactly why, it is written down in the repo, and it is the first thing we fix.
+    <div class="stats">
+      <div class="stat"><div class="n">9</div><div class="l">transactions accepted<br>on a real node</div></div>
+      <div class="stat"><div class="n">3</div><div class="l">attacks tried,<br>all refused</div></div>
+      <div class="stat"><div class="n accent">0</div><div class="l">secrets reaching<br>public state</div></div>
     </div>
-    <div class="mono" style="margin-top:22px">
-      git clone github.com/vwakesahu/nominee &amp;&amp; ./run-devnet.sh
+    <div class="sub" style="margin-top:30px; max-width:1000px; font-size:23px">
+      Money goes in on chain. Money coming out is the one piece still to land.
     </div>
   </div>
-  <div class="foot">Apache-2.0 &nbsp;·&nbsp; every claim has evidence in the repo</div>
+  <div class="foot">Apache-2.0 &nbsp;·&nbsp; github.com/vwakesahu/nominee</div>
   <div class="num">4</div>
 </section>
