@@ -21,6 +21,11 @@ program
   .action(async () => { await demo(); });
 
 program
+  .command('address')
+  .description('print wallet addresses for the configured network (NOMINEE_NETWORK)')
+  .action(async () => { const { address } = await import('./commands/address.js'); await address(); });
+
+program
   .command('doctor')
   .description('check the local devnet, proof server and contract build')
   .action(async () => { const { doctor } = await import('./commands/doctor.js'); await doctor(); });
