@@ -1,61 +1,61 @@
 {
   "network": "local-devnet",
   "toolchain": "0.31.1",
-  "contractAddress": "cf2a3650a5f9424e24592c4ca5a2ceb6f0a4587b59477a309ecc194e9036b43d",
+  "contractAddress": "ddc6ab362bc9c7f3a3273a4e409483960fe6a6d54f0d3c4f5f6bcca0d61bdb10",
   "graceSeconds": 60,
   "transactions": [
     {
       "circuit": "deploy",
-      "txHash": "cf2a3650a5f9424e24592c4ca5a2ceb6f0a4587b59477a309ecc194e9036b43d",
+      "txHash": "ddc6ab362bc9c7f3a3273a4e409483960fe6a6d54f0d3c4f5f6bcca0d61bdb10",
       "block": null,
       "status": "accepted"
     },
     {
       "circuit": "register",
-      "txHash": "4b860fabcc3e68304823399b3c91c9b6d55e27991cd1f2682cefd6da3809b43b",
-      "block": 1032,
+      "txHash": "4df3151d0339d61b57086732675916dbf139f877b7ffe079318d4e225a8012ad",
+      "block": 2791,
       "status": "accepted"
     },
     {
       "circuit": "deposit",
-      "txHash": "be0e55bc1ab1336d1f4b98c63eefbeec1577e70689bbf68a68d3e311d695d939",
-      "block": 1036,
+      "txHash": "df428da9ba9741d1a9e95ac69747ca0ddbccdb32a6ca4b72df95e8d6049f0c9a",
+      "block": 2795,
       "status": "accepted"
     },
     {
       "circuit": "heartbeat",
-      "txHash": "f7b0d97a3e41c3545f3724e90a7ad64c9614ed265841156733c13c8c7e44dbfa",
-      "block": 1039,
+      "txHash": "7d42c41d5b804be06d8b90c51ba5183cf2ba693a66cfc08d119d81a406ef4513",
+      "block": 2799,
       "status": "accepted"
     },
     {
       "circuit": "updateWill",
-      "txHash": "1ba595f75e9ff1a8173b1d72e1436bfddff13defdef2a67fceb6eefa17ae8dcb",
-      "block": 1042,
+      "txHash": "730fd6b8c64e958a41e522a0a05d1fc79e93dc241b92785ef8c15f98e1fb6c4d",
+      "block": 2802,
       "status": "accepted"
     },
     {
-      "circuit": "heartbeat — the last one",
-      "txHash": "23ab9477e695ba3d35863337b404566ae0f429bccdfd34ea59cef142c67b22e1",
-      "block": 1045,
+      "circuit": "heartbeat, the last one",
+      "txHash": "5319e178717a39abc5356181bc4fb8f507e67e7a6a859ad161245a4ba30e04e1",
+      "block": 2805,
       "status": "accepted"
     },
     {
       "circuit": "resolve",
-      "txHash": "1baaaf37c2dfc6f6470115ff1b2f1320d7bcd939cd53f547091a1294475b37c0",
-      "block": 1059,
+      "txHash": "3266552ac191f44e7e99bd0ef0be6fac2614029f2f4ea8b4f9b640c39bf5fa53",
+      "block": 2819,
       "status": "accepted"
     },
     {
       "circuit": "register",
-      "txHash": "4539c2e70db5516b86470cc91d38bb700c59d3abe76fed8276cbf8a78993067d",
-      "block": 1063,
+      "txHash": "753730afa5d0f380437c5dcf5f86f1ee127f09603af8e0d630cde8fd7b69b880",
+      "block": 2822,
       "status": "accepted"
     },
     {
       "circuit": "guardianResolve2of3",
-      "txHash": "316172d33c26d648f0b6d658ce39a2f6e75172f02650f452029eca54565902bb",
-      "block": 1066,
+      "txHash": "a3e1b5e037c26df0bb13c813146c6103b4a97461dd386931564ff43e3180e0bb",
+      "block": 2825,
       "status": "accepted"
     }
   ],
@@ -67,5 +67,5 @@
     "wrongHeir",
     "wrongShare"
   ],
-  "timestamp": "2026-09-16T07:05:20.580Z"
+  "timestamp": "2026-09-16T10:01:14.371Z"
 }

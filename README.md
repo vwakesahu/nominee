@@ -10,6 +10,13 @@ nominee.world · built on Midnight
 
 **Your crypto knows who comes next. Nobody else does.**
 
+[Demo video](https://youtu.be/Fb69qNrujFU) · [Deck](docs/nominee-deck.pdf) · [nominee.world](https://nominee.world)
+
+![The demo, chapter 1](docs/screenshots/1-a-life.png)
+
+Every step of the demo prints two panels. What actually happened on the left,
+what the chain got out of it on the right.
+
 ---
 
 ## Why Midnight
@@ -27,28 +34,41 @@ Every *trustless* option reveals the beneficiary, at setup, or at execution. Eve
 
 That is only possible because of two Midnight properties together: a **shielded pool** that hides value, and a **compiler that statically proves** a private value never reaches public state.
 
-## Run the demo
+## Run it
+
+You need [Docker](https://docs.docker.com/desktop/) running and
+[Bun](https://bun.sh). You do **not** need the Compact toolchain, the compiled
+circuits and proving keys in `contract/out/` are committed.
 
 ```bash
 git clone https://github.com/vwakesahu/nominee && cd nominee
-bun install
-docker compose up -d          # local Midnight devnet: node, indexer, proof server
-./run-devnet.sh               # the full demo, live on chain
+bun install                   # always from the repo root, see the gotcha below
+./run-devnet.sh               # brings up the devnet and runs the demo on chain
 ```
+
+`run-devnet.sh` starts Docker Desktop if it is not up, brings up the node,
+indexer and proof server, builds the CLI and runs the demo live. First run pulls
+images and takes a few minutes. After that it is about six.
+
+To run the pieces separately:
+
+```bash
+docker compose up -d            # node, indexer, proof server
+bun run --cwd cli build
+node cli/dist/index.js demo     # simulator, fast, no chain
+NOMINEE_LIVE=1 node cli/dist/index.js demo   # real proofs on the devnet
+```
+
+Tests and checks:
 
 ```bash
 bun run test        # 33 simulator tests
-bun run leakcheck   # ZKIR privacy scan
+bun run leakcheck   # ZKIR privacy scan, checks no secret reaches public state
 bun run nominee doctor
 ```
 
-The demo runs in the simulator by default. `NOMINEE_LIVE=1` executes it on the
-devnet with real proofs, which is what `./run-devnet.sh` does.
-
 A recorded live run is in [`deployments/devnet.json`](deployments/devnet.json):
 **9 accepted transactions**, deploy through `guardianResolve2of3`.
-
-You do **not** need the Compact toolchain, `contract/out/` (proving keys and generated bindings) is committed.
 
 ## What's proven, and what's next
 
@@ -87,21 +107,48 @@ You do **not** need the Compact toolchain, `contract/out/` (proving keys and gen
 
 One **shared registry contract** serves many owners, a contract per will would turn every heartbeat into a per-person fingerprint.
 
+```mermaid
+flowchart TD
+    subgraph OFF ["Off chain, never leaves your machine"]
+        WILL["the will<br/>nominee to share"]
+        SEC["owner secret"]
+        NK["nominee keys"]
+        PS["proof server<br/>self hosted"]
+    end
+
+    subgraph ON ["On chain, one shared registry contract"]
+        TAG["ownerTag"]
+        SEEN["lastSeen"]
+        ROOT["vaultRoot"]
+        COIN["heldCoin"]
+        RES["resolvedVault"]
+        NULL["spent nullifiers"]
+    end
+
+    PS -.->|builds every proof, sees every witness| ON
+    SEC -->|register| TAG
+    SEC -->|heartbeat| SEEN
+    WILL -->|Merkle root only| ROOT
+    DEP["shielded deposit"] --> COIN
+    SEEN -->|grace elapsed| RES
+    GUARD["2 of 3 guardians"] -->|open early| RES
+    RES --> CLAIM{{claim}}
+    ROOT --> CLAIM
+    NK --> CLAIM
+    CLAIM --> NULL
+    CLAIM -->|share stays inside a Zswap commitment| OUT["the nominee's coin"]
 ```
-  ownerSet (Merkle root of the owner cohort)
-        │
-        ├── ownerTag ── lastSeen ── graceSeconds ──► resolve() ──► resolvedVault
-        │       │                                        ▲
-        │       ├── vaultRoot  (beneficiary Merkle root) │
-        │       ├── heldCoin   (outstanding shielded coin)
-        │       └── willVersion                  guardianResolve (M-of-N Schnorr)
-        │
-        └── nominees ── claim() ── nullifier ──► share
-```
+
+Every arrow crossing into the contract carries a hash, a root or a proof. The
+will, the identities and the individual shares never make that crossing.
+
 
 Full detail (state layout, per-circuit inputs, envelope format, threat model) is in [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 
 ## What the chain learns
+
+![What the chain learned](docs/screenshots/5-what-the-chain-learned.png)
+
 
 **Never:**
 - Who the owner is
@@ -115,6 +162,10 @@ Full detail (state layout, per-circuit inputs, envelope format, threat model) is
 - A heartbeat stopped
 - N anonymous claims were made
 - No double-claim succeeded
+
+### Attacks, run every time the demo runs
+
+![Attacks refused](docs/screenshots/4-attacks-refused.png)
 
 ## Honest limits
 
