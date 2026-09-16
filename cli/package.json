@@ -2,13 +2,16 @@
   "name": "nominee-cli",
   "version": "0.1.0",
   "private": true,
-  "description": "Nominee CLI — add a nominee to your crypto. Nobody learns who.",
+  "description": "Nominee CLI \u2014 add a nominee to your crypto. Nobody learns who.",
   "homepage": "https://nominee.world",
   "license": "Apache-2.0",
   "type": "module",
-  "bin": { "nominee": "./bin/nominee.mjs" },
+  "bin": {
+    "nominee": "./bin/nominee.mjs"
+  },
   "scripts": {
-    "start": "tsx src/index.ts",
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/index.js",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
@@ -35,5 +38,7 @@
     "tsx": "^4.19.2",
     "typescript": "^5.8.3"
   },
-  "overrides": { "@midnight-ntwrk/onchain-runtime-v3": "3.0.0" }
+  "overrides": {
+    "@midnight-ntwrk/onchain-runtime-v3": "3.0.0"
+  }
 }

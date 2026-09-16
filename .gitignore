@@ -48,3 +48,5 @@ deployments/devnet.json
 
 # level private-state stores (runtime artifacts)
 **/midnight-level-db/
+cli/dist/
+live.log

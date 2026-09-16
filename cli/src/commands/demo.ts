@@ -107,7 +107,10 @@ export async function demo() {
 
   let r: TxRecord | null;
   const lastBeat = nowSeconds();
-  const simLastBeat = lastBeat;
+  // The simulator has no chain clock advancing with wall time, so its
+  // blockTimeGte bound is checked against a fixed synthetic epoch. Live calls
+  // use real Unix seconds, which is what the node compares against.
+  const simLastBeat = 1_000_000n;
 
   if (live) {
     r = await step('register', () => stepRegister(live!, alice));      if (r) txs.push(r);
@@ -123,7 +126,7 @@ export async function demo() {
   // the nominees have a beneficiary root to prove against in Chapter 4.
   simRegister(sim, alice);
   simDeposit(sim, alice, 1000n);
-  simHeartbeat(sim, alice, lastBeat, live ? 'heartbeat (simulator mirror)' : 'heartbeat');
+  simHeartbeat(sim, alice, simLastBeat, live ? 'heartbeat (simulator mirror)' : 'heartbeat');
   simUpdateWill(sim, alice, cast.heirTree.digest());
   simOnly.push('register', 'deposit', 'heartbeat', 'updateWill');
 

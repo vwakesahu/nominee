@@ -6,8 +6,8 @@ import {
   createKeystore, InMemoryTransactionHistoryStorage, TransactionHistoryStorage,
 } from "@midnight-ntwrk/wallet-sdk";
 import * as rx from "rxjs";
-import { NETWORK_ID, networkConfig } from "./config";
-import { deriveShieldedSeed, deriveUnshieldedSeed, deriveDustSeed } from "./keys";
+import { NETWORK_ID, networkConfig } from "./config.js";
+import { deriveShieldedSeed, deriveUnshieldedSeed, deriveDustSeed } from "./keys.js";
 
 /**
  * Build the wallet facade.

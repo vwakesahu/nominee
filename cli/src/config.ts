@@ -2,20 +2,57 @@
 // Local Midnight devnet endpoints (docker-compose.yml at the repo root).
 import { NetworkId } from '@midnight-ntwrk/wallet-sdk';
 
-export const NETWORK_ID = NetworkId.NetworkId.Undeployed;
+/**
+ * Which network to talk to:  NOMINEE_NETWORK = undeployed | preview | preprod
+ * Proving is always local — the proof server sees every witness, so it must
+ * never be hosted by someone else.
+ */
+export type NetworkName = 'undeployed' | 'preview' | 'preprod';
+export const NETWORK: NetworkName =
+  (process.env.NOMINEE_NETWORK as NetworkName) ?? 'undeployed';
 
+const PRESETS: Record<NetworkName, { indexerHttpUrl: string; indexerWsUrl: string; node: string }> = {
+  undeployed: {
+    indexerHttpUrl: 'http://127.0.0.1:8088/api/v4/graphql',
+    indexerWsUrl:   'ws://127.0.0.1:8088/api/v4/graphql/ws',
+    node:           'ws://127.0.0.1:9944',
+  },
+  preview: {
+    indexerHttpUrl: 'https://indexer.preview.midnight.network/api/v4/graphql',
+    indexerWsUrl:   'wss://indexer.preview.midnight.network/api/v4/graphql/ws',
+    node:           'wss://rpc.preview.midnight.network',
+  },
+  preprod: {
+    indexerHttpUrl: 'https://indexer.preprod.midnight.network/api/v4/graphql',
+    indexerWsUrl:   'wss://indexer.preprod.midnight.network/api/v4/graphql/ws',
+    node:           'wss://rpc.preprod.midnight.network',
+  },
+};
+
+export const NETWORK_ID =
+  NETWORK === 'preview'  ? NetworkId.NetworkId.Preview  :
+  NETWORK === 'preprod'  ? NetworkId.NetworkId.PreProd  :
+                           NetworkId.NetworkId.Undeployed;
+
+const preset = PRESETS[NETWORK];
 export const networkConfig = {
-  indexerHttpUrl: process.env.NOMINEE_INDEXER_HTTP ?? 'http://127.0.0.1:8088/api/v4/graphql',
-  indexerWsUrl:   process.env.NOMINEE_INDEXER_WS   ?? 'ws://127.0.0.1:8088/api/v4/graphql/ws',
-  node:           process.env.NOMINEE_NODE_WS      ?? 'ws://127.0.0.1:9944',
+  indexerHttpUrl: process.env.NOMINEE_INDEXER_HTTP ?? preset.indexerHttpUrl,
+  indexerWsUrl:   process.env.NOMINEE_INDEXER_WS   ?? preset.indexerWsUrl,
+  node:           process.env.NOMINEE_NODE_WS      ?? preset.node,
   proofServer:    process.env.NOMINEE_PROOF_SERVER ?? 'http://127.0.0.1:6300',
 };
 
-/** Local devnet genesis wallet — funded at chain start. Public, dev-only. */
-export const GENESIS_SEED_HEX = process.env.NOMINEE_SEED_HEX ?? '00'.repeat(31) + '01';
+/**
+ * Wallet seed. On the local devnet this defaults to the well-known genesis
+ * seed, which is funded at chain start and is public by design. On a public
+ * testnet you MUST supply your own funded seed:
+ *   NOMINEE_SEED_HEX=<64 hex chars>
+ */
+export const GENESIS_SEED_HEX =
+  process.env.NOMINEE_SEED_HEX ?? (NETWORK === 'undeployed' ? '00'.repeat(31) + '01' : '');
 
 /** Grace period for the demo, in SECONDS.
  *  blockTime* takes Unix SECONDS; the indexer reports MILLISECONDS. */
 export const DEMO_GRACE_SECONDS = BigInt(process.env.NOMINEE_GRACE ?? '60');
 
-export const DEPLOYMENTS_FILE = 'deployments/devnet.json';
+export const DEPLOYMENTS_FILE = `deployments/${NETWORK}.json`;
