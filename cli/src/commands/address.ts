@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 // Print the wallet addresses for the configured network so a public testnet
-// wallet can be funded. Addresses are derived from the seed directly — no
+// wallet can be funded. Addresses are derived from the seed directly, no
 // chain sync, which matters because an unfunded wallet never reports "synced".
 import { Buffer } from 'node:buffer';
 import * as ledger from '@midnight-ntwrk/midnight-js-protocol/ledger';
@@ -34,8 +34,8 @@ export async function address() {
   };
 
   show('unshielded (NIGHT)', () => (keystore as any).getBech32Address().toString());
-  show('shielded', () => (zswap as any).coinPublicKey?.toHexString?.() ?? '—');
-  show('dust', () => (dustSk as any).publicKey?.toString?.() ?? '—');
+  show('shielded', () => (zswap as any).coinPublicKey?.toHexString?.() ?? ', ');
+  show('dust', () => (dustSk as any).publicKey?.toString?.() ?? ', ');
   console.log();
   note('Fund the unshielded (NIGHT) address, then register DUST before deploying.');
   process.exit(0);

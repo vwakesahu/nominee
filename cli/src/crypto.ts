@@ -37,8 +37,8 @@ export interface Hasher {
   _persistentHash_2(v: bigint): Uint8Array;
   _persistentHash_3(v: [Uint8Array, Uint8Array]): Uint8Array;
   _persistentHash_4(v: [Uint8Array, Uint8Array, Uint8Array]): Uint8Array;
-  _transientHash_0(v: any): bigint;   // SchnorrHashInput — the Schnorr challenge
-  _transientHash_1(v: [bigint, bigint]): bigint;  // Vector<2,Field> — Merkle node
+  _transientHash_0(v: any): bigint;   // SchnorrHashInput, the Schnorr challenge
+  _transientHash_1(v: [bigint, bigint]): bigint;  // Vector<2,Field>, Merkle node
   _degradeToTransient_0(b: Uint8Array): bigint;
   _ecMulGenerator_0(s: bigint): JubjubPoint;
   _ecMul_0(p: JubjubPoint, s: bigint): JubjubPoint;
@@ -49,7 +49,7 @@ export interface Hasher {
 
 const MDN_LH = new Uint8Array([109, 100, 110, 58, 108, 104]); // "mdn:lh"
 
-/** pad(32, s) — right-zero-pad an ASCII literal to 32 bytes, as Compact does. */
+/** pad(32, s), right-zero-pad an ASCII literal to 32 bytes, as Compact does. */
 export function pad32(s: string): Uint8Array {
   const out = new Uint8Array(32);
   out.set(new TextEncoder().encode(s));
@@ -107,7 +107,7 @@ export class SparseTree {
 export const ownerLeaf = (c: Hasher, sk: Uint8Array, willRoot: Uint8Array) =>
   c._persistentHash_3([sk, willRoot]);
 
-/** Owner tag — the contract's own circuit, so it cannot drift. */
+/** Owner tag, the contract's own circuit, so it cannot drift. */
 export const ownerTag = (c: Hasher, sk: Uint8Array, willRoot: Uint8Array) =>
   c._ownerTag_0(sk, willRoot);
 
@@ -120,7 +120,7 @@ export const nullifier = (c: Hasher, sk: Uint8Array) =>
   c._persistentHash_3([pad32('nominee:nf:v1'), sk]);
 
 // ---------------------------------------------------------------------------
-// Schnorr over Jubjub — matches contract/src/schnorr.compact exactly
+// Schnorr over Jubjub, matches contract/src/schnorr.compact exactly
 // ---------------------------------------------------------------------------
 
 const randScalar = (): bigint => {
@@ -135,7 +135,7 @@ const randScalar = (): bigint => {
  * A wasm-bindgen value is consumed when it is passed into another wasm call.
  * The deploy path hands the private state to the SDK *and* passes guardian
  * points as constructor arguments, so a shared live object is moved by the
- * first use and the second use reads a dangling pointer — which surfaces far
+ * first use and the second use reads a dangling pointer, which surfaces far
  * away as "expected instance of ContractMaintenanceAuthority". Rebuilding the
  * point on each access keeps every use independent.
  */

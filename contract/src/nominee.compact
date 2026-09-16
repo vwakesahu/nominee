@@ -3,8 +3,8 @@ import CompactStandardLibrary;
 import "schnorr" prefix Schnorr_;
 
 // ===========================================================================
-// NOMINEE — final architecture, compiled on toolchain 0.31.1 (live nets).
-// nominee.world — add a nominee to your crypto. Nobody learns who.
+// NOMINEE, final architecture, compiled on toolchain 0.31.1 (live nets).
+// nominee.world, add a nominee to your crypto. Nobody learns who.
 //
 // SHARED REGISTRY: one contract serves many owners. A heartbeat proves
 // membership in the owner set, so an observer sees "someone checked in",
@@ -83,7 +83,7 @@ export circuit register(): [] {
 }
 
 // 2. Heartbeat: proves membership + knowledge of the will root. The prover
-//    never touches the will CONTENTS — only its root — so a compromised
+//    never touches the will CONTENTS, only its root, so a compromised
 //    prover learns a 32-byte root, not the beneficiaries.
 export circuit heartbeat(now: Uint<64>): [] {
   const sk = ownerSecret(); const wr = willRoot();

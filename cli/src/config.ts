@@ -4,7 +4,7 @@ import { NetworkId } from '@midnight-ntwrk/wallet-sdk';
 
 /**
  * Which network to talk to:  NOMINEE_NETWORK = undeployed | preview | preprod
- * Proving is always local — the proof server sees every witness, so it must
+ * Proving is always local, the proof server sees every witness, so it must
  * never be hosted by someone else.
  */
 export type NetworkName = 'undeployed' | 'preview' | 'preprod';

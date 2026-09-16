@@ -16,7 +16,7 @@ export async function balance() {
   catch (e: any) { note(`sync did not complete: ${String(e?.message ?? e).slice(0, 90)}`); }
   const st: any = await Rx.firstValueFrom(bundle.facade.state());
   const dump = (label: string, v: any) => {
-    if (v === undefined || v === null) { note(`${label}: —`); return; }
+    if (v === undefined || v === null) { note(`${label}:,`); return; }
     if (typeof v === 'bigint' || typeof v === 'string' || typeof v === 'number') {
       ok(`${label}: ${v}`); return;
     }
@@ -29,7 +29,7 @@ export async function balance() {
   };
   console.log();
   const dustCoins = st.dust?.availableCoins?.length ?? 0;
-  let dustBal: any = '—';
+  let dustBal: any = ', ';
   try { dustBal = st.dust?.balance(new Date()); } catch { /* fn shape varies */ }
   ok(`DUST spendable coins : ${dustCoins}`);
   ok(`DUST balance         : ${dustBal}`);

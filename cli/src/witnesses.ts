@@ -90,7 +90,7 @@ export function makeWitnesses(hasher: any, ref?: StateRef): any {
   const sig = (ps: PrivateState, slot: number): SchnorrSignature => {
     const which = ps.attesting[slot];
     if (which === undefined) {
-      // Unused slot — a well-formed but irrelevant signature keeps the shape valid.
+      // Unused slot, a well-formed but irrelevant signature keeps the shape valid.
       return schnorrSign(hasher, ps.guardianKeys[0], GUARDIAN_MSG);
     }
     return schnorrSign(hasher, ps.guardianKeys[which], GUARDIAN_MSG);

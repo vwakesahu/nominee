@@ -4,7 +4,7 @@
 // three attacks that fail, and the guardian path.
 //
 // Chapters 1-3 and 6 are REAL: real circuits, real proofs, real devnet.
-// Chapters 4-5 run in the simulator and say so — the shielded payout path is
+// Chapters 4-5 run in the simulator and say so, the shielded payout path is
 // the one piece not yet live, and the demo does not pretend otherwise.
 import { execSync } from 'node:child_process';
 import chalk from 'chalk';
@@ -34,7 +34,7 @@ function devnetUp(): boolean {
 
 async function ensureDevnet() {
   if (devnetUp()) { ok('Local devnet already running.'); return true; }
-  note('Local devnet not detected — starting it with docker compose…');
+  note('Local devnet not detected, starting it with docker compose…');
   try {
     execSync('docker compose up -d', { stdio: 'inherit' });
   } catch {
@@ -71,14 +71,14 @@ export async function demo() {
 
   // On-chain execution is opt-in while the deploy path is being finished:
   //   NOMINEE_LIVE=1 npx nominee demo
-  // Without it the whole story runs in the simulator — the same compiled
+  // Without it the whole story runs in the simulator, the same compiled
   // circuits and the same assertions, with no proof and no ledger.
   const wantLive = process.env.NOMINEE_LIVE === '1';
   let live: LiveSession | null = null;
 
   if (!wantLive) {
     note('Running in simulator mode (set NOMINEE_LIVE=1 to execute on the devnet).');
-    note('Same compiled circuits, same assertions — no proof, no ledger.');
+    note('Same compiled circuits, same assertions, no proof, no ledger.');
   } else try {
     note('Connecting wallet, proof server and indexer…');
     live = await LiveSession.connect(cast, { grace: DEMO_GRACE_SECONDS });
@@ -86,7 +86,7 @@ export async function demo() {
     ok(`Contract deployed: ${chalk.bold(live.address)}`);
     txs.push({ circuit: 'deploy', txHash: live.address, block: null, status: 'accepted' });
   } catch (e) {
-    warn('On-chain deploy unavailable — running the whole story in the simulator.');
+    warn('On-chain deploy unavailable, running the whole story in the simulator.');
     note(describeErr(e).split('\n')[0].slice(0, 160));
     note('The circuits, assertions and privacy properties below are identical;');
     note('only the proof and the ledger are absent.');
@@ -119,7 +119,7 @@ export async function demo() {
     r = await step('heartbeat', () => stepHeartbeat(live!, alice, nowSeconds())); if (r) txs.push(r);
     r = await step('updateWill', () => stepUpdateWill(live!, alice, 1n)); if (r) txs.push(r);
     lastBeat = nowSeconds();   // captured here so it is genuinely the latest
-    r = await step('heartbeat', () => stepHeartbeat(live!, alice, lastBeat, 'heartbeat — the last one'));
+    r = await step('heartbeat', () => stepHeartbeat(live!, alice, lastBeat, 'heartbeat, the last one'));
     if (r) txs.push(r);
   }
 
@@ -153,7 +153,7 @@ export async function demo() {
   note('The shielded payout path (sendShielded from a contract) is a Wave 2 gate.');
   note(live
     ? 'Deposit is proven live above. Payout logic is proven here, in the same circuit.'
-    : 'Every chapter here runs the same compiled circuits — only the proof and chain are absent.');
+    : 'Every chapter here runs the same compiled circuits, only the proof and chain are absent.');
 
   const simTag = sim.tag();
   if (!sim.ledger.resolvedVault.member(simTag)) {

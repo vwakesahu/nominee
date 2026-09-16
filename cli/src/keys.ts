@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// src/keys.ts — derive role keys from a seed (path m/44'/2400'/0'/<role>/0)
+// src/keys.ts, derive role keys from a seed (path m/44'/2400'/0'/<role>/0)
 import { HDWallet, Roles } from '@midnight-ntwrk/wallet-sdk';
 
 function deriveKey(seed: Buffer, role: typeof Roles[keyof typeof Roles]): Uint8Array {

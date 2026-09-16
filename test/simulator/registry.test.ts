@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// register / heartbeat / update-will — the owner's side of the vault.
+// register / heartbeat / update-will, the owner's side of the vault.
 import { describe, it, expect, beforeEach } from 'vitest';
 import { Vault, makeOwner, makeHeir } from './harness.js';
 import type { Owner } from '../../cli/src/witnesses.js';
@@ -65,7 +65,7 @@ describe('heartbeat', () => {
     expect(() => v.heartbeat(1_000_000n)).toThrow();
   });
 
-  it('one owner cannot heartbeat for another — the tag differs', () => {
+  it('one owner cannot heartbeat for another, the tag differs', () => {
     v.heartbeat(1_000_000n);
     const aliceTag = v.tag();
     v.actAs(1);

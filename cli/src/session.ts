@@ -2,7 +2,7 @@
 //
 // A session is either LIVE (real circuits, real proofs, real devnet) or
 // SIMULATOR (real circuits, no proofs, no network). Both run the same compiled
-// contract, so a simulator result is the circuit's real behaviour — only the
+// contract, so a simulator result is the circuit's real behaviour, only the
 // proof and the ledger are absent.
 import { Buffer } from 'node:buffer';
 import { randomBytes } from 'node:crypto';

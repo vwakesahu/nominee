@@ -3,7 +3,7 @@
 //
 // Proving takes seconds and the dust state advances while it runs, so by
 // submission time the proof refers to a spend that is no longer current.
-// Resubmitting the SAME finalised transaction therefore fails forever — the
+// Resubmitting the SAME finalised transaction therefore fails forever, the
 // fix is to rebuild and re-prove from scratch on every attempt.
 // Measured in validation/VALIDATION_FINAL.md §A0: the probe deploy succeeded
 // on attempt 2 with exactly this loop.
@@ -66,7 +66,7 @@ export async function withRetries<T>(
       console.log(
         chalk.yellow(
           `  ↻ ${label}: attempt ${i}/${attempts} hit Custom(170) InvalidDustSpendProof ` +
-            `— dust state moved while proving, rebuilding and re-proving…`,
+            ` dust state moved while proving, rebuilding and re-proving…`,
         ),
       );
       if (i === attempts) break;

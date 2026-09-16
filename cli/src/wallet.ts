@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// src/wallet.ts — build the facade and sync safely
+// src/wallet.ts, build the facade and sync safely
 import * as ledger from "@midnight-ntwrk/midnight-js-protocol/ledger";
 import {
   WalletFacade, ShieldedWallet, DustWallet, UnshieldedWallet, PublicKey,
@@ -53,7 +53,7 @@ export async function buildWallet(seed: Buffer, opts: { useCheckpoint?: boolean 
 }
 
 /**
- * Per-wallet sync check — we wait for the UNSHIELDED wallet only.
+ * Per-wallet sync check, we wait for the UNSHIELDED wallet only.
  *
  * We deliberately DON'T block on the shielded wallet (it scans the whole chain
  * and trial-decrypts every shielded output just to confirm this wallet has none)

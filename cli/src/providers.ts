@@ -49,7 +49,7 @@ export async function createProviders(
       : 'nominee-cli-account';
 
   return {
-    // >= 16 chars, 3 character classes — enforced by the provider, no recovery.
+    // >= 16 chars, 3 character classes, enforced by the provider, no recovery.
     privateStateProvider: levelPrivateStateProvider({
       privateStateStoreName: 'nominee-cli',
       privateStoragePasswordProvider: () =>

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// deployments/devnet.json — the record a judge can check against the indexer.
+// deployments/devnet.json, the record a judge can check against the indexer.
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';

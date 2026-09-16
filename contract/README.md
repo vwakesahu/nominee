@@ -1,6 +1,6 @@
 # nominee-contract
 
-The Compact contracts for Nominee. Target toolchain **0.31.1** (language 0.23.0, ledger-8.0.2) — the version Preview, Preprod and Mainnet run. Do not build with 0.34.0; nothing here needs it and no live network accepts it.
+The Compact contracts for Nominee. Target toolchain **0.31.1** (language 0.23.0, ledger-8.0.2), the version Preview, Preprod and Mainnet run. Do not build with 0.34.0; nothing here needs it and no live network accepts it.
 
 ## Build
 
@@ -25,20 +25,20 @@ python3 tools/leakcheck.py                            # ZKIR privacy check
 | `resolveUnderPin` | 13 | 7,290 | duress decoy |
 | **total** | **max k=15** | **97,628** | 40 MB proving keys |
 
-`claim` sits at 99.6 % of the k=15 budget — anything added to it pushes k=16.
+`claim` sits at 99.6 % of the k=15 budget, anything added to it pushes k=16.
 
 ## Privacy check
 
 `tools/leakcheck.py` reads the compiled ZKIR and asserts that no `private_input`
 variable is ever `declare_pub_input`. Expected result: **8 circuits clean, 2
 allowlisted** (`updateWill` var 16 = `newVaultRoot`, `resolveUnderPin` var 24 =
-`decoyRoot`) — both are Merkle roots published by design, each consumed by
+`decoyRoot`), both are Merkle roots published by design, each consumed by
 exactly one instruction. Run it in CI.
 
 ## Files
 
-- `src/nominee.compact` — the contract
-- `src/schnorr.compact` — Jubjub Schnorr polyfill, vendored from `midnightntwrk/example-zkloan` (`jubjubSchnorrVerify` does not exist in 0.31.1)
-- `tools/leakcheck.py` — ZKIR private-variable check
+- `src/nominee.compact`, the contract
+- `src/schnorr.compact`, Jubjub Schnorr polyfill, vendored from `midnightntwrk/example-zkloan` (`jubjubSchnorrVerify` does not exist in 0.31.1)
+- `tools/leakcheck.py`, ZKIR private-variable check
 
 See [`../docs/ARCHITECTURE.md`](../docs/ARCHITECTURE.md) for the state layout, per-circuit disclosures and threat model.

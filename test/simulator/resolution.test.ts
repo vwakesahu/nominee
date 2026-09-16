@@ -31,7 +31,7 @@ describe('resolve', () => {
     expect(() => v.resolve(bogus, NOW + GRACE)).toThrow(/unknown owner/);
   });
 
-  it('is idempotent — resolving twice leaves one entry', () => {
+  it('is idempotent, resolving twice leaves one entry', () => {
     v.resolve(tag, NOW + GRACE);
     v.resolve(tag, NOW + GRACE);
     expect(v.ledger.resolvedVault.size()).toBe(1n);

@@ -2,7 +2,7 @@
 import { describe, it, expect } from 'vitest';
 import { Vault, makeOwner, makeHeir, randKey, GRACE } from './harness.js';
 
-describe('smoke — the whole stack end to end', () => {
+describe('smoke, the whole stack end to end', () => {
   it('register -> deposit -> heartbeat -> update -> resolve -> claim', () => {
     const owners = [makeOwner('Alice'), makeOwner('Bob')];
     const heirs = [makeHeir('Maya', 500n), makeHeir('Raj', 300n), makeHeir('Sam', 200n)];

@@ -51,6 +51,6 @@ export async function doctor() {
 
   const major = Number(process.versions.node.split('.')[0]);
   major === 22 ? ok(`node ${process.versions.node}`)
-               : note(`node ${process.versions.node} — 22 is the supported version`);
+               : note(`node ${process.versions.node}, 22 is the supported version`);
   console.log();
 }
