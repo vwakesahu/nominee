@@ -1,0 +1,29 @@
+flowchart TD
+    subgraph OFF ["Off chain, never leaves your machine"]
+        WILL["the will<br/>nominee to share"]
+        SEC["owner secret"]
+        NK["nominee keys"]
+        PS["proof server<br/>self hosted"]
+    end
+
+    subgraph ON ["On chain, one shared registry contract"]
+        TAG["ownerTag"]
+        SEEN["lastSeen"]
+        ROOT["vaultRoot"]
+        COIN["heldCoin"]
+        RES["resolvedVault"]
+        NULL["spent nullifiers"]
+    end
+
+    PS -.->|builds every proof, sees every witness| ON
+    SEC -->|register| TAG
+    SEC -->|heartbeat| SEEN
+    WILL -->|Merkle root only| ROOT
+    DEP["shielded deposit"] --> COIN
+    SEEN -->|grace elapsed| RES
+    GUARD["2 of 3 guardians"] -->|open early| RES
+    RES --> CLAIM{{claim}}
+    ROOT --> CLAIM
+    NK --> CLAIM
+    CLAIM --> NULL
+    CLAIM -->|share stays inside a Zswap commitment| OUT["the nominee's coin"]

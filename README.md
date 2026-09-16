@@ -70,78 +70,11 @@ bun run nominee doctor
 A recorded live run is in [`deployments/devnet.json`](deployments/devnet.json):
 **9 accepted transactions**, deploy through `guardianResolve2of3`.
 
-## What's proven, and what's next
-
-| Component | Status | Evidence |
-|---|---|---|
-| 10 Compact circuits | Compiled on 0.31.1 | `contract/out/` |
-| Shielded deposit | Accepted on a live node | block 183, `validation/VALIDATION_FINAL.md` §A1 |
-| Unshielded deposit | Rejected `Custom(192)` | same block window, a controlled test, not a guess |
-| Multi-nominee claims | 33/33 simulator tests | `test/simulator/` |
-| ZKIR leak check | 8/10 clean, 2 by design | `test/privacy/leakcheck.py` |
-| blockTime units | Resolved: **seconds** | `validation/VALIDATION_FINAL.md` §A2 |
-| Shielded payout | Wave 2 | `validation/VALIDATION_FINAL.md` §A1b, precise diagnosis |
-| CLI live deploy | Working on local devnet | `deployments/devnet.json`, 9 accepted txs |
-| Preprod deployment | Wave 2 | |
-| Frontend | Wave 2 | |
-| Probate disclosure | Wave 3 | circuit compiled, 11,270 rows |
-| Duress decoy | Wave 3 | circuit compiled, 7,290 rows |
-
-## Circuits
-
-| Circuit | k | rows | What `disclose()` reveals, and why that is acceptable |
-|---|---:|---:|---|
-| `register` | 14 | 11,099 | The owner **tag**, a hash of two secrets, opaque. Not which cohort member. |
-| `heartbeat` | 14 | 11,170 | The tag and a timestamp. 38 private variables, **zero** leaks. |
-| `deposit` | 14 | 10,971 | The coin's nonce/colour/value. Not who deposited. |
-| `updateWill` | 13 | 4,528 | A new root and a version bump. Neither will version is revealed. |
-| `resolve` | 9 | 445 | Nothing private. Permissionless, nobody can censor resolution. |
-| `guardianResolve2of3` | 12 | 3,356 | Which guardian ids acted. Never their keys. |
-| `guardianResolve3of5` | 13 | 4,876 | " |
-| `claim` | **15** | **32,623** | A nullifier and the recomputed root. **The share stays inside the Zswap commitment.** |
-| `openProbate` | 14 | 11,270 | An envelope commitment binding the executor's figures to the vault. |
-| `resolveUnderPin` | 13 | 7,290 | Only the **OR** of two commitment matches, never which one. |
-| **total** | **max k=15** | **97,628** | 40 MB proving keys, 19 s to build |
-
 ## Architecture
 
 One **shared registry contract** serves many owners, a contract per will would turn every heartbeat into a per-person fingerprint.
 
 ![Architecture](docs/assets/architecture.png)
-
-<!--
-```mermaid
-flowchart TD
-    subgraph OFF ["Off chain, never leaves your machine"]
-        WILL["the will<br/>nominee to share"]
-        SEC["owner secret"]
-        NK["nominee keys"]
-        PS["proof server<br/>self hosted"]
-    end
-
-    subgraph ON ["On chain, one shared registry contract"]
-        TAG["ownerTag"]
-        SEEN["lastSeen"]
-        ROOT["vaultRoot"]
-        COIN["heldCoin"]
-        RES["resolvedVault"]
-        NULL["spent nullifiers"]
-    end
-
-    PS -.->|builds every proof, sees every witness| ON
-    SEC -->|register| TAG
-    SEC -->|heartbeat| SEEN
-    WILL -->|Merkle root only| ROOT
-    DEP["shielded deposit"] --> COIN
-    SEEN -->|grace elapsed| RES
-    GUARD["2 of 3 guardians"] -->|open early| RES
-    RES --> CLAIM{{claim}}
-    ROOT --> CLAIM
-    NK --> CLAIM
-    CLAIM --> NULL
-    CLAIM -->|share stays inside a Zswap commitment| OUT["the nominee's coin"]
-```
--->
 
 Every arrow crossing into the contract carries a hash, a root or a proof. The
 will, the identities and the individual shares never make that crossing.
@@ -191,8 +124,6 @@ failure below. The root `overrides` pin only applies to a root install.
 
 Bun is the package manager. The CLI is still executed with `node`, never with
 bun or a TypeScript loader, for the reason below.
-
-
 
 **Run the CLI on plain `node`, never through `tsx`.**
 
