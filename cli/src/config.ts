@@ -51,6 +51,17 @@ export const networkConfig = {
 export const GENESIS_SEED_HEX =
   process.env.NOMINEE_SEED_HEX ?? (NETWORK === 'undeployed' ? '00'.repeat(31) + '01' : '');
 
+/**
+ * A BIP-39 mnemonic, as an alternative to NOMINEE_SEED_HEX.
+ *
+ * This is the practical route on a public testnet: DUST cannot be bought and
+ * registering NIGHT for DUST generation itself costs DUST, so a brand-new
+ * wallet cannot bootstrap itself from the SDK alone. Lace's "Generate tDUST"
+ * flow does the registration, so the workable path is to import a mnemonic
+ * into Lace, fund and register there, then hand the CLI the same mnemonic.
+ */
+export const MNEMONIC = process.env.NOMINEE_MNEMONIC ?? '';
+
 /** Grace period for the demo, in SECONDS.
  *  blockTime* takes Unix SECONDS; the indexer reports MILLISECONDS. */
 export const DEMO_GRACE_SECONDS = BigInt(process.env.NOMINEE_GRACE ?? '60');

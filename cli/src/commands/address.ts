@@ -1,30 +1,42 @@
 // SPDX-License-Identifier: Apache-2.0
-// Print the wallet addresses for the configured network, so a public testnet
-// wallet can be funded from the faucet.
+// Print the wallet addresses for the configured network so a public testnet
+// wallet can be funded. Addresses are derived from the seed directly — no
+// chain sync, which matters because an unfunded wallet never reports "synced".
 import { Buffer } from 'node:buffer';
-import * as Rx from 'rxjs';
-import { NETWORK, GENESIS_SEED_HEX, networkConfig } from '../config.js';
+import * as ledger from '@midnight-ntwrk/midnight-js-protocol/ledger';
+import { createKeystore } from '@midnight-ntwrk/wallet-sdk';
+import { NETWORK, NETWORK_ID, networkConfig } from '../config.js';
+import { resolveSeed } from '../seed.js';
 import { initializeNetwork } from '../netid.js';
-import { buildWallet, startAndSync } from '../wallet.js';
+import { deriveShieldedSeed, deriveUnshieldedSeed, deriveDustSeed } from '../keys.js';
 import { note, ok, fail } from '../display.js';
 
 export async function address() {
-  if (!GENESIS_SEED_HEX) {
-    fail(`No seed for network "${NETWORK}". Set NOMINEE_SEED_HEX=<64 hex chars>.`);
-    process.exit(1);
-  }
   initializeNetwork();
-  note(`network: ${NETWORK}`);
-  note(`node:    ${networkConfig.node}`);
-  const bundle = await buildWallet(Buffer.from(GENESIS_SEED_HEX, 'hex'), { useCheckpoint: false });
-  await startAndSync(bundle);
-  const st: any = await Rx.firstValueFrom(bundle.facade.state());
+  const seed = resolveSeed();
+
+  const zswap = ledger.ZswapSecretKeys.fromSeed(deriveShieldedSeed(seed));
+  const dustSk = ledger.DustSecretKey.fromSeed(deriveDustSeed(seed));
+  const keystore = createKeystore(deriveUnshieldedSeed(seed), NETWORK_ID);
+
   console.log();
-  ok(`unshielded (NIGHT) : ${st.unshielded?.address ?? st.unshielded?.bech32Address ?? '—'}`);
-  ok(`shielded           : ${st.shielded?.address ?? '—'}`);
-  ok(`dust               : ${st.dust?.address ?? '—'}`);
+  note(`network : ${NETWORK}`);
+  note(`node    : ${networkConfig.node}`);
   console.log();
-  note('Fund the unshielded address at the faucet, then register DUST before deploying.');
-  try { await (bundle.facade as any).close?.(); } catch { /* best effort */ }
+
+  const show = (label: string, fn: () => any) => {
+    try {
+      const v = fn();
+      ok(`${label.padEnd(20)} ${typeof v === 'string' ? v : String(v)}`);
+    } catch (e: any) {
+      note(`${label.padEnd(20)} (unavailable: ${String(e?.message ?? e).slice(0, 60)})`);
+    }
+  };
+
+  show('unshielded (NIGHT)', () => (keystore as any).getBech32Address().toString());
+  show('shielded', () => (zswap as any).coinPublicKey?.toHexString?.() ?? '—');
+  show('dust', () => (dustSk as any).publicKey?.toString?.() ?? '—');
+  console.log();
+  note('Fund the unshielded (NIGHT) address, then register DUST before deploying.');
   process.exit(0);
 }

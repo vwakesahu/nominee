@@ -19,7 +19,8 @@ import {
 import { CompiledContract } from '@midnight-ntwrk/compact-js';
 import { deployContract, findDeployedContract } from '@midnight-ntwrk/midnight-js-contracts';
 import { Contract, ledger as readLedger, type Ledger } from '../../contract/out/contract/index.js';
-import { GENESIS_SEED_HEX, DEMO_GRACE_SECONDS } from './config.js';
+import { DEMO_GRACE_SECONDS } from './config.js';
+import { resolveSeed } from './seed.js';
 import { initializeNetwork } from './netid.js';
 import { buildWallet, startAndSync } from './wallet.js';
 import { createProviders, ZK_CONFIG_PATH } from './providers.js';
@@ -156,7 +157,7 @@ export class LiveSession {
 
   static async connect(cast: Cast, opts: { address?: string; grace?: bigint } = {}) {
     initializeNetwork();
-    const bundle = await buildWallet(Buffer.from(GENESIS_SEED_HEX, 'hex'), { useCheckpoint: false });
+    const bundle = await buildWallet(resolveSeed(), { useCheckpoint: false });
     await startAndSync(bundle);
     const providers = await createProviders(
       bundle.facade, bundle.zswapSecretKeys, bundle.dustSecretKey, bundle.keystore,

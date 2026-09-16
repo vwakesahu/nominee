@@ -26,6 +26,16 @@ program
   .action(async () => { const { address } = await import('./commands/address.js'); await address(); });
 
 program
+  .command('balance')
+  .description('sync and show NIGHT / DUST balances for the configured network')
+  .action(async () => { const { balance } = await import('./commands/balance.js'); await balance(); });
+
+program
+  .command('register-dust')
+  .description('register NIGHT for DUST generation (required once on a testnet)')
+  .action(async () => { const { registerDust } = await import('./commands/register-dust.js'); await registerDust(); });
+
+program
   .command('doctor')
   .description('check the local devnet, proof server and contract build')
   .action(async () => { const { doctor } = await import('./commands/doctor.js'); await doctor(); });
