@@ -107,6 +107,9 @@ A recorded live run is in [`deployments/devnet.json`](deployments/devnet.json):
 
 One **shared registry contract** serves many owners, a contract per will would turn every heartbeat into a per-person fingerprint.
 
+![Architecture](docs/assets/architecture.png)
+
+<!--
 ```mermaid
 flowchart TD
     subgraph OFF ["Off chain, never leaves your machine"]
@@ -138,6 +141,7 @@ flowchart TD
     CLAIM --> NULL
     CLAIM -->|share stays inside a Zswap commitment| OUT["the nominee's coin"]
 ```
+-->
 
 Every arrow crossing into the contract carries a hash, a root or a proof. The
 will, the identities and the individual shares never make that crossing.
