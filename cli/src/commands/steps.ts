@@ -187,8 +187,9 @@ export function simAttack(label: string, narrative: string[], fn: () => void, ex
 // when no node is reachable. Same circuits, same assertions — no proof, no chain.
 // ---------------------------------------------------------------------------
 
-export function simRegister(sim: SimSession, owner: Owner) {
+export function simRegister(sim: SimSession, owner: Owner, quiet = false) {
   sim.call('register');
+  if (quiet) return;
   panel('register', [
     `${owner.name} joins the registry.`,
     'She proves she is in the deployed cohort without saying which member she is.',
@@ -201,9 +202,10 @@ export function simRegister(sim: SimSession, owner: Owner) {
   ], 'SIMULATOR');
 }
 
-export function simDeposit(sim: SimSession, owner: Owner, value: bigint) {
+export function simDeposit(sim: SimSession, owner: Owner, value: bigint, quiet = false) {
   sim.call('deposit', { nonce: randomBytes32(), color: new Uint8Array(32), value });
   sim.refreshCoin();
+  if (quiet) return;
   panel('deposit', [
     `${owner.name} funds the vault with a shielded coin.`,
     'The contract now holds value on her behalf.',
@@ -215,8 +217,9 @@ export function simDeposit(sim: SimSession, owner: Owner, value: bigint) {
   ], 'SIMULATOR');
 }
 
-export function simHeartbeat(sim: SimSession, owner: Owner, now: bigint, label = 'heartbeat') {
+export function simHeartbeat(sim: SimSession, owner: Owner, now: bigint, label = 'heartbeat', quiet = false) {
   sim.call('heartbeat', now);
+  if (quiet) return;
   panel(label, [
     `${owner.name} proves she is alive.`,
     'Membership in the cohort is proven; her identity is not.',
@@ -228,9 +231,10 @@ export function simHeartbeat(sim: SimSession, owner: Owner, now: bigint, label =
   ], 'SIMULATOR');
 }
 
-export function simUpdateWill(sim: SimSession, owner: Owner, newRoot: { field: bigint }) {
+export function simUpdateWill(sim: SimSession, owner: Owner, newRoot: { field: bigint }, quiet = false) {
   sim.patch({ newVaultRoot: newRoot });
   sim.call('updateWill');
+  if (quiet) return;
   panel('update-will', [
     `${owner.name} amends her will.`,
     'A new beneficiary root replaces the old one. Neither version is revealed.',
@@ -243,8 +247,9 @@ export function simUpdateWill(sim: SimSession, owner: Owner, newRoot: { field: b
   ], 'SIMULATOR');
 }
 
-export function simResolve(sim: SimSession, deadline: bigint) {
+export function simResolve(sim: SimSession, deadline: bigint, quiet = false) {
   sim.call('resolve', sim.tag(), deadline);
+  if (quiet) return;
   panel('resolve', [
     'The grace period has elapsed with no heartbeat.',
     'Anyone may call this — no privileged keeper, no operator.',
@@ -257,9 +262,10 @@ export function simResolve(sim: SimSession, deadline: bigint) {
   ], 'SIMULATOR');
 }
 
-export function simGuardianResolve(sim: SimSession, owner: Owner, g0: bigint, g1: bigint) {
+export function simGuardianResolve(sim: SimSession, owner: Owner, g0: bigint, g1: bigint, quiet = false) {
   sim.patch({ attesting: [Number(g0), Number(g1)] });
   sim.call('guardianResolve2of3', sim.tag(), g0, g1);
+  if (quiet) return;
   panel('guardian-resolve', [
     'Two of three guardians attest the owner is gone.',
     'This short-circuits the grace period — no waiting.',

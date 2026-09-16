@@ -106,7 +106,7 @@ export async function demo() {
   chapter(1, 'A life');
 
   let r: TxRecord | null;
-  const lastBeat = nowSeconds();
+  let lastBeat = nowSeconds();
   // The simulator has no chain clock advancing with wall time, so its
   // blockTimeGte bound is checked against a fixed synthetic epoch. Live calls
   // use real Unix seconds, which is what the node compares against.
@@ -118,17 +118,19 @@ export async function demo() {
     r = await step('deposit', () => stepDeposit(live!, alice, coin));  if (r) txs.push(r);
     r = await step('heartbeat', () => stepHeartbeat(live!, alice, nowSeconds())); if (r) txs.push(r);
     r = await step('updateWill', () => stepUpdateWill(live!, alice, 1n)); if (r) txs.push(r);
+    lastBeat = nowSeconds();   // captured here so it is genuinely the latest
     r = await step('heartbeat', () => stepHeartbeat(live!, alice, lastBeat, 'heartbeat — the last one'));
     if (r) txs.push(r);
   }
 
   // The simulator runs the same chapter regardless, so the vault is funded and
   // the nominees have a beneficiary root to prove against in Chapter 4.
-  simRegister(sim, alice);
-  simDeposit(sim, alice, 1000n);
-  simHeartbeat(sim, alice, simLastBeat, live ? 'heartbeat (simulator mirror)' : 'heartbeat');
-  simUpdateWill(sim, alice, cast.heirTree.digest());
-  simOnly.push('register', 'deposit', 'heartbeat', 'updateWill');
+  const mirror = !!live;   // live already narrated this chapter
+  simRegister(sim, alice, mirror);
+  simDeposit(sim, alice, 1000n, mirror);
+  simHeartbeat(sim, alice, simLastBeat, 'heartbeat', mirror);
+  simUpdateWill(sim, alice, cast.heirTree.digest(), mirror);
+  if (!mirror) simOnly.push('register', 'deposit', 'heartbeat', 'updateWill');
 
   // ---- Chapter 2 ---------------------------------------------------------
   chapter(2, 'Silence');
@@ -142,8 +144,8 @@ export async function demo() {
     r = await step('resolve', () => stepResolve(live!, alice, lastBeat + DEMO_GRACE_SECONDS));
     if (r) txs.push(r);
   }
-  simResolve(sim, simLastBeat + DEMO_GRACE_SECONDS);
-  simOnly.push('resolve');
+  simResolve(sim, simLastBeat + DEMO_GRACE_SECONDS, !!live);
+  if (!live) simOnly.push('resolve');
 
   // ---- Chapter 4 ---------------------------------------------------------
   chapter(4, 'The nominees');

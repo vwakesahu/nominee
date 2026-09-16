@@ -38,7 +38,10 @@ export async function balance() {
   dump('NIGHT balance', st.unshielded?.balance);
   dump('NIGHT balances', st.unshielded?.balances);
   dump('DUST balance', st.dust?.balance);
-  note(`unshielded keys: ${Object.keys(st.unshielded ?? {}).join(', ')}`);
-  note(`dust keys      : ${Object.keys(st.dust ?? {}).join(', ')}`);
+  const j = (v: any) => JSON.stringify(v, (k, x) => typeof x === 'bigint' ? String(x) : x);
+  note(`unshielded sync: ${j(st.unshielded?.progress)}`);
+  note(`dust sync      : ${j(st.dust?.progress)}`);
+  note(`dust connected : ${st.dust?.isConnected}`);
+  note(`dust coins     : ${j((st.dust?.availableCoins ?? []).length)}`);
   process.exit(0);
 }

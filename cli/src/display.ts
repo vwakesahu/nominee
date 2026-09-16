@@ -143,8 +143,5 @@ export function summary(stats: {
   ['A vault exists', 'A heartbeat stopped', '3 anonymous claims were made',
     'No double-claims succeeded']
     .forEach((s) => row(chalk.green('  ✓ ') + s));
-  row();
-  row(chalk.dim('Wave 2: payout on live node │ Preprod deploy │ Frontend'));
-  row(chalk.dim('Wave 3: probate disclosure │ duress │ DAO successor-signer'));
   console.log(chalk.bold.green('└' + '─'.repeat(W) + '┘'));
 }
