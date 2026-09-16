@@ -49,7 +49,7 @@
   .cmd { font-size: 19px; color: var(--muted); }
 
   /* component stack */
-  .stack { display: flex; flex-direction: column; gap: 18px; margin-top: 40px; }
+  .stack { display: flex; flex-direction: column; gap: 18px; }
   .layer { display: flex; align-items: center; gap: 24px; }
   .ltag  { width: 96px; font-size: 17px; color: var(--muted); text-align: right; flex-shrink: 0; }
   .boxes { display: flex; gap: 13px; flex: 1; }
@@ -60,7 +60,7 @@
   .box.hi b { color: #C7C7FF; }
 
   /* flow */
-  .flow { display: flex; align-items: stretch; gap: 9px; margin-top: 40px; }
+  .flow { display: flex; align-items: stretch; gap: 9px; }
   .step { flex: 1; border-radius: 8px; padding: 17px 16px; border: 1px solid var(--line); background: #0D0D14; }
   .step b { display: block; font-size: 20px; font-weight: 600; letter-spacing: -.012em; }
   .step span { display: block; font-size: 15px; color: var(--muted); margin-top: 5px; line-height: 1.4; }
@@ -69,6 +69,17 @@
   .step.sim    { border-color: #4A3A18; background: #14100A; }
   .step.sim i  { color: var(--amber); }
   .arr { align-self: center; color: #3A3A45; font-size: 20px; }
+
+  /* receipts */
+  .receipts { display: flex; gap: 46px; align-items: flex-start; }
+  .rcol { display: flex; flex-direction: column; gap: 9px; min-width: 216px; }
+  .r { display: flex; justify-content: space-between; align-items: baseline;
+       border-bottom: 1px solid var(--line); padding-bottom: 8px; }
+  .r b { font-size: 18px; font-weight: 500; color: var(--soft); }
+  .r em { font-style: normal; font-size: 18px; color: var(--ink); }
+  .r.rlast b { color: var(--muted); }
+  .r.rlast em { color: var(--amber); }
+  .rnote { font-size: 16px; line-height: 1.6; color: var(--muted); padding-top: 2px; }
 
   /* numbers */
   .stats { display: flex; gap: 92px; }
@@ -107,7 +118,6 @@
 <section class="slide">
   <img class="logo" src="assets/midnight-logo.png">
   <div class="mid">
-    <h3>How it is put together</h3>
     <div class="stack">
       <div class="layer">
         <div class="ltag">ours</div>
@@ -144,7 +154,6 @@
 <section class="slide">
   <img class="logo" src="assets/midnight-logo.png">
   <div class="mid">
-    <h3>What the demo does</h3>
     <div class="flow">
       <div class="step live"><b>Deposit</b><span>shielded coin in</span><i>on chain</i></div>
       <div class="arr">›</div>
@@ -157,12 +166,26 @@
       <div class="step sim"><b>Claim</b><span>nominee takes share</span><i>simulator</i></div>
     </div>
     <div class="rule"></div>
-    <div class="sub" style="max-width:1010px">
-      Nine transactions landed on a real node. We tried three ways to steal from it
-      and the contract refused all three. Nothing secret ever reached public state.
-    </div>
-    <div class="sub" style="margin-top:22px; max-width:1010px; color:#8E8E99">
-      Money goes in on chain. Money coming out is the one piece still to land.
+    <div class="receipts">
+      <div class="rcol">
+        <div class="r"><b>register</b><em>1032</em></div>
+        <div class="r"><b>deposit</b><em>1036</em></div>
+        <div class="r"><b>heartbeat</b><em>1039</em></div>
+      </div>
+      <div class="rcol">
+        <div class="r"><b>updateWill</b><em>1042</em></div>
+        <div class="r"><b>heartbeat</b><em>1045</em></div>
+        <div class="r"><b>resolve</b><em>1059</em></div>
+      </div>
+      <div class="rcol">
+        <div class="r"><b>register</b><em>1063</em></div>
+        <div class="r"><b>guardianResolve</b><em>1066</em></div>
+        <div class="r rlast"><b>claim</b><em>not yet</em></div>
+      </div>
+      <div class="rnote">
+        Blocks from one run on contract cf2a3650.<br>
+        Every hash is in deployments/devnet.json.
+      </div>
     </div>
   </div>
   <div class="foot">github.com/vwakesahu/nominee</div>

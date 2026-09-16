@@ -1,22 +1,71 @@
 {
   "network": "local-devnet",
   "toolchain": "0.31.1",
-  "contractAddress": null,
+  "contractAddress": "cf2a3650a5f9424e24592c4ca5a2ceb6f0a4587b59477a309ecc194e9036b43d",
   "graceSeconds": 60,
-  "transactions": [],
+  "transactions": [
+    {
+      "circuit": "deploy",
+      "txHash": "cf2a3650a5f9424e24592c4ca5a2ceb6f0a4587b59477a309ecc194e9036b43d",
+      "block": null,
+      "status": "accepted"
+    },
+    {
+      "circuit": "register",
+      "txHash": "4b860fabcc3e68304823399b3c91c9b6d55e27991cd1f2682cefd6da3809b43b",
+      "block": 1032,
+      "status": "accepted"
+    },
+    {
+      "circuit": "deposit",
+      "txHash": "be0e55bc1ab1336d1f4b98c63eefbeec1577e70689bbf68a68d3e311d695d939",
+      "block": 1036,
+      "status": "accepted"
+    },
+    {
+      "circuit": "heartbeat",
+      "txHash": "f7b0d97a3e41c3545f3724e90a7ad64c9614ed265841156733c13c8c7e44dbfa",
+      "block": 1039,
+      "status": "accepted"
+    },
+    {
+      "circuit": "updateWill",
+      "txHash": "1ba595f75e9ff1a8173b1d72e1436bfddff13defdef2a67fceb6eefa17ae8dcb",
+      "block": 1042,
+      "status": "accepted"
+    },
+    {
+      "circuit": "heartbeat — the last one",
+      "txHash": "23ab9477e695ba3d35863337b404566ae0f429bccdfd34ea59cef142c67b22e1",
+      "block": 1045,
+      "status": "accepted"
+    },
+    {
+      "circuit": "resolve",
+      "txHash": "1baaaf37c2dfc6f6470115ff1b2f1320d7bcd939cd53f547091a1294475b37c0",
+      "block": 1059,
+      "status": "accepted"
+    },
+    {
+      "circuit": "register",
+      "txHash": "4539c2e70db5516b86470cc91d38bb700c59d3abe76fed8276cbf8a78993067d",
+      "block": 1063,
+      "status": "accepted"
+    },
+    {
+      "circuit": "guardianResolve2of3",
+      "txHash": "316172d33c26d648f0b6d658ce39a2f6e75172f02650f452029eca54565902bb",
+      "block": 1066,
+      "status": "accepted"
+    }
+  ],
   "simulatorOnly": [
-    "register",
-    "deposit",
-    "heartbeat",
-    "updateWill",
-    "resolve",
     "claim",
     "claim",
     "claim",
     "doubleClaim",
     "wrongHeir",
-    "wrongShare",
-    "guardianResolve2of3"
+    "wrongShare"
   ],
-  "timestamp": "2026-09-16T08:05:13.697Z"
+  "timestamp": "2026-09-16T07:05:20.580Z"
 }
