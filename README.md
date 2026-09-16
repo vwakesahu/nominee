@@ -31,17 +31,19 @@ That is only possible because of two Midnight properties together: a **shielded 
 
 ```bash
 git clone https://github.com/vwakesahu/nominee && cd nominee
-npm install
+bun install
 docker compose up -d          # local Midnight devnet: node, indexer, proof server
-npm test                      # 33 simulator tests
-npx nominee doctor            # check devnet, proof server, contract build
+./run-devnet.sh               # the full demo, live on chain
 ```
 
 ```bash
-npm --prefix cli run build    # compile the CLI (runs on plain node, not tsx)
-npx nominee demo              # the full story in the simulator
-NOMINEE_LIVE=1 npx nominee demo   # ...and on the local devnet, with real proofs
+bun run test        # 33 simulator tests
+bun run leakcheck   # ZKIR privacy scan
+bun run nominee doctor
 ```
+
+The demo runs in the simulator by default. `NOMINEE_LIVE=1` executes it on the
+devnet with real proofs, which is what `./run-devnet.sh` does.
 
 A recorded live run is in [`deployments/devnet.json`](deployments/devnet.json):
 **9 accepted transactions**, deploy through `guardianResolve2of3`.
@@ -128,10 +130,12 @@ Named here because a judge will find them anyway, and because the validation fou
 
 ## Two gotchas worth knowing
 
-**Always `npm install` from the repo root.** Installing inside a workspace
-(`npm --prefix cli install ...`) creates a local `cli/node_modules` with a second
-copy of the wasm bindings, which reproduces the class-identity failure below.
-The root `overrides` pin only applies to a root install.
+**Always install from the repo root.** Installing inside a workspace creates a
+second copy of the wasm bindings there, which reproduces the class-identity
+failure below. The root `overrides` pin only applies to a root install.
+
+Bun is the package manager. The CLI is still executed with `node`, never with
+bun or a TypeScript loader, for the reason below.
 
 
 

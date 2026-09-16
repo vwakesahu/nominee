@@ -9,17 +9,21 @@
   "workspaces": [
     "contract",
     "cli",
-    "test"
+    "test",
+    "web"
   ],
   "scripts": {
     "compact": "cd contract && compact compile +0.31.1 src/nominee.compact out",
+    "build": "bun run --cwd cli build",
     "leakcheck": "python3 test/privacy/leakcheck.py contract/out/zkir",
     "leaktest": "python3 test/privacy/leaktest.py",
-    "test": "npm --workspace test run test",
-    "demo": "npm --workspace cli exec -- tsx src/index.ts demo",
-    "nominee": "npm --workspace cli exec -- tsx src/index.ts"
+    "test": "bun run --cwd test test",
+    "demo": "bun run build && node cli/dist/index.js demo",
+    "nominee": "node cli/dist/index.js",
+    "web": "bun run --cwd web dev"
   },
   "overrides": {
     "@midnight-ntwrk/onchain-runtime-v3": "3.0.0"
-  }
+  },
+  "packageManager": "bun@1.4.0"
 }

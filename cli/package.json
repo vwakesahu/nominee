@@ -2,7 +2,7 @@
   "name": "nominee-cli",
   "version": "0.1.0",
   "private": true,
-  "description": "Nominee CLI — add a nominee to your crypto. Nobody learns who.",
+  "description": "Nominee CLI \u2014 add a nominee to your crypto. Nobody learns who.",
   "homepage": "https://nominee.world",
   "license": "Apache-2.0",
   "type": "module",
@@ -32,7 +32,8 @@
     "cli-table3": "^0.6.5",
     "commander": "^12.1.0",
     "ora": "^8.1.1",
-    "rxjs": "^7.8.2"
+    "rxjs": "^7.8.2",
+    "@midnight-ntwrk/onchain-runtime-v3": "3.0.0"
   },
   "devDependencies": {
     "@types/node": "^22.15.29",

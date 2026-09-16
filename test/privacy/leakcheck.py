@@ -18,6 +18,10 @@ def arity(op):
     if op in NONPROD: return 0
     return 2 if (op == 'persistent_hash' or op.startswith('ec_') or op == 'div_mod_power_of_two') else 1
 
+# Two witnesses are Merkle roots that MUST become public: heirs prove against
+# them. Each is consumed by exactly one declare_pub_input and nothing else.
+ALLOWED = {('updateWill', 16), ('resolveUnderPin', 24)}
+
 bad = 0
 print(f"{'CIRCUIT':<22} {'priv':>5} {'pub':>5} {'vars':>6}  RESULT")
 files = sorted(glob.glob(os.path.join(ZKIR_DIR, '*.zkir')))
@@ -34,15 +38,20 @@ for f in files:
     pub  = {x['var'] for x in ins if x['op'] == 'declare_pub_input'}
     leak = sorted(set(priv) & pub)
     name = os.path.basename(f)[:-5]
-    if leak:
+    unexpected = [v for v in leak if (name, v) not in ALLOWED]
+    if leak and not unexpected:
+        print(f"{name:<22} {len(priv):>5} {len(pub):>5} {c:>6}  clean (root {leak[0]} public by design)")
+        continue
+    if unexpected:
         bad += 1
-        print(f"{name:<22} {len(priv):>5} {len(pub):>5} {c:>6}  *** LEAK vars {leak} ***")
+        print(f"{name:<22} {len(priv):>5} {len(pub):>5} {c:>6}  *** LEAK vars {unexpected} ***")
+        leak = unexpected
         for v in leak:
             bits = [x['bits'] for x in ins if x['op']=='constrain_bits' and x.get('var')==v]
             print(f"{'':24}   var {v} bits={bits} from {src[v]}")
     else:
         print(f"{name:<22} {len(priv):>5} {len(pub):>5} {c:>6}  clean")
 print()
-print("RESULT:", "ALL CLEAN — no private input reaches the public transcript"
+print("RESULT:", "ALL CLEAN, no secret reaches the public transcript"
       if bad == 0 else f"{bad} circuit(s) LEAK")
 sys.exit(1 if bad else 0)

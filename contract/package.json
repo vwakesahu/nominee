@@ -2,10 +2,14 @@
   "name": "nominee-contract",
   "version": "0.1.0",
   "private": true,
-  "description": "Nominee — Compact contracts",
+  "description": "Nominee \u2014 Compact contracts",
   "license": "Apache-2.0",
   "scripts": {
-    "compact": "compact compile +0.31.1 src/nominee.compact managed",
+    "compact": "compact compile +0.31.1 src/nominee.compact out",
     "leakcheck": "python3 tools/leakcheck.py"
+  },
+  "dependencies": {
+    "@midnight-ntwrk/compact-runtime": "0.16.0",
+    "@midnight-ntwrk/onchain-runtime-v3": "3.0.0"
   }
 }

@@ -6,7 +6,7 @@ set -euo pipefail
 cd "$(dirname "$0")"
 
 # Docker Desktop is not always on PATH.
-export PATH="$HOME/.docker/bin:$HOME/.local/bin:$PATH"
+export PATH="$HOME/.docker/bin:$HOME/.local/bin:$HOME/.bun/bin:$PATH"
 export DOCKER_HOST="${DOCKER_HOST:-unix://$HOME/.docker/run/docker.sock}"
 
 if ! docker ps >/dev/null 2>&1; then
@@ -25,8 +25,8 @@ done
 docker ps --format '  {{.Names}}: {{.Status}}' | grep midnight
 
 echo "==> build"
-[ -d node_modules ] || npm install --silent        # always from the repo root
-npm --prefix cli run build --silent >/dev/null
+[ -d contract/node_modules ] || bun install --silent   # always from the repo root
+bun run --cwd cli build >/dev/null
 
 echo "==> demo (live on devnet)"
 NOMINEE_LIVE=1 node cli/dist/index.js demo

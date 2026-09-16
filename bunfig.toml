@@ -1,0 +1,10 @@
+# Use an npm-style flat node_modules rather than bun's isolated store.
+#
+# Two things here need a hoisted layout:
+#   - Vite (vitest) cannot resolve @midnight-ntwrk/onchain-runtime-v3 through
+#     bun's symlinked .bun store.
+#   - The Midnight wasm bindings must resolve to exactly ONE copy. Two copies
+#     put two ContractState classes in the process and every instanceof check
+#     across the boundary fails.
+[install]
+nodeLinker = "hoisted"

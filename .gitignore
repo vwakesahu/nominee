@@ -52,3 +52,8 @@ live.log
 addr.log
 .testnet-seed
 .testnet-mnemonic
+
+# next.js / web
+web/.next/
+web/out/
+web/next-env.d.ts
