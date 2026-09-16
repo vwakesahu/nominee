@@ -1,0 +1,132 @@
+<!-- SPDX-License-Identifier: Apache-2.0 -->
+<meta charset="utf-8">
+<title>Nominee</title>
+<style>
+  @page { size: 1280px 720px; margin: 0; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body {
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+    color: #111;
+    background: #fff;
+  }
+  .slide {
+    width: 1280px; height: 720px;
+    padding: 96px 104px;
+    display: flex; flex-direction: column;
+    page-break-after: always; break-after: page;
+    position: relative;
+    background: #FAFAF8;
+  }
+  .slide:last-child { page-break-after: auto; break-after: auto; }
+
+  .mark {
+    position: absolute; top: 44px; left: 104px;
+    font-size: 13px; letter-spacing: .14em; text-transform: uppercase;
+    color: #9A9A93; font-weight: 500;
+  }
+  .num {
+    position: absolute; bottom: 44px; right: 104px;
+    font-size: 13px; color: #C4C4BC; font-variant-numeric: tabular-nums;
+  }
+  .foot {
+    position: absolute; bottom: 44px; left: 104px;
+    font-size: 13px; color: #9A9A93;
+  }
+
+  h1 { font-size: 92px; line-height: 1.0; font-weight: 600; letter-spacing: -.035em; }
+  h2 { font-size: 46px; line-height: 1.18; font-weight: 600; letter-spacing: -.02em; }
+  .sub { font-size: 27px; line-height: 1.45; color: #55554E; font-weight: 400; }
+  .big { font-size: 128px; font-weight: 600; letter-spacing: -.04em; line-height: 1; }
+  .mid { margin: auto 0; }
+  .rule { height: 1px; background: #E2E2DA; margin: 34px 0; }
+
+  table { border-collapse: collapse; width: 100%; font-size: 21px; }
+  td, th { padding: 13px 0; text-align: left; border-bottom: 1px solid #E8E8E0; }
+  th { font-size: 13px; letter-spacing: .1em; text-transform: uppercase; color: #9A9A93; font-weight: 500; }
+  td.r, th.r { text-align: right; }
+  .yes { color: #1B7F4B; font-weight: 600; }
+  .no  { color: #B23A48; font-weight: 600; }
+  .mono { font-family: "SF Mono", ui-monospace, Menlo, monospace; font-size: 18px; color: #55554E; }
+  .dim { color: #9A9A93; }
+  em { font-style: normal; border-bottom: 2px solid #111; }
+</style>
+
+<!-- 1 ─────────────────────────────────────────────────────────── -->
+<section class="slide">
+  <div class="mark">Nominee</div>
+  <div class="mid">
+    <h1>Add a nominee<br>to your crypto.</h1>
+    <div class="sub" style="margin-top:34px">Nobody learns who.</div>
+  </div>
+  <div class="foot">nominee.world · built on Midnight</div>
+  <div class="num">1</div>
+</section>
+
+<!-- 2 ─────────────────────────────────────────────────────────── -->
+<section class="slide">
+  <div class="mark">The problem</div>
+  <div class="mid">
+    <div class="big">$68.7B</div>
+    <div class="sub" style="margin-top:26px; max-width:860px">
+      in Bitcoin is permanently lost. A lot of it belonged to people who died.
+    </div>
+    <div class="rule"></div>
+    <h2 style="max-width:930px">
+      Your bank account has a nominee field.<br>Your wallet does not.
+    </h2>
+    <div class="sub" style="margin-top:22px; max-width:900px">
+      Every fix on offer makes you pick one: tell a company who inherits,
+      or tell <em>everyone</em>.
+    </div>
+  </div>
+  <div class="num">2</div>
+</section>
+
+<!-- 3 ─────────────────────────────────────────────────────────── -->
+<section class="slide">
+  <div class="mark">Why this needs Midnight</div>
+  <div class="mid">
+    <table>
+      <tr><th>&nbsp;</th><th class="r">Reveals the nominee</th><th class="r">Trusts a company</th></tr>
+      <tr><td>Sarcophagus</td><td class="r no">Yes</td><td class="r">No</td></tr>
+      <tr><td>Bitcoin timelock</td><td class="r no">Yes — at spend</td><td class="r">No</td></tr>
+      <tr><td>Casa</td><td class="r">No</td><td class="r no">Yes</td></tr>
+      <tr><td>Coinbase</td><td class="r no">Yes</td><td class="r no">Yes</td></tr>
+      <tr><td><strong>Nominee</strong></td><td class="r yes">No</td><td class="r yes">No</td></tr>
+    </table>
+    <div class="sub" style="margin-top:38px; max-width:980px">
+      Deposit, name your nominees, check in now and then. Stop checking in and
+      the vault opens — each nominee proves membership and takes their share.
+    </div>
+    <div class="mono" style="margin-top:24px">
+      The chain sees: a vault exists · a heartbeat stopped · N anonymous claims.
+    </div>
+  </div>
+  <div class="num">3</div>
+</section>
+
+<!-- 4 ─────────────────────────────────────────────────────────── -->
+<section class="slide">
+  <div class="mark">What's actually built</div>
+  <div class="mid">
+    <table>
+      <tr><td>Compact circuits, compiled on 0.31.1</td><td class="r">10 · max k=15 · 97,628 rows</td></tr>
+      <tr><td>Live on-chain transactions</td><td class="r">9 accepted</td></tr>
+      <tr><td>Shielded deposit</td><td class="r yes">works on a real node</td></tr>
+      <tr><td>Unshielded deposit — the control</td><td class="r">rejected, same block window</td></tr>
+      <tr><td>Simulator tests</td><td class="r">33 passing</td></tr>
+      <tr><td>ZKIR privacy scan</td><td class="r">no secret reaches public state</td></tr>
+    </table>
+    <div class="rule"></div>
+    <div class="sub" style="max-width:1000px">
+      Payout is not live yet. Deposit is. We know exactly why, it's written down,
+      and it's the first thing in Wave 2.
+    </div>
+    <div class="mono" style="margin-top:20px">
+      git clone github.com/vwakesahu/nominee &amp;&amp; ./run-devnet.sh
+    </div>
+  </div>
+  <div class="foot">Apache-2.0 · every claim in the repo has evidence behind it</div>
+  <div class="num">4</div>
+</section>
