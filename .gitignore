@@ -57,3 +57,5 @@ addr.log
 web/.next/
 web/out/
 web/next-env.d.ts
+dust*.log
+midnight-level-db/
