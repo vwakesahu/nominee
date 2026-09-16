@@ -126,7 +126,14 @@ Named here because a judge will find them anyway, and because the validation fou
 - **Lace has no plugin mechanism** — Nominee is its own DApp that wallets connect to, not a wallet feature.
 - **Legally this is a transfer mechanism, not a will.** Lead with the probate-disclosure feature, not the privacy feature.
 
-## One gotcha worth knowing
+## Two gotchas worth knowing
+
+**Always `npm install` from the repo root.** Installing inside a workspace
+(`npm --prefix cli install ...`) creates a local `cli/node_modules` with a second
+copy of the wasm bindings, which reproduces the class-identity failure below.
+The root `overrides` pin only applies to a root install.
+
+
 
 **Run the CLI on plain `node`, never through `tsx`.**
 

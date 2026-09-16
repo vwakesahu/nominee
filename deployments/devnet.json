@@ -1,64 +1,9 @@
 {
   "network": "local-devnet",
   "toolchain": "0.31.1",
-  "contractAddress": "6fe8c639395555261243246cae10629e72cb6fa950e346074fe85cb2e9600e19",
+  "contractAddress": null,
   "graceSeconds": 60,
-  "transactions": [
-    {
-      "circuit": "deploy",
-      "txHash": "6fe8c639395555261243246cae10629e72cb6fa950e346074fe85cb2e9600e19",
-      "block": null,
-      "status": "accepted"
-    },
-    {
-      "circuit": "register",
-      "txHash": "ebff20967ccbc985781489eeeeab997b23b29366bd8eda3645a297ccfe44cee6",
-      "block": 23,
-      "status": "accepted"
-    },
-    {
-      "circuit": "deposit",
-      "txHash": "61426bb3661cbdf36f4c90c9e465a22ce36a23b7a7c0e903d8eab799daf17937",
-      "block": 27,
-      "status": "accepted"
-    },
-    {
-      "circuit": "heartbeat",
-      "txHash": "b1731dd007ee6b34a73536a53306aba8503a0adfd9ce97924ad0023ef5b202f7",
-      "block": 31,
-      "status": "accepted"
-    },
-    {
-      "circuit": "updateWill",
-      "txHash": "363eb0eb008c9f4481e4f8d5fa4d59cc5a0424ae9e5272da27c716d6082465fd",
-      "block": 34,
-      "status": "accepted"
-    },
-    {
-      "circuit": "heartbeat — the last one",
-      "txHash": "9c2aab0134f6c2e48bce77b0939e7365bc6bafb3f9d0427561f72894506e2ab5",
-      "block": 37,
-      "status": "accepted"
-    },
-    {
-      "circuit": "resolve",
-      "txHash": "1fddb126d68b766e46c6b20b991dda8bd271e27b89c2281312ae36ce2e18ec87",
-      "block": 51,
-      "status": "accepted"
-    },
-    {
-      "circuit": "register",
-      "txHash": "0b361b4d1e356d3bb7bd64d434757892a6d55f2ee5d90c4a4048c32e9f46d462",
-      "block": 54,
-      "status": "accepted"
-    },
-    {
-      "circuit": "guardianResolve2of3",
-      "txHash": "8968154ad523032f205e2d66088d45e75abf8ab72f035615dd376780fc15243b",
-      "block": 57,
-      "status": "accepted"
-    }
-  ],
+  "transactions": [],
   "simulatorOnly": [
     "register",
     "deposit",
@@ -70,7 +15,8 @@
     "claim",
     "doubleClaim",
     "wrongHeir",
-    "wrongShare"
+    "wrongShare",
+    "guardianResolve2of3"
   ],
-  "timestamp": "2026-09-16T05:24:26.258Z"
+  "timestamp": "2026-09-16T05:37:00.789Z"
 }
