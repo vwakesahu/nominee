@@ -1,6 +1,14 @@
 # Local Midnight devnet for the Nominee demo.
 # Pinned to the versions the validation ran against: node 1.0.0, indexer
 # 4.3.3, proof server 8.1.0. Adapted from midnightntwrk/midnight-local-dev.
+#
+#   Local devnet (everything here):   docker compose up -d
+#   Preprod / Preview / Mainnet:      docker compose up -d proof-server
+#
+# On a public network Midnight runs the node and the indexer, but the PROOF
+# SERVER is still yours and must stay yours: it is handed owner secrets, heir
+# secrets and shares in the clear. See docs/ARCHITECTURE.md — "Proof-server
+# rule: self-host. Always."
 services:
   proof-server:
     container_name: 'midnight-proof-server'

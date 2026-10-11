@@ -24,9 +24,8 @@ for _ in $(seq 1 40); do
 done
 docker ps --format '  {{.Names}}: {{.Status}}' | grep midnight
 
-echo "==> build"
+echo "==> install"
 [ -d contract/node_modules ] || bun install --silent   # always from the repo root
-bun run --cwd cli build >/dev/null
 
 echo "==> demo (live on devnet)"
-NOMINEE_LIVE=1 node cli/dist/index.js demo
+node cli/bin/nominee.mjs --network undeployed demo --live

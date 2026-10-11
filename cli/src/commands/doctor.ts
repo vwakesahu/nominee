@@ -1,56 +1,44 @@
 // SPDX-License-Identifier: Apache-2.0
 // Pre-flight: is everything a judge needs actually present and reachable?
 import { execSync } from 'node:child_process';
-import { existsSync, readdirSync } from 'node:fs';
-import { ok, fail, note } from '../display.js';
+import chalk from 'chalk';
+import { ok, fail, note, warn } from '../display.js';
 import { networkConfig } from '../config.js';
-import { ZK_CONFIG_PATH } from '../providers.js';
-
-const probe = async (label: string, fn: () => Promise<boolean> | boolean) => {
-  try { (await fn()) ? ok(label) : fail(label); }
-  catch { fail(label); }
-};
+import { runPreflight } from '../preflight.js';
 
 export async function doctor() {
-  console.log('\n  nominee doctor\n');
+  const net = networkConfig();
+  console.log(`\n  nominee doctor — network ${chalk.bold(net.name)}\n`);
 
-  await probe(`contract build present (${ZK_CONFIG_PATH})`, () => {
-    if (!existsSync(ZK_CONFIG_PATH)) return false;
-    const keys = readdirSync(`${ZK_CONFIG_PATH}/keys`).filter((f) => f.endsWith('.prover'));
-    note(`  ${keys.length} proving keys`);
-    return keys.length === 10;
-  });
-
-  await probe('docker running', () => {
-    execSync('docker ps', { stdio: 'ignore' });
-    return true;
-  });
-
-  for (const [label, url] of [
-    ['proof server', networkConfig.proofServer],
-    ['indexer', networkConfig.indexerHttpUrl.replace('/api/v4/graphql', '')],
-  ] as const) {
-    await probe(`${label} reachable (${url})`, async () => {
-      const r = await fetch(url).catch(() => null);
-      return !!r;
-    });
+  // Docker only matters for what actually runs in it. On a public network that
+  // is the proof server alone; the node and indexer are Midnight's.
+  const dockerOk = (() => {
+    try { execSync('docker ps', { stdio: 'ignore' }); return true; } catch { return false; }
+  })();
+  if (dockerOk) {
+    ok('docker running');
+  } else {
+    warn('docker not running');
+    note(net.local
+      ? '  The whole devnet runs in docker:  docker compose up -d'
+      : '  The proof server runs in docker:  docker compose up -d proof-server');
   }
 
-  await probe('node responding', async () => {
-    const http = networkConfig.node.replace(/^ws/, 'http');
-    const r = await fetch(http, {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'system_chain', params: [] }),
-    }).catch(() => null);
-    if (!r) return false;
-    const j: any = await r.json().catch(() => null);
-    if (j?.result) note(`  chain: ${j.result}`);
-    return !!j?.result;
-  });
+  for (const c of await runPreflight()) {
+    c.ok ? ok(c.label) : (c.fatal ? fail(c.label) : warn(c.label));
+    if (c.detail) note(`  ${c.detail}`);
+  }
 
-  const major = Number(process.versions.node.split('.')[0]);
-  major === 22 ? ok(`node ${process.versions.node}`)
-               : note(`node ${process.versions.node}, 22 is the supported version`);
+  if (!net.local) {
+    note(`  faucet:   ${net.faucet ?? 'none — this network needs real NIGHT'}`);
+    note(`  explorer: ${net.explorer ?? 'none'}`);
+    if (!process.env.NOMINEE_SEED_HEX) {
+      warn('NOMINEE_SEED_HEX is not set');
+      note('  Generate:  openssl rand -hex 32');
+      note('  Then fund the address from:  nominee address');
+    } else {
+      ok('NOMINEE_SEED_HEX is set');
+    }
+  }
   console.log();
 }

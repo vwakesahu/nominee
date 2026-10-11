@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 // The two-panel printer. Left: what happened, in human terms.
-// Right: what the chain actually saw, and, crucially, what it did NOT.
+// Right: what the chain actually saw — and, crucially, what it did NOT.
 import chalk from 'chalk';
 
 const W_LEFT = 34;
@@ -8,7 +8,7 @@ const W_RIGHT = 37;
 
 /** 0x{first4}…{last4} */
 export function short(v: Uint8Array | string | bigint | number | undefined | null): string {
-  if (v === undefined || v === null) return ', ';
+  if (v === undefined || v === null) return '—';
   let hex: string;
   if (typeof v === 'bigint' || typeof v === 'number') hex = BigInt(v).toString(16);
   else if (typeof v === 'string') hex = v.replace(/^0x/, '');
@@ -98,7 +98,7 @@ export function chapter(n: number | string, title: string) {
 export function banner() {
   const line = (s: string) => '║' + padEnd(' ' + s, 70) + '║';
   console.log(chalk.bold.cyan('\n╔' + '═'.repeat(70) + '╗'));
-  console.log(chalk.bold.cyan(line('NOMINEE, Demo')));
+  console.log(chalk.bold.cyan(line('NOMINEE — Demo')));
   console.log(chalk.cyan(line('"Your crypto knows who comes next. Nobody else does."')));
   console.log(chalk.bold.cyan('╚' + '═'.repeat(70) + '╝\n'));
   console.log('  $68.7 billion in Bitcoin is permanently lost. Much of it: people who died.');
@@ -132,7 +132,7 @@ export function summary(stats: {
   console.log('\n' + chalk.bold.green('┌' + '─'.repeat(W) + '┐'));
   row(`Circuits: ${stats.circuits} compiled  │  Max k=${stats.maxK}  │  Keys: ${stats.keysMB} MB`);
   row(`Tests: ${stats.tests}  │  Leak check: ${stats.leak}`);
-  row(`Devnet txs: ${stats.txs} accepted  │  Custom(192) control: ${stats.control}`);
+  row(`On-chain txs: ${stats.txs} accepted  │  Custom(192) control: ${stats.control}`);
   row();
   row('The chain never learned:');
   ['Who the owner is', 'Who the nominees are', 'How much each nominee received',
@@ -143,5 +143,8 @@ export function summary(stats: {
   ['A vault exists', 'A heartbeat stopped', '3 anonymous claims were made',
     'No double-claims succeeded']
     .forEach((s) => row(chalk.green('  ✓ ') + s));
+  row();
+  row(chalk.dim('Wave 2: payout on live node │ Preprod deploy │ Frontend'));
+  row(chalk.dim('Wave 3: probate disclosure │ duress │ DAO successor-signer'));
   console.log(chalk.bold.green('└' + '─'.repeat(W) + '┘'));
 }

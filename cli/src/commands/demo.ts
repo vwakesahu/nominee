@@ -3,8 +3,8 @@
 // The whole story in one command: a life, silence, resolution, the nominees,
 // three attacks that fail, and the guardian path.
 //
-// Chapters 1-3 and 6 are REAL: real circuits, real proofs, real devnet.
-// Chapters 4-5 run in the simulator and say so, the shielded payout path is
+// Chapters 1-3 and 6 are REAL: real circuits, real proofs, real network.
+// Chapters 4-5 run in the simulator and say so — the shielded payout path is
 // the one piece not yet live, and the demo does not pretend otherwise.
 import { execSync } from 'node:child_process';
 import chalk from 'chalk';
@@ -15,44 +15,78 @@ import {
 import {
   LiveSession, SimSession, buildCast, makeHasher, makeHeir, randKey, describeErr,
 } from '../session.js';
-import { DEMO_GRACE_SECONDS } from '../config.js';
-import { emptyDeployment, save, DEPLOYMENTS_PATH, type TxRecord } from '../state.js';
+import { DEMO_GRACE_SECONDS, networkConfig } from '../config.js';
+import { emptyDeployment, save, type TxRecord } from '../state.js';
+import { runPreflight } from '../preflight.js';
 import {
   nowSeconds, stepRegister, stepDeposit, stepHeartbeat, stepUpdateWill,
   stepResolve, stepGuardianResolve, simClaim, simAttack,
   simRegister, simDeposit, simHeartbeat, simUpdateWill, simResolve, simGuardianResolve,
 } from './steps.js';
 
-const DOCKER = 'midnight-node|midnight-indexer|midnight-proof-server';
-
-function devnetUp(): boolean {
+/** Containers that must be up. On a public network only the prover is ours. */
+function containersUp(names: string[]): boolean {
   try {
     const out = execSync('docker ps --format "{{.Names}}"', { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] });
-    return ['midnight-node', 'midnight-indexer', 'midnight-proof-server'].every((n) => out.includes(n));
+    return names.every((n) => out.includes(n));
   } catch { return false; }
 }
 
-async function ensureDevnet() {
-  if (devnetUp()) { ok('Local devnet already running.'); return true; }
-  note('Local devnet not detected, starting it with docker compose…');
+/**
+ * Bring up what this machine is responsible for.
+ *
+ * Local devnet: the node, indexer and proof server all run here.
+ * Public network: only the proof server — and it must, because it sees the
+ * owner and heir secrets. Midnight runs the node and indexer.
+ */
+async function ensureLocalServices(local: boolean) {
+  const names = local
+    ? ['midnight-node', 'midnight-indexer', 'midnight-proof-server']
+    : ['midnight-proof-server'];
+  const services = local ? [] : ['proof-server'];
+  const what = local ? 'Local devnet' : 'Proof server';
+
+  if (containersUp(names)) { ok(`${what} already running.`); return true; }
+  note(`${what} not detected — starting it with docker compose…`);
   try {
-    execSync('docker compose up -d', { stdio: 'inherit' });
+    execSync(['docker', 'compose', 'up', '-d', ...services].join(' '), { stdio: 'inherit' });
   } catch {
-    fail('Could not start the devnet. Start Docker Desktop, then: docker compose up -d');
+    fail(`Could not start it. Start Docker Desktop, then: docker compose up -d ${services.join(' ')}`);
     return false;
   }
   for (let i = 0; i < 40; i++) {
-    if (devnetUp()) { ok('Devnet is up.'); return true; }
+    if (containersUp(names)) { ok(`${what} is up.`); return true; }
     await new Promise((r) => setTimeout(r, 1500));
   }
-  fail('Devnet did not become healthy in time.');
+  fail(`${what} did not become healthy in time.`);
   return false;
 }
 
-export async function demo() {
+export async function demo(opts: { live?: boolean } = {}) {
   banner();
+  const net = networkConfig();
   console.log();
-  if (!(await ensureDevnet())) process.exit(1);
+  note(`Network: ${chalk.bold(net.name)}`);
+
+  // On-chain execution is opt-in: --live, or NOMINEE_LIVE=1.
+  // Without it the whole story runs in the simulator — the same compiled
+  // circuits and the same assertions, with no proof and no ledger.
+  const wantLive = opts.live === true || process.env.NOMINEE_LIVE === '1';
+
+  // Only touch docker when something is actually going on chain.
+  if (wantLive && !(await ensureLocalServices(net.local))) process.exit(1);
+
+  if (wantLive) {
+    const checks = await runPreflight();
+    for (const c of checks.filter((x) => !x.ok)) {
+      (c.fatal ? fail : warn)(c.label);
+      if (c.detail) note(`  ${c.detail}`);
+    }
+    if (checks.some((c) => !c.ok && c.fatal)) {
+      fail('Preflight failed — nothing will be submitted.');
+      process.exit(1);
+    }
+  }
 
   const deployment = emptyDeployment();
   deployment.graceSeconds = Number(DEMO_GRACE_SECONDS);
@@ -69,24 +103,24 @@ export async function demo() {
   // when no node is reachable. Same circuits either way.
   const sim = new SimSession(cast, DEMO_GRACE_SECONDS);
 
-  // On-chain execution is opt-in while the deploy path is being finished:
-  //   NOMINEE_LIVE=1 npx nominee demo
-  // Without it the whole story runs in the simulator, the same compiled
-  // circuits and the same assertions, with no proof and no ledger.
-  const wantLive = process.env.NOMINEE_LIVE === '1';
   let live: LiveSession | null = null;
 
   if (!wantLive) {
-    note('Running in simulator mode (set NOMINEE_LIVE=1 to execute on the devnet).');
-    note('Same compiled circuits, same assertions, no proof, no ledger.');
+    note(`Running in simulator mode (add --live to execute on ${net.name}).`);
+    note('Same compiled circuits, same assertions — no proof, no ledger.');
   } else try {
+    // The demo is a narrative, not a deployment: it wants a vault that has never
+    // been registered, deposited into or resolved, so it deploys its own with a
+    // fresh cohort. `nominee deploy` is the command that leaves a durable,
+    // seed-reproducible contract behind.
+    note(`Deploying a fresh contract for this run on ${net.name}.`);
     note('Connecting wallet, proof server and indexer…');
     live = await LiveSession.connect(cast, { grace: DEMO_GRACE_SECONDS });
     deployment.contractAddress = live.address;
     ok(`Contract deployed: ${chalk.bold(live.address)}`);
     txs.push({ circuit: 'deploy', txHash: live.address, block: null, status: 'accepted' });
   } catch (e) {
-    warn('On-chain deploy unavailable, running the whole story in the simulator.');
+    warn('On-chain deploy unavailable — running the whole story in the simulator.');
     note(describeErr(e).split('\n')[0].slice(0, 160));
     note('The circuits, assertions and privacy properties below are identical;');
     note('only the proof and the ledger are absent.');
@@ -106,11 +140,13 @@ export async function demo() {
   chapter(1, 'A life');
 
   let r: TxRecord | null;
-  let lastBeat = nowSeconds();
-  // The simulator has no chain clock advancing with wall time, so its
-  // blockTimeGte bound is checked against a fixed synthetic epoch. Live calls
-  // use real Unix seconds, which is what the node compares against.
-  const simLastBeat = 1_000_000n;
+  const lastBeat = nowSeconds();
+  // The simulator has no chain, so `blockTimeGte` is checked against wall-clock
+  // time — a deadline in the future can never be satisfied, however long the
+  // narrative countdown runs. The live path really waits out the grace period;
+  // the simulator instead anchors its heartbeat far enough in the past that the
+  // same 60-second grace has genuinely elapsed. Same circuit, same assertion.
+  const simLastBeat = lastBeat - DEMO_GRACE_SECONDS - 5n;
 
   if (live) {
     r = await step('register', () => stepRegister(live!, alice));      if (r) txs.push(r);
@@ -118,19 +154,17 @@ export async function demo() {
     r = await step('deposit', () => stepDeposit(live!, alice, coin));  if (r) txs.push(r);
     r = await step('heartbeat', () => stepHeartbeat(live!, alice, nowSeconds())); if (r) txs.push(r);
     r = await step('updateWill', () => stepUpdateWill(live!, alice, 1n)); if (r) txs.push(r);
-    lastBeat = nowSeconds();   // captured here so it is genuinely the latest
-    r = await step('heartbeat', () => stepHeartbeat(live!, alice, lastBeat, 'heartbeat, the last one'));
+    r = await step('heartbeat', () => stepHeartbeat(live!, alice, lastBeat, 'heartbeat — the last one'));
     if (r) txs.push(r);
   }
 
   // The simulator runs the same chapter regardless, so the vault is funded and
   // the nominees have a beneficiary root to prove against in Chapter 4.
-  const mirror = !!live;   // live already narrated this chapter
-  simRegister(sim, alice, mirror);
-  simDeposit(sim, alice, 1000n, mirror);
-  simHeartbeat(sim, alice, simLastBeat, 'heartbeat', mirror);
-  simUpdateWill(sim, alice, cast.heirTree.digest(), mirror);
-  if (!mirror) simOnly.push('register', 'deposit', 'heartbeat', 'updateWill');
+  simRegister(sim, alice);
+  simDeposit(sim, alice, 1000n);
+  simHeartbeat(sim, alice, simLastBeat, live ? 'heartbeat (simulator mirror)' : 'heartbeat');
+  simUpdateWill(sim, alice, cast.heirTree.digest());
+  simOnly.push('register', 'deposit', 'heartbeat', 'updateWill');
 
   // ---- Chapter 2 ---------------------------------------------------------
   chapter(2, 'Silence');
@@ -144,8 +178,8 @@ export async function demo() {
     r = await step('resolve', () => stepResolve(live!, alice, lastBeat + DEMO_GRACE_SECONDS));
     if (r) txs.push(r);
   }
-  simResolve(sim, simLastBeat + DEMO_GRACE_SECONDS, !!live);
-  if (!live) simOnly.push('resolve');
+  simResolve(sim, simLastBeat + DEMO_GRACE_SECONDS);
+  simOnly.push('resolve');
 
   // ---- Chapter 4 ---------------------------------------------------------
   chapter(4, 'The nominees');
@@ -153,7 +187,7 @@ export async function demo() {
   note('The shielded payout path (sendShielded from a contract) is a Wave 2 gate.');
   note(live
     ? 'Deposit is proven live above. Payout logic is proven here, in the same circuit.'
-    : 'Every chapter here runs the same compiled circuits, only the proof and chain are absent.');
+    : 'Every chapter here runs the same compiled circuits — only the proof and chain are absent.');
 
   const simTag = sim.tag();
   if (!sim.ledger.resolvedVault.member(simTag)) {
@@ -217,7 +251,7 @@ export async function demo() {
   const accepted = txs.filter((t) => t.status === 'accepted').length;
   deployment.transactions = txs;
   deployment.simulatorOnly = simOnly;
-  save(deployment);
+  const recordPath = save(deployment);
 
   summary({
     circuits: 10, maxK: 15, keysMB: 40,
@@ -225,7 +259,11 @@ export async function demo() {
     txs: accepted, control: 'REJECTED',
   });
   console.log();
-  note(`Transaction record written to ${DEPLOYMENTS_PATH.replace(process.cwd() + '/', '')}`);
-  if (live) { note(`Contract: ${live.address}`); await live.close(); }
+  note(`Transaction record written to ${recordPath}`);
+  if (live) {
+    note(`Contract: ${live.address}`);
+    if (net.explorer) note(`Explorer: ${net.explorer}/contracts/${live.address}`);
+    await live.close();
+  }
   console.log();
 }
