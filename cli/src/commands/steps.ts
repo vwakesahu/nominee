@@ -3,8 +3,8 @@
 // One function per circuit. Each runs the circuit and prints the two-panel
 // view: what happened, and what the chain actually saw.
 //
-// LIVE steps go through the proof server and the devnet.
-// SIMULATOR steps run the same compiled circuit with no proof and no ledger,
+// LIVE steps go through the proof server and the selected network.
+// SIMULATOR steps run the same compiled circuit with no proof and no ledger —
 // the assertions are identical, only the proof and the chain are absent.
 import { randomBytes } from 'node:crypto';
 import type { LiveSession, SimSession } from '../session.js';
@@ -39,7 +39,7 @@ export async function stepRegister(s: LiveSession, owner: Owner): Promise<TxReco
     [`${owner.name}'s name`, NOWHERE],
     ['which cohort member', UNDISCLOSED],
     ['the will itself', NEVER],
-    ['block', String(r.block ?? ', ')],
+    ['block', String(r.block ?? '—')],
   ]);
   return rec('register', r);
 }
@@ -50,14 +50,14 @@ export async function stepDeposit(
   const r = await s.call('deposit', coin);
   panel('deposit', [
     `${owner.name} funds the vault with a shielded coin.`,
-    'This is real shielded custody on the devnet, the contract now holds value.',
+    'This is real shielded custody on chain — the contract now holds value.',
   ], [
     ['ownerTag', short(s.tag(owner))],
     ['coin nonce', short(coin.nonce)],
     ['coin colour', short(coin.color) + ' (native)'],
     ['who deposited', NOWHERE],
     ['linked wallet', NOWHERE],
-    ['block', String(r.block ?? ', ')],
+    ['block', String(r.block ?? '—')],
   ]);
   return rec('deposit', r);
 }
@@ -74,7 +74,7 @@ export async function stepHeartbeat(
     ['lastSeen[tag]', String(now) + ' (unix s)'],
     ['who checked in', UNDISCLOSED],
     ['the will contents', NEVER],
-    ['block', String(r.block ?? ', ')],
+    ['block', String(r.block ?? '—')],
   ]);
   return rec(label, r);
 }
@@ -91,7 +91,7 @@ export async function stepUpdateWill(s: LiveSession, owner: Owner, version: bigi
     ['old beneficiaries', NEVER],
     ['new beneficiaries', HIDDEN],
     ['what changed', UNDISCLOSED],
-    ['block', String(r.block ?? ', ')],
+    ['block', String(r.block ?? '—')],
   ]);
   return rec('updateWill', r);
 }
@@ -102,14 +102,14 @@ export async function stepResolve(
   const r = await s.call('resolve', s.tag(owner), deadline);
   panel('resolve', [
     'The grace period has elapsed with no heartbeat.',
-    'Anyone may call this, no privileged keeper, no operator.',
+    'Anyone may call this — no privileged keeper, no operator.',
   ], [
     ['ownerTag', short(s.tag(owner))],
     ['deadline', String(deadline) + ' (unix s)'],
     ['resolvedVault', '+1 entry'],
-    ['who called resolve', 'anyone, permissionless'],
+    ['who called resolve', 'anyone — permissionless'],
     ['why the heartbeat stopped', NOWHERE],
-    ['block', String(r.block ?? ', ')],
+    ['block', String(r.block ?? '—')],
   ]);
   return rec('resolve', r);
 }
@@ -120,20 +120,20 @@ export async function stepGuardianResolve(
   const r = await s.call('guardianResolve2of3', s.tag(owner), g0, g1);
   panel('guardian-resolve', [
     'Two of three guardians attest the owner is gone.',
-    'This short-circuits the grace period, no waiting.',
+    'This short-circuits the grace period — no waiting.',
   ], [
     ['ownerTag', short(s.tag(owner))],
     ['guardians', `#${g0} and #${g1} of 3`],
     ['signatures', 'verified in-circuit'],
     ['guardian private keys', NEVER],
     ['what they attested to', UNDISCLOSED],
-    ['block', String(r.block ?? ', ')],
+    ['block', String(r.block ?? '—')],
   ]);
   return rec('guardianResolve2of3', r);
 }
 
 // ---------------------------------------------------------------------------
-// SIMULATOR steps, the payout path
+// SIMULATOR steps — the payout path
 // ---------------------------------------------------------------------------
 
 export function simClaim(sim: SimSession, index: number, heir: Heir, heirKey: Uint8Array) {
@@ -144,7 +144,7 @@ export function simClaim(sim: SimSession, index: number, heir: Heir, heirKey: Ui
   sim.call('claim', tag, { bytes: heirKey });
   const after = sim.ledger.heldCoin.lookup(tag).value;
 
-  panel(`claim, nominee ${index + 1}`, [
+  panel(`claim — nominee ${index + 1}`, [
     `${heir.name} claims their share.`,
     'They prove membership in the beneficiary set and spend a one-time nullifier.',
     `Received: ${heir.share} tokens.`,
@@ -164,7 +164,7 @@ export function simClaim(sim: SimSession, index: number, heir: Heir, heirKey: Ui
 export function simAttack(label: string, narrative: string[], fn: () => void, expect: RegExp) {
   try {
     fn();
-    fail(`${label}: NOT rejected, this is a bug`);
+    fail(`${label}: NOT rejected — this is a bug`);
     return false;
   } catch (e: any) {
     const msg = String(e?.message ?? e);
@@ -184,12 +184,11 @@ export function simAttack(label: string, narrative: string[], fn: () => void, ex
 
 // ---------------------------------------------------------------------------
 // SIMULATOR equivalents of the on-chain steps, so the story is complete even
-// when no node is reachable. Same circuits, same assertions, no proof, no chain.
+// when no node is reachable. Same circuits, same assertions — no proof, no chain.
 // ---------------------------------------------------------------------------
 
-export function simRegister(sim: SimSession, owner: Owner, quiet = false) {
+export function simRegister(sim: SimSession, owner: Owner) {
   sim.call('register');
-  if (quiet) return;
   panel('register', [
     `${owner.name} joins the registry.`,
     'She proves she is in the deployed cohort without saying which member she is.',
@@ -202,10 +201,9 @@ export function simRegister(sim: SimSession, owner: Owner, quiet = false) {
   ], 'SIMULATOR');
 }
 
-export function simDeposit(sim: SimSession, owner: Owner, value: bigint, quiet = false) {
+export function simDeposit(sim: SimSession, owner: Owner, value: bigint) {
   sim.call('deposit', { nonce: randomBytes32(), color: new Uint8Array(32), value });
   sim.refreshCoin();
-  if (quiet) return;
   panel('deposit', [
     `${owner.name} funds the vault with a shielded coin.`,
     'The contract now holds value on her behalf.',
@@ -217,9 +215,8 @@ export function simDeposit(sim: SimSession, owner: Owner, value: bigint, quiet =
   ], 'SIMULATOR');
 }
 
-export function simHeartbeat(sim: SimSession, owner: Owner, now: bigint, label = 'heartbeat', quiet = false) {
+export function simHeartbeat(sim: SimSession, owner: Owner, now: bigint, label = 'heartbeat') {
   sim.call('heartbeat', now);
-  if (quiet) return;
   panel(label, [
     `${owner.name} proves she is alive.`,
     'Membership in the cohort is proven; her identity is not.',
@@ -231,10 +228,9 @@ export function simHeartbeat(sim: SimSession, owner: Owner, now: bigint, label =
   ], 'SIMULATOR');
 }
 
-export function simUpdateWill(sim: SimSession, owner: Owner, newRoot: { field: bigint }, quiet = false) {
+export function simUpdateWill(sim: SimSession, owner: Owner, newRoot: { field: bigint }) {
   sim.patch({ newVaultRoot: newRoot });
   sim.call('updateWill');
-  if (quiet) return;
   panel('update-will', [
     `${owner.name} amends her will.`,
     'A new beneficiary root replaces the old one. Neither version is revealed.',
@@ -247,28 +243,26 @@ export function simUpdateWill(sim: SimSession, owner: Owner, newRoot: { field: b
   ], 'SIMULATOR');
 }
 
-export function simResolve(sim: SimSession, deadline: bigint, quiet = false) {
+export function simResolve(sim: SimSession, deadline: bigint) {
   sim.call('resolve', sim.tag(), deadline);
-  if (quiet) return;
   panel('resolve', [
     'The grace period has elapsed with no heartbeat.',
-    'Anyone may call this, no privileged keeper, no operator.',
+    'Anyone may call this — no privileged keeper, no operator.',
   ], [
     ['ownerTag', short(sim.tag())],
     ['deadline', `${deadline} (unix s)`],
     ['resolvedVault', '+1 entry'],
-    ['who called resolve', 'anyone, permissionless'],
+    ['who called resolve', 'anyone — permissionless'],
     ['why the heartbeat stopped', NOWHERE],
   ], 'SIMULATOR');
 }
 
-export function simGuardianResolve(sim: SimSession, owner: Owner, g0: bigint, g1: bigint, quiet = false) {
+export function simGuardianResolve(sim: SimSession, owner: Owner, g0: bigint, g1: bigint) {
   sim.patch({ attesting: [Number(g0), Number(g1)] });
   sim.call('guardianResolve2of3', sim.tag(), g0, g1);
-  if (quiet) return;
   panel('guardian-resolve', [
     'Two of three guardians attest the owner is gone.',
-    'This short-circuits the grace period, no waiting.',
+    'This short-circuits the grace period — no waiting.',
   ], [
     ['ownerTag', short(sim.tag())],
     ['guardians', `#${g0} and #${g1} of 3`],

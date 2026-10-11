@@ -14,12 +14,14 @@
   ],
   "scripts": {
     "compact": "cd contract && compact compile +0.31.1 src/nominee.compact out",
-    "build": "bun run --cwd cli build",
     "leakcheck": "python3 test/privacy/leakcheck.py contract/out/zkir",
     "leaktest": "python3 test/privacy/leaktest.py",
     "test": "bun run --cwd test test",
-    "demo": "bun run build && node cli/dist/index.js demo",
-    "nominee": "node cli/dist/index.js",
+    "demo": "node cli/bin/nominee.mjs demo",
+    "deploy": "NODE_OPTIONS=--max-old-space-size=8192 node cli/bin/nominee.mjs deploy",
+    "address": "node cli/bin/nominee.mjs address",
+    "doctor": "node cli/bin/nominee.mjs doctor",
+    "nominee": "node cli/bin/nominee.mjs",
     "web": "bun run --cwd web dev"
   },
   "overrides": {

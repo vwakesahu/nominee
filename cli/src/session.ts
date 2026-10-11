@@ -1,28 +1,31 @@
 // SPDX-License-Identifier: Apache-2.0
 //
-// A session is either LIVE (real circuits, real proofs, real devnet) or
+// A session is either LIVE (real circuits, real proofs, real network) or
 // SIMULATOR (real circuits, no proofs, no network). Both run the same compiled
-// contract, so a simulator result is the circuit's real behaviour, only the
+// contract, so a simulator result is the circuit's real behaviour — only the
 // proof and the ledger are absent.
 import { Buffer } from 'node:buffer';
 import { randomBytes } from 'node:crypto';
 // NOTE: the generated contract imports '@midnight-ntwrk/compact-runtime', so
-// everything that touches a ContractState must come from that same specifier.
-// '@midnight-ntwrk/midnight-js-protocol' carries a second copy of the wasm
-// bindings; loading both puts two instances in the graph and a ContractState
-// built by one is rejected by the other:
+// everything that touches a ContractState must resolve to that same MODULE
+// INSTANCE. Two instances in the graph and a ContractState built by one is
+// rejected by the other:
 //   'contractState' parameter ContractState (...) has unexpected type
-// That is the open issue behind the simulator path in the CLI.
+// This used to fire on every CLI run. The cause was not a duplicated package —
+// `npm ls` shows one deduped onchain-runtime-v3 — but a missing
+// `"type": "module"` in contract/package.json, which made Node load the ESM
+// bindings in contract/out as CommonJS and instantiate compact-runtime twice.
+// Vitest hid it by bundling through Vite. Keep that field, or this returns.
 import {
   createCircuitContext, createConstructorContext, sampleContractAddress,
 } from '@midnight-ntwrk/compact-runtime';
 import { CompiledContract } from '@midnight-ntwrk/compact-js';
 import { deployContract, findDeployedContract } from '@midnight-ntwrk/midnight-js-contracts';
 import { Contract, ledger as readLedger, type Ledger } from '../../contract/out/contract/index.js';
-import { DEMO_GRACE_SECONDS } from './config.js';
-import { resolveSeed } from './seed.js';
+import { walletSeedHex, networkConfig, DEMO_GRACE_SECONDS } from './config.js';
+import { randomSecrets, type SecretSource } from './secrets.js';
 import { initializeNetwork } from './netid.js';
-import { buildWallet, startAndSync } from './wallet.js';
+import { buildWallet, startAndSync, readFunds } from './wallet.js';
 import { createProviders, ZK_CONFIG_PATH } from './providers.js';
 import { withRetries, describe as describeErr, errorCode } from './retry.js';
 import {
@@ -47,11 +50,11 @@ export function makeHasher(): any {
   return new Contract(vacant);
 }
 
-export const makeOwner = (name: string): Owner => ({
-  name, secret: new Uint8Array(randomBytes(32)), willRoot: new Uint8Array(randomBytes(32)),
+export const makeOwner = (name: string, s: SecretSource = randomSecrets()): Owner => ({
+  name, secret: s.bytes32(`owner|${name}|secret`), willRoot: s.bytes32(`owner|${name}|will`),
 });
-export const makeHeir = (name: string, share: bigint): Heir => ({
-  name, secret: new Uint8Array(randomBytes(32)), share,
+export const makeHeir = (name: string, share: bigint, s: SecretSource = randomSecrets()): Heir => ({
+  name, secret: s.bytes32(`heir|${name}|secret`), share,
 });
 export const randKey = () => new Uint8Array(randomBytes(32));
 
@@ -63,10 +66,18 @@ export interface Cast {
   heirTree: SparseTree;
 }
 
-/** Build the off-chain cohort: owner tree, heir tree, guardian keys. */
-export function buildCast(hasher: any, ownerNames: string[], heirs: Heir[]): Cast {
-  const owners = ownerNames.map(makeOwner);
-  const guardianKeys = [0, 1, 2].map(() => guardianKeypair(hasher));
+/**
+ * Build the off-chain cohort: owner tree, heir tree, guardian keys.
+ *
+ * Pass a seeded `SecretSource` when the deployment has to be reachable after
+ * this process exits — the constructor commits to the owner root and the
+ * guardian points, and only the matching secrets can satisfy them again.
+ */
+export function buildCast(
+  hasher: any, ownerNames: string[], heirs: Heir[], secrets: SecretSource = randomSecrets(),
+): Cast {
+  const owners = ownerNames.map((n) => makeOwner(n, secrets));
+  const guardianKeys = [0, 1, 2].map((i) => guardianKeypair(hasher, secrets.scalar(`guardian|${i}`)));
   const ownerTree = new SparseTree(hasher, OWNER_DEPTH,
     owners.map((o) => ownerLeaf(hasher, o.secret, o.willRoot)));
   const heirTree = new SparseTree(hasher, HEIR_DEPTH,
@@ -155,10 +166,32 @@ export class LiveSession {
   actAs(owner: Owner) { this.ref.ps = { ...this.ref.ps, owner }; }
   patch(p: Partial<PrivateState>) { this.ref.ps = { ...this.ref.ps, ...p }; }
 
+  /** Populated on a fresh deploy; null when reconnecting to an existing address. */
+  deployTxHash: string | null = null;
+
   static async connect(cast: Cast, opts: { address?: string; grace?: bigint } = {}) {
     initializeNetwork();
-    const bundle = await buildWallet(resolveSeed(), { useCheckpoint: false });
-    await startAndSync(bundle);
+    const bundle = await buildWallet(Buffer.from(walletSeedHex(), 'hex'), { useCheckpoint: false });
+    const synced = await startAndSync(bundle);
+
+    // Fail here, with the faucet URL, rather than deep inside balanceTx where an
+    // empty wallet surfaces as an opaque ledger error.
+    const net = networkConfig();
+    const { night, dust } = readFunds(synced);
+    if (night === 0n && !net.local) {
+      throw new Error(
+        `wallet has no tNIGHT on ${net.name} — nothing to pay fees with.\n` +
+          `  Address:  run \`nominee address\`\n` +
+          (net.faucet ? `  Faucet:   ${net.faucet}\n` : '') +
+          `  Fund it, wait for the transaction to land, then run this again.`,
+      );
+    }
+    if (night > 0n && dust === 0n && !net.local) {
+      console.warn(
+        `  ⚠ ${night} NIGHT but 0 DUST. DUST pays fees and is generated from ` +
+          `registered NIGHT — if this persists, register the NIGHT for DUST generation.`,
+      );
+    }
     const providers = await createProviders(
       bundle.facade, bundle.zswapSecretKeys, bundle.dustSecretKey, bundle.keystore,
     );
@@ -203,7 +236,12 @@ export class LiveSession {
       );
       address = deployed.deployTxData.public.contractAddress;
     }
-    return new LiveSession(hasher, providers, deployed, address, cast, bundle, ref);
+    const session = new LiveSession(hasher, providers, deployed, address, cast, bundle, ref);
+    if (!opts.address) {
+      const pub = deployed?.deployTxData?.public;
+      session.deployTxHash = pub?.txHash ?? pub?.txId ?? null;
+    }
+    return session;
   }
 
   /** Run a circuit on chain, rebuilding and re-proving on Custom(170). */

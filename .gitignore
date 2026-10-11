@@ -44,7 +44,6 @@ raw/akindo_page.html
 
 # CLI run artifacts
 demo.log
-
 # level private-state stores (runtime artifacts)
 **/midnight-level-db/
 cli/dist/
@@ -59,3 +58,14 @@ web/out/
 web/next-env.d.ts
 dust*.log
 midnight-level-db/
+
+# Local-devnet deployment records are throwaway — the chain is recreated on every
+# `docker compose up`. Public-network records (preprod/preview/mainnet) are the
+# evidence a judge checks against the indexer, so those ARE committed.
+deployments/devnet.json
+deployments/undeployed.json
+
+# wallet seeds — NEVER commit
+.env
+.env.*
+!.env.example

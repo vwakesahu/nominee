@@ -2,7 +2,8 @@
   "name": "nominee-contract",
   "version": "0.1.0",
   "private": true,
-  "description": "Nominee \u2014 Compact contracts",
+  "type": "module",
+  "description": "Nominee — Compact contracts",
   "license": "Apache-2.0",
   "scripts": {
     "compact": "compact compile +0.31.1 src/nominee.compact out",

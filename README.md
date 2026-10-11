@@ -42,21 +42,20 @@ circuits and proving keys in `contract/out/` are committed.
 
 ```bash
 git clone https://github.com/vwakesahu/nominee && cd nominee
-bun install                   # always from the repo root, see the gotcha below
+bun install                   # always from the repo root
 ./run-devnet.sh               # brings up the devnet and runs the demo on chain
 ```
 
 `run-devnet.sh` starts Docker Desktop if it is not up, brings up the node,
-indexer and proof server, builds the CLI and runs the demo live. First run pulls
-images and takes a few minutes. After that it is about six.
+indexer and proof server and runs the demo live. First run pulls images and
+takes a few minutes. After that it is about six.
 
 To run the pieces separately:
 
 ```bash
-docker compose up -d            # node, indexer, proof server
-bun run --cwd cli build
-node cli/dist/index.js demo     # simulator, fast, no chain
-NOMINEE_LIVE=1 node cli/dist/index.js demo   # real proofs on the devnet
+docker compose up -d                                  # node, indexer, proof server
+bun run nominee demo                                  # simulator, fast, no chain
+bun run nominee --network undeployed demo --live      # real proofs on the devnet
 ```
 
 Tests and checks:
@@ -67,8 +66,44 @@ bun run leakcheck   # ZKIR privacy scan, checks no secret reaches public state
 bun run nominee doctor
 ```
 
-A recorded live run is in [`deployments/devnet.json`](deployments/devnet.json):
-**9 accepted transactions**, deploy through `guardianResolve2of3`.
+## Run it on the network
+
+The CLI targets **Preprod**, Midnight's public test network, by default. Pick
+another with `--network` (`undeployed` | `preview` | `preprod` | `mainnet`);
+`testnet-02` is retired and no longer resolves.
+
+**Node 22 is required for the public networks.** Node 23+ ships a built-in
+WebSocket that silently drops Preprod RPC submissions under wallet SDK 1.2.0:
+the transaction is proved, sent, and never lands. `nominee doctor` fails on this
+rather than letting you discover it as a mystery.
+
+```bash
+# 1. The proof server is yours and stays yours, it sees every witness.
+docker compose up -d proof-server
+
+# 2. A wallet seed. Generate your own; there is no default on a public network.
+export NOMINEE_SEED_HEX=$(openssl rand -hex 32)
+
+# 3. Fund it. `address` derives the address without touching the network.
+bun run nominee address       # prints the address + the faucet URL
+#    ...paste it into https://midnight-tmnight-preprod.nethermind.dev/
+
+# 4. Check everything before spending anything.
+bun run nominee doctor
+
+# 5. Deploy, and record the address.
+bun run deploy                # writes deployments/preprod.json
+
+# 6. Run the story against the deployed contract.
+bun run nominee demo --live
+```
+
+The cohort secrets are derived from `NOMINEE_SEED_HEX`, so the same seed
+reconnects to the same contract: the constructor commits to the owner-tree root
+and the guardian keys, and only the matching secrets can satisfy them again.
+**Keep the seed; without it the deployment is unreachable.**
+
+The live deployment is recorded in [`deployments/preprod.json`](deployments/preprod.json).
 
 ## Architecture
 
@@ -116,30 +151,29 @@ Named here because a judge will find them anyway, and because the validation fou
 - **Lace has no plugin mechanism**, Nominee is its own DApp that wallets connect to, not a wallet feature.
 - **Legally this is a transfer mechanism, not a will.** Lead with the probate-disclosure feature, not the privacy feature.
 
-## Two gotchas worth knowing
+## Solved: the wasm class-identity error
 
-**Always install from the repo root.** Installing inside a workspace creates a
-second copy of the wasm bindings there, which reproduces the class-identity
-failure below. The root `overrides` pin only applies to a root install.
-
-Bun is the package manager. The CLI is still executed with `node`, never with
-bun or a TypeScript loader, for the reason below.
-
-**Run the CLI on plain `node`, never through `tsx`.**
-
-A transform-based TypeScript loader resolves the wasm bindings under a second
-module URL, so two copies of `ContractState` end up in the process and every
-`instanceof` check across the boundary fails:
+For a long time `deployContract` from the CLI failed with:
 
 ```
 'contractState' parameter ContractState (...) has unexpected type
 expected instance of ContractMaintenanceAuthority
 ```
 
-Measured directly, `cs instanceof ContractState` is `false` under `tsx` and
-`true` under `node`. That is why `bin/nominee` compiles first and spawns
-`node dist/index.js`, and why the same code passes 33 tests under vitest (which
-keeps one instance) while failing under `tsx`.
+**Root cause: `contract/package.json` was missing `"type": "module"`.**
+
+The generated bindings in `contract/out/contract/index.js` use ESM syntax, but the
+nearest `package.json` did not declare the workspace as a module, so Node loaded them
+as CommonJS. That produced a *second* instance of `@midnight-ntwrk/compact-runtime`
+in the graph, and a `ContractState` built by one instance is rejected by the other.
+
+It looked like a dependency-duplication problem and was not: `npm ls` shows a single
+deduped `onchain-runtime-v3@3.0.0`. Two module *instances* from one on-disk copy was
+enough. The tests never caught it because Vitest resolves through Vite, which bundles
+everything as ESM and yields one instance — only plain Node/`tsx` reproduced it.
+
+Adding `"type": "module"` to `contract/package.json` fixes it. `createCircuitContext`
+now succeeds under `tsx`, and `npx nominee demo` runs all six chapters end to end.
 
 ## Roadmap
 
