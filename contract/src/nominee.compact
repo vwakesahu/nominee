@@ -17,11 +17,13 @@ import "schnorr" prefix Schnorr_;
 export ledger ownerSet:       MerkleTreeDigest;              // root of registered owners
 export ledger lastSeen:       Map<Bytes<32>, Uint<64>>;      // ownerTag -> last heartbeat
 export ledger graceSeconds:   Uint<64>;
+export ledger challengeSeconds: Uint<64>;                     // veto window after the grace period
+export ledger challengeUntil: Map<Bytes<32>, Uint<64>>;      // ownerTag -> end of the open veto window
 export ledger vaultRoot:      Map<Bytes<32>, MerkleTreeDigest>; // ownerTag -> beneficiary root
 export ledger resolvedVault:  Set<Bytes<32>>;                // ownerTags that have resolved
 export ledger spent:          Set<Bytes<32>>;                // per-heir nullifiers
 export ledger guardians:      Map<Uint<16>, JubjubPoint>;
-export ledger heldCoin:       Map<Bytes<32>, ShieldedCoinInfo>; // ownerTag -> outstanding coin
+export ledger heldCoin:       Map<Bytes<32>, QualifiedShieldedCoinInfo>; // ownerTag -> outstanding coin, WITH its Merkle index
 export ledger probateOpened:  Map<Bytes<32>, Bytes<32>>;     // ownerTag -> envelope commitment
 export ledger willVersion:    Map<Bytes<32>, Uint<64>>;
 
@@ -34,7 +36,9 @@ witness newVaultRoot():  MerkleTreeDigest;
 witness heirSecret():    Bytes<32>;
 witness heirShare():     Uint<128>;
 witness heirPath(leaf: Bytes<32>): MerkleTreePath<16, Bytes<32>>;
-witness spendCoin():     QualifiedShieldedCoinInfo;
+witness devicePkX():     Field;      // the owner's registered device key (possession factor)
+witness devicePkY():     Field;
+witness deviceSig():     Schnorr_SchnorrSignature;   // device signature over [2, now, 0, 0]
 witness gSig0():         Schnorr_SchnorrSignature;
 witness gSig1():         Schnorr_SchnorrSignature;
 witness gSig2():         Schnorr_SchnorrSignature;
@@ -56,12 +60,14 @@ witness decoyRoot():     MerkleTreeDigest;
 constructor(
   initialOwnerSet: MerkleTreeDigest,
   grace: Uint<64>,
+  challenge: Uint<64>,
   g0x: Field, g0y: Field,
   g1x: Field, g1y: Field,
   g2x: Field, g2y: Field
 ) {
   ownerSet     = disclose(initialOwnerSet);
   graceSeconds = disclose(grace);
+  challengeSeconds = disclose(challenge);
   guardians.insert(0, constructJubjubPoint(disclose(g0x), disclose(g0y)));
   guardians.insert(1, constructJubjubPoint(disclose(g1x), disclose(g1y)));
   guardians.insert(2, constructJubjubPoint(disclose(g2x), disclose(g2y)));
@@ -72,32 +78,72 @@ circuit ownerTag(sk: Bytes<32>, wr: Bytes<32>): Bytes<32> {
   return persistentHash<Vector<3, Bytes<32>>>([pad(32, "nominee:owner:v1"), sk, wr]);
 }
 
+// Commitment to the owner's device key. The key itself never reaches the chain.
+circuit deviceCommit(x: Field, y: Field): Bytes<32> {
+  return persistentHash<Vector<2, Field>>([x, y]);
+}
+
+// Owner leaf = H(secret, willRoot, deviceCommit). Knowledge AND possession.
+circuit ownerLeafOf(sk: Bytes<32>, wr: Bytes<32>): Bytes<32> {
+  return persistentHash<Vector<3, Bytes<32>>>([sk, wr, deviceCommit(devicePkX(), devicePkY())]);
+}
+
+// Guardian messages are bound to the vault they act on, so a signature for one
+// vault cannot be replayed against another.
+circuit guardianMsg(kind: Field, tag: Bytes<32>): Vector<4, Field> {
+  return [kind, degradeToTransient(tag), 0 as Field, 0 as Field];
+}
+
 // 1. Register: owner joins the shared registry.
 export circuit register(): [] {
   const sk = ownerSecret(); const wr = willRoot();
   const tag = ownerTag(sk, wr);
-  const leaf = persistentHash<Vector<2, Bytes<32>>>([sk, wr]);
+  const leaf = ownerLeafOf(sk, wr);
   assert(ownerSet.field == disclose(merkleTreePathRoot<16, Bytes<32>>(ownerPath(leaf))).field, "not a registered owner");
   lastSeen.insert(disclose(tag), 0 as Uint<64>);
   willVersion.insert(disclose(tag), 0 as Uint<64>);
 }
 
-// 2. Heartbeat: proves membership + knowledge of the will root. The prover
-//    never touches the will CONTENTS, only its root, so a compromised
-//    prover learns a 32-byte root, not the beneficiaries.
+// 2. Heartbeat: TWO factors. Knowledge (ownerSecret, willRoot) proves
+//    membership; possession (a device signature over the timestamp) proves the
+//    owner's registered device was present. A stolen seed alone cannot
+//    heartbeat. The prover never touches the will CONTENTS, only its root.
+//    A heartbeat also closes any open veto window: the owner is alive.
 export circuit heartbeat(now: Uint<64>): [] {
   const sk = ownerSecret(); const wr = willRoot();
-  const leaf = persistentHash<Vector<2, Bytes<32>>>([sk, wr]);
+  const leaf = ownerLeafOf(sk, wr);
   assert(ownerSet.field == disclose(merkleTreePathRoot<16, Bytes<32>>(ownerPath(leaf))).field, "not a registered owner");
   assert(blockTimeGte(disclose(now)), "timestamp in the future");
-  lastSeen.insert(disclose(ownerTag(sk, wr)), disclose(now));
+  const devMsg: Vector<4, Field> = [2 as Field, disclose(now) as Field, 0 as Field, 0 as Field];
+  Schnorr_schnorrVerify<4>(devMsg, deviceSig(), constructJubjubPoint(devicePkX(), devicePkY()));
+  const tag = disclose(ownerTag(sk, wr));
+  lastSeen.insert(tag, disclose(now));
+  if (challengeUntil.member(tag)) { challengeUntil.remove(tag); }
+}
+
+// 2b. Veto: the emergency path. Knowledge only, no device needed. Closes an
+//     open veto window and refreshes lastSeen. Someone holding only the seed
+//     can delay inheritance; they can never redirect it.
+export circuit veto(now: Uint<64>): [] {
+  const sk = ownerSecret(); const wr = willRoot();
+  const leaf = ownerLeafOf(sk, wr);
+  assert(ownerSet.field == disclose(merkleTreePathRoot<16, Bytes<32>>(ownerPath(leaf))).field, "not a registered owner");
+  assert(blockTimeGte(disclose(now)), "timestamp in the future");
+  const tag = disclose(ownerTag(sk, wr));
+  assert(challengeUntil.member(tag), "no open challenge");
+  challengeUntil.remove(tag);
+  lastSeen.insert(tag, disclose(now));
 }
 
 // 3. Deposit shielded value into the vault. PROVEN to work on-chain (A1).
 export circuit deposit(coin: ShieldedCoinInfo): [] {
   const sk = ownerSecret(); const wr = willRoot();
   receiveShielded(disclose(coin));
-  heldCoin.insert(disclose(ownerTag(sk, wr)), disclose(coin));
+  // insertCoin resolves the coin's Merkle index in THIS transaction, the only
+  // moment it is knowable on chain (midnightntwrk/servicedesk#187). The next
+  // claimant reads a fully qualified coin from the ledger; no indexer lookup.
+  heldCoin.insertCoin(disclose(ownerTag(sk, wr)), disclose(coin),
+                      right<ZswapCoinPublicKey, ContractAddress>(kernel.self()));
 }
 
 // 4. Rewrite the will. Old and new contents both stay private.
@@ -109,17 +155,29 @@ export circuit updateWill(): [] {
   willVersion.insert(tag, (willVersion.lookup(tag) + 1) as Uint<64>);
 }
 
-// 5. Permissionless resolution once the grace period lapses.
+// 5. Permissionless resolution once the grace period lapses. This OPENS a
+//    veto window rather than unlocking the vault: death is never asserted,
+//    only absence, and absence can be contested by the owner (veto/heartbeat)
+//    or by guardians (guardianVeto) for challengeSeconds.
 export circuit resolve(tag: Bytes<32>, deadline: Uint<64>): [] {
   assert(lastSeen.member(disclose(tag)), "unknown owner");
   assert(disclose(deadline) == (lastSeen.lookup(disclose(tag)) + graceSeconds) as Uint<64>, "bad deadline");
   assert(blockTimeGte(disclose(deadline)), "grace not elapsed");
+  challengeUntil.insert(disclose(tag), (disclose(deadline) + challengeSeconds) as Uint<64>);
+}
+
+// 5b. Finalize: the window closed with no veto. Permissionless.
+export circuit finalize(tag: Bytes<32>, until: Uint<64>): [] {
+  assert(challengeUntil.member(disclose(tag)), "no open challenge");
+  assert(disclose(until) == challengeUntil.lookup(disclose(tag)), "bad challenge deadline");
+  assert(blockTimeGte(disclose(until)), "challenge window still open");
+  challengeUntil.remove(disclose(tag));
   resolvedVault.insert(disclose(tag));
 }
 
 // 6. M-of-N guardians short-circuit the grace period (2-of-3 shape).
 export circuit guardianResolve2of3(tag: Bytes<32>, g0: Uint<16>, g1: Uint<16>): [] {
-  const msg: Vector<4, Field> = [1 as Field, 0 as Field, 0 as Field, 0 as Field];
+  const msg = guardianMsg(1 as Field, disclose(tag));
   assert(disclose(g0) < disclose(g1), "guardian ids must strictly increase");
   assert(guardians.member(disclose(g0)), "unknown guardian");
   assert(guardians.member(disclose(g1)), "unknown guardian");
@@ -130,7 +188,7 @@ export circuit guardianResolve2of3(tag: Bytes<32>, g0: Uint<16>, g1: Uint<16>): 
 
 // 6b. 3-of-5 shape.
 export circuit guardianResolve3of5(tag: Bytes<32>, g0: Uint<16>, g1: Uint<16>, g2: Uint<16>): [] {
-  const msg: Vector<4, Field> = [1 as Field, 0 as Field, 0 as Field, 0 as Field];
+  const msg = guardianMsg(1 as Field, disclose(tag));
   assert(disclose(g0) < disclose(g1), "ids must strictly increase");
   assert(disclose(g1) < disclose(g2), "ids must strictly increase");
   assert(guardians.member(disclose(g0)), "unknown guardian");
@@ -142,25 +200,42 @@ export circuit guardianResolve3of5(tag: Bytes<32>, g0: Uint<16>, g1: Uint<16>, g
   resolvedVault.insert(disclose(tag));
 }
 
+// 6c. Guardians contest an open window: "the owner is alive, we have seen them".
+export circuit guardianVeto2of3(tag: Bytes<32>, g0: Uint<16>, g1: Uint<16>): [] {
+  const msg = guardianMsg(3 as Field, disclose(tag));
+  assert(disclose(g0) < disclose(g1), "guardian ids must strictly increase");
+  assert(guardians.member(disclose(g0)), "unknown guardian");
+  assert(guardians.member(disclose(g1)), "unknown guardian");
+  Schnorr_schnorrVerify<4>(msg, gSig0(), guardians.lookup(disclose(g0)));
+  Schnorr_schnorrVerify<4>(msg, gSig1(), guardians.lookup(disclose(g1)));
+  assert(challengeUntil.member(disclose(tag)), "no open challenge");
+  challengeUntil.remove(disclose(tag));
+}
+
 // 7. An heir claims. Share is private; nullifier prevents a second claim.
+//    Payout goes only to the key bound in the heir's leaf.
 export circuit claim(tag: Bytes<32>, heirKey: ZswapCoinPublicKey): [] {
   assert(resolvedVault.member(disclose(tag)), "vault not resolved");
   const sk = heirSecret(); const share = heirShare();
-  const leaf = persistentHash<Vector<2, Bytes<32>>>([sk, persistentHash<Uint<128>>(share)]);
+  // The payout key is bound into the leaf: a stolen envelope still pays the
+  // heir the owner named, never the thief.
+  const leaf = persistentHash<Vector<3, Bytes<32>>>([sk, persistentHash<Uint<128>>(share), heirKey.bytes]);
   assert(vaultRoot.lookup(disclose(tag)).field
          == disclose(merkleTreePathRoot<16, Bytes<32>>(heirPath(leaf))).field, "not a beneficiary");
   const nf = persistentHash<Vector<2, Bytes<32>>>([pad(32, "nominee:nf:v1"), sk]);
   assert(!spent.member(disclose(nf)), "already claimed");
   spent.insert(disclose(nf));
-  const q = spendCoin();
   const outstanding = heldCoin.lookup(disclose(tag));
-  assert(disclose(q.nonce) == outstanding.nonce, "stale coin qualification");
-  assert(disclose(q.value) == outstanding.value, "stale coin value");
   assert(disclose(share) <= outstanding.value, "share exceeds remaining");
-  const res = sendShielded(disclose(q),
+  const res = sendShielded(outstanding,
                            left<ZswapCoinPublicKey, ContractAddress>(disclose(heirKey)),
                            disclose(share));
-  heldCoin.insert(disclose(tag), res.change.value);
+  if (res.change.is_some) {
+    heldCoin.insertCoin(disclose(tag), res.change.value,
+                        right<ZswapCoinPublicKey, ContractAddress>(kernel.self()));
+  } else {
+    heldCoin.remove(disclose(tag));
+  }
 }
 
 // 8. Scoped probate disclosure: prove the opened figures match the vault.

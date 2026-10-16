@@ -21,10 +21,10 @@ export type Witnesses<PS> = {
                                                goes_left: boolean
                                              }[]
                                      }];
-  spendCoin(context: __compactRuntime.WitnessContext<Ledger, PS>): [PS, { nonce: Uint8Array,
-                                                                          color: Uint8Array,
-                                                                          value: bigint,
-                                                                          mt_index: bigint
+  devicePkX(context: __compactRuntime.WitnessContext<Ledger, PS>): [PS, bigint];
+  devicePkY(context: __compactRuntime.WitnessContext<Ledger, PS>): [PS, bigint];
+  deviceSig(context: __compactRuntime.WitnessContext<Ledger, PS>): [PS, { announcement: __compactRuntime.JubjubPoint,
+                                                                          response: bigint
                                                                         }];
   gSig0(context: __compactRuntime.WitnessContext<Ledger, PS>): [PS, { announcement: __compactRuntime.JubjubPoint,
                                                                       response: bigint
@@ -47,12 +47,16 @@ export type Witnesses<PS> = {
 export type ImpureCircuits<PS> = {
   register(context: __compactRuntime.CircuitContext<PS>): __compactRuntime.CircuitResults<PS, []>;
   heartbeat(context: __compactRuntime.CircuitContext<PS>, now_0: bigint): __compactRuntime.CircuitResults<PS, []>;
+  veto(context: __compactRuntime.CircuitContext<PS>, now_0: bigint): __compactRuntime.CircuitResults<PS, []>;
   deposit(context: __compactRuntime.CircuitContext<PS>,
           coin_0: { nonce: Uint8Array, color: Uint8Array, value: bigint }): __compactRuntime.CircuitResults<PS, []>;
   updateWill(context: __compactRuntime.CircuitContext<PS>): __compactRuntime.CircuitResults<PS, []>;
   resolve(context: __compactRuntime.CircuitContext<PS>,
           tag_0: Uint8Array,
           deadline_0: bigint): __compactRuntime.CircuitResults<PS, []>;
+  finalize(context: __compactRuntime.CircuitContext<PS>,
+           tag_0: Uint8Array,
+           until_0: bigint): __compactRuntime.CircuitResults<PS, []>;
   guardianResolve2of3(context: __compactRuntime.CircuitContext<PS>,
                       tag_0: Uint8Array,
                       g0_0: bigint,
@@ -62,6 +66,10 @@ export type ImpureCircuits<PS> = {
                       g0_0: bigint,
                       g1_0: bigint,
                       g2_0: bigint): __compactRuntime.CircuitResults<PS, []>;
+  guardianVeto2of3(context: __compactRuntime.CircuitContext<PS>,
+                   tag_0: Uint8Array,
+                   g0_0: bigint,
+                   g1_0: bigint): __compactRuntime.CircuitResults<PS, []>;
   claim(context: __compactRuntime.CircuitContext<PS>,
         tag_0: Uint8Array,
         heirKey_0: { bytes: Uint8Array }): __compactRuntime.CircuitResults<PS, []>;
@@ -77,12 +85,16 @@ export type ImpureCircuits<PS> = {
 export type ProvableCircuits<PS> = {
   register(context: __compactRuntime.CircuitContext<PS>): __compactRuntime.CircuitResults<PS, []>;
   heartbeat(context: __compactRuntime.CircuitContext<PS>, now_0: bigint): __compactRuntime.CircuitResults<PS, []>;
+  veto(context: __compactRuntime.CircuitContext<PS>, now_0: bigint): __compactRuntime.CircuitResults<PS, []>;
   deposit(context: __compactRuntime.CircuitContext<PS>,
           coin_0: { nonce: Uint8Array, color: Uint8Array, value: bigint }): __compactRuntime.CircuitResults<PS, []>;
   updateWill(context: __compactRuntime.CircuitContext<PS>): __compactRuntime.CircuitResults<PS, []>;
   resolve(context: __compactRuntime.CircuitContext<PS>,
           tag_0: Uint8Array,
           deadline_0: bigint): __compactRuntime.CircuitResults<PS, []>;
+  finalize(context: __compactRuntime.CircuitContext<PS>,
+           tag_0: Uint8Array,
+           until_0: bigint): __compactRuntime.CircuitResults<PS, []>;
   guardianResolve2of3(context: __compactRuntime.CircuitContext<PS>,
                       tag_0: Uint8Array,
                       g0_0: bigint,
@@ -92,6 +104,10 @@ export type ProvableCircuits<PS> = {
                       g0_0: bigint,
                       g1_0: bigint,
                       g2_0: bigint): __compactRuntime.CircuitResults<PS, []>;
+  guardianVeto2of3(context: __compactRuntime.CircuitContext<PS>,
+                   tag_0: Uint8Array,
+                   g0_0: bigint,
+                   g1_0: bigint): __compactRuntime.CircuitResults<PS, []>;
   claim(context: __compactRuntime.CircuitContext<PS>,
         tag_0: Uint8Array,
         heirKey_0: { bytes: Uint8Array }): __compactRuntime.CircuitResults<PS, []>;
@@ -110,12 +126,16 @@ export type PureCircuits = {
 export type Circuits<PS> = {
   register(context: __compactRuntime.CircuitContext<PS>): __compactRuntime.CircuitResults<PS, []>;
   heartbeat(context: __compactRuntime.CircuitContext<PS>, now_0: bigint): __compactRuntime.CircuitResults<PS, []>;
+  veto(context: __compactRuntime.CircuitContext<PS>, now_0: bigint): __compactRuntime.CircuitResults<PS, []>;
   deposit(context: __compactRuntime.CircuitContext<PS>,
           coin_0: { nonce: Uint8Array, color: Uint8Array, value: bigint }): __compactRuntime.CircuitResults<PS, []>;
   updateWill(context: __compactRuntime.CircuitContext<PS>): __compactRuntime.CircuitResults<PS, []>;
   resolve(context: __compactRuntime.CircuitContext<PS>,
           tag_0: Uint8Array,
           deadline_0: bigint): __compactRuntime.CircuitResults<PS, []>;
+  finalize(context: __compactRuntime.CircuitContext<PS>,
+           tag_0: Uint8Array,
+           until_0: bigint): __compactRuntime.CircuitResults<PS, []>;
   guardianResolve2of3(context: __compactRuntime.CircuitContext<PS>,
                       tag_0: Uint8Array,
                       g0_0: bigint,
@@ -125,6 +145,10 @@ export type Circuits<PS> = {
                       g0_0: bigint,
                       g1_0: bigint,
                       g2_0: bigint): __compactRuntime.CircuitResults<PS, []>;
+  guardianVeto2of3(context: __compactRuntime.CircuitContext<PS>,
+                   tag_0: Uint8Array,
+                   g0_0: bigint,
+                   g1_0: bigint): __compactRuntime.CircuitResults<PS, []>;
   claim(context: __compactRuntime.CircuitContext<PS>,
         tag_0: Uint8Array,
         heirKey_0: { bytes: Uint8Array }): __compactRuntime.CircuitResults<PS, []>;
@@ -147,6 +171,14 @@ export type Ledger = {
     [Symbol.iterator](): Iterator<[Uint8Array, bigint]>
   };
   readonly graceSeconds: bigint;
+  readonly challengeSeconds: bigint;
+  challengeUntil: {
+    isEmpty(): boolean;
+    size(): bigint;
+    member(key_0: Uint8Array): boolean;
+    lookup(key_0: Uint8Array): bigint;
+    [Symbol.iterator](): Iterator<[Uint8Array, bigint]>
+  };
   vaultRoot: {
     isEmpty(): boolean;
     size(): bigint;
@@ -179,9 +211,10 @@ export type Ledger = {
     member(key_0: Uint8Array): boolean;
     lookup(key_0: Uint8Array): { nonce: Uint8Array,
                                  color: Uint8Array,
-                                 value: bigint
+                                 value: bigint,
+                                 mt_index: bigint
                                };
-    [Symbol.iterator](): Iterator<[Uint8Array, { nonce: Uint8Array, color: Uint8Array, value: bigint }]>
+    [Symbol.iterator](): Iterator<[Uint8Array, { nonce: Uint8Array, color: Uint8Array, value: bigint, mt_index: bigint }]>
   };
   probateOpened: {
     isEmpty(): boolean;
@@ -212,6 +245,7 @@ export declare class Contract<PS = any, W extends Witnesses<PS> = Witnesses<PS>>
   initialState(context: __compactRuntime.ConstructorContext<PS>,
                initialOwnerSet_0: { field: bigint },
                grace_0: bigint,
+               challenge_0: bigint,
                g0x_0: bigint,
                g0y_0: bigint,
                g1x_0: bigint,

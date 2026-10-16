@@ -35,6 +35,25 @@
       }
     },
     {
+      "name": "veto",
+      "pure": false,
+      "proof": true,
+      "arguments": [
+        {
+          "name": "now",
+          "type": {
+            "type-name": "Uint",
+            "maxval": 18446744073709551615
+          }
+        }
+      ],
+      "result-type": {
+        "type-name": "Tuple",
+        "types": [
+        ]
+      }
+    },
+    {
       "name": "deposit",
       "pure": false,
       "proof": true,
@@ -115,6 +134,32 @@
       }
     },
     {
+      "name": "finalize",
+      "pure": false,
+      "proof": true,
+      "arguments": [
+        {
+          "name": "tag",
+          "type": {
+            "type-name": "Bytes",
+            "length": 32
+          }
+        },
+        {
+          "name": "until",
+          "type": {
+            "type-name": "Uint",
+            "maxval": 18446744073709551615
+          }
+        }
+      ],
+      "result-type": {
+        "type-name": "Tuple",
+        "types": [
+        ]
+      }
+    },
+    {
       "name": "guardianResolve2of3",
       "pure": false,
       "proof": true,
@@ -175,6 +220,39 @@
         },
         {
           "name": "g2",
+          "type": {
+            "type-name": "Uint",
+            "maxval": 65535
+          }
+        }
+      ],
+      "result-type": {
+        "type-name": "Tuple",
+        "types": [
+        ]
+      }
+    },
+    {
+      "name": "guardianVeto2of3",
+      "pure": false,
+      "proof": true,
+      "arguments": [
+        {
+          "name": "tag",
+          "type": {
+            "type-name": "Bytes",
+            "length": 32
+          }
+        },
+        {
+          "name": "g0",
+          "type": {
+            "type-name": "Uint",
+            "maxval": 65535
+          }
+        },
+        {
+          "name": "g1",
           "type": {
             "type-name": "Uint",
             "maxval": 65535
@@ -479,39 +557,44 @@
       }
     },
     {
-      "name": "spendCoin",
+      "name": "devicePkX",
+      "arguments": [
+      ],
+      "result type": {
+        "type-name": "Field"
+      }
+    },
+    {
+      "name": "devicePkY",
+      "arguments": [
+      ],
+      "result type": {
+        "type-name": "Field"
+      }
+    },
+    {
+      "name": "deviceSig",
       "arguments": [
       ],
       "result type": {
         "type-name": "Struct",
-        "name": "QualifiedShieldedCoinInfo",
+        "name": "SchnorrSignature",
         "elements": [
           {
-            "name": "nonce",
+            "name": "announcement",
             "type": {
-              "type-name": "Bytes",
-              "length": 32
+              "type-name": "Alias",
+              "name": "JubjubPoint",
+              "type": {
+                "type-name": "Opaque",
+                "tsType": "JubjubPoint"
+              }
             }
           },
           {
-            "name": "color",
+            "name": "response",
             "type": {
-              "type-name": "Bytes",
-              "length": 32
-            }
-          },
-          {
-            "name": "value",
-            "type": {
-              "type-name": "Uint",
-              "maxval": 340282366920938463463374607431768211455
-            }
-          },
-          {
-            "name": "mt_index",
-            "type": {
-              "type-name": "Uint",
-              "maxval": 18446744073709551615
+              "type-name": "Field"
             }
           }
         ]
@@ -710,8 +793,32 @@
       }
     },
     {
-      "name": "vaultRoot",
+      "name": "challengeSeconds",
       "index": 3,
+      "exported": true,
+      "storage": "Cell",
+      "type": {
+        "type-name": "Uint",
+        "maxval": 18446744073709551615
+      }
+    },
+    {
+      "name": "challengeUntil",
+      "index": 4,
+      "exported": true,
+      "storage": "Map",
+      "key": {
+        "type-name": "Bytes",
+        "length": 32
+      },
+      "value": {
+        "type-name": "Uint",
+        "maxval": 18446744073709551615
+      }
+    },
+    {
+      "name": "vaultRoot",
+      "index": 5,
       "exported": true,
       "storage": "Map",
       "key": {
@@ -733,7 +840,7 @@
     },
     {
       "name": "resolvedVault",
-      "index": 4,
+      "index": 6,
       "exported": true,
       "storage": "Set",
       "type": {
@@ -743,7 +850,7 @@
     },
     {
       "name": "spent",
-      "index": 5,
+      "index": 7,
       "exported": true,
       "storage": "Set",
       "type": {
@@ -753,7 +860,7 @@
     },
     {
       "name": "guardians",
-      "index": 6,
+      "index": 8,
       "exported": true,
       "storage": "Map",
       "key": {
@@ -771,7 +878,7 @@
     },
     {
       "name": "heldCoin",
-      "index": 7,
+      "index": 9,
       "exported": true,
       "storage": "Map",
       "key": {
@@ -780,7 +887,7 @@
       },
       "value": {
         "type-name": "Struct",
-        "name": "ShieldedCoinInfo",
+        "name": "QualifiedShieldedCoinInfo",
         "elements": [
           {
             "name": "nonce",
@@ -802,13 +909,20 @@
               "type-name": "Uint",
               "maxval": 340282366920938463463374607431768211455
             }
+          },
+          {
+            "name": "mt_index",
+            "type": {
+              "type-name": "Uint",
+              "maxval": 18446744073709551615
+            }
           }
         ]
       }
     },
     {
       "name": "probateOpened",
-      "index": 8,
+      "index": 10,
       "exported": true,
       "storage": "Map",
       "key": {
@@ -822,7 +936,7 @@
     },
     {
       "name": "willVersion",
-      "index": 9,
+      "index": 11,
       "exported": true,
       "storage": "Map",
       "key": {

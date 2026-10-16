@@ -59,3 +59,11 @@ web/out/
 web/next-env.d.ts
 dust*.log
 midnight-level-db/
+
+# local wallet material: seeds, mnemonics, Blockfrost ids. Never commit.
+.env
+.env.*
+
+# demo artifacts that carry secrets (heir envelopes, the stand-in device key)
+deployments/envelopes/
+deployments/device.json
