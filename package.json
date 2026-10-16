@@ -10,6 +10,7 @@
     "contract",
     "cli",
     "test",
+    "server",
     "web"
   ],
   "scripts": {
@@ -20,7 +21,8 @@
     "test": "bun run --cwd test test",
     "demo": "bun run build && node cli/dist/index.js demo",
     "nominee": "node cli/dist/index.js",
-    "web": "bun run --cwd web dev"
+    "web": "bun run --cwd web dev",
+    "server": "bun run --cwd server build && node server/dist/index.js"
   },
   "overrides": {
     "@midnight-ntwrk/onchain-runtime-v3": "3.0.0"

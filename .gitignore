@@ -67,3 +67,4 @@ midnight-level-db/
 # demo artifacts that carry secrets (heir envelopes, the stand-in device key)
 deployments/envelopes/
 deployments/device.json
+server/dist/
