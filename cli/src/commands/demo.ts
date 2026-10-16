@@ -1,29 +1,31 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 // The whole story in one command: a life, silence, resolution, the nominees,
-// three attacks that fail, and the guardian path.
+// six attacks that fail, and a faked death that the owner contests.
 //
-// Chapters 1-3 and 6 are REAL: real circuits, real proofs, real devnet.
-// Chapters 4-5 run in the simulator and say so, the shielded payout path is
-// the one piece not yet live, and the demo does not pretend otherwise.
+// With NOMINEE_LIVE=1 chapters 1, 3, 4 and 6 are REAL: real circuits, real
+// proofs, real blocks on the devnet, including the three shielded payouts.
+// Chapter 5 is refusals, which happen at circuit execution before any proof
+// exists, so it runs in the simulator and says so. Without NOMINEE_LIVE the
+// whole story runs in the simulator: same compiled circuits, same assertions.
 import { execSync } from 'node:child_process';
 import chalk from 'chalk';
+import { banner, chapter, countdownUntil, note, warn, ok, fail, summary } from '../display.js';
 import {
-  banner, chapter, countdown, note, warn, ok, fail, summary, panel, short,
-  NOWHERE, HIDDEN,
-} from '../display.js';
-import {
-  LiveSession, SimSession, buildCast, makeHasher, makeHeir, randKey, describeErr,
+  LiveSession, SimSession, buildCast, setHeirs, makeHasher, makeHeir, randKey, randScalar, describeErr,
+  type Cast,
 } from '../session.js';
-import { DEMO_GRACE_SECONDS } from '../config.js';
+import { DEMO_GRACE_SECONDS, DEMO_CHALLENGE_SECONDS, DEVICE_URL, NETWORK } from '../config.js';
 import { emptyDeployment, save, DEPLOYMENTS_PATH, type TxRecord } from '../state.js';
+import { exportEnvelope, writeEnvelope } from '../envelope.js';
+import { SparseTree, ownerLeaf } from '../crypto.js';
+import { OWNER_DEPTH } from '../witnesses.js';
 import {
   nowSeconds, stepRegister, stepDeposit, stepHeartbeat, stepUpdateWill,
-  stepResolve, stepGuardianResolve, simClaim, simAttack,
-  simRegister, simDeposit, simHeartbeat, simUpdateWill, simResolve, simGuardianResolve,
+  stepResolve, stepFinalize, stepVeto, stepGuardianResolve, stepClaim, liveRefusal, deviceSignature,
+  simClaim, simAttack, simRegister, simDeposit, simHeartbeat, simUpdateWill,
+  simResolve, simFinalize, simVeto, simGuardianResolve,
 } from './steps.js';
-
-const DOCKER = 'midnight-node|midnight-indexer|midnight-proof-server';
 
 function devnetUp(): boolean {
   try {
@@ -49,50 +51,81 @@ async function ensureDevnet() {
   return false;
 }
 
+/** Fetch the external device's public key, if a device is configured. */
+async function devicePublicKey(): Promise<{ x: bigint; y: bigint } | null> {
+  if (!DEVICE_URL) return null;
+  const r = await fetch(`${DEVICE_URL.replace(/\/$/, '')}/pubkey`);
+  if (!r.ok) throw new Error(`device: HTTP ${r.status} from /pubkey`);
+  const j: any = await r.json();
+  return { x: BigInt(j.x), y: BigInt(j.y) };
+}
+
+const GRACE = DEMO_GRACE_SECONDS;
+const CHALLENGE = DEMO_CHALLENGE_SECONDS;
+
 export async function demo() {
   banner();
   console.log();
-  if (!(await ensureDevnet())) process.exit(1);
+
+  const wantLive = process.env.NOMINEE_LIVE === '1';
+  if (wantLive && NETWORK === 'undeployed' && !(await ensureDevnet())) process.exit(1);
 
   const deployment = emptyDeployment();
-  deployment.graceSeconds = Number(DEMO_GRACE_SECONDS);
+  deployment.graceSeconds = Number(GRACE);
+  deployment.challengeSeconds = Number(CHALLENGE);
   const txs: TxRecord[] = [];
   const simOnly: string[] = [];
 
   const hasher = makeHasher();
-  const heirs = [makeHeir('Maya', 500n), makeHeir('Raj', 300n), makeHeir('Sam', 200n)];
-  const cast = buildCast(hasher, ['Alice', 'Ben'], heirs);
+  // The heirs are added once we know their payout keys (live: the wallet's).
+  const cast: Cast = buildCast(hasher, ['Alice', 'Ben'], []);
   const alice = cast.owners[0];
   const ben = cast.owners[1];
 
-  // The simulator session backs every chapter, and stands in for the live one
-  // when no node is reachable. Same circuits either way.
-  const sim = new SimSession(cast, DEMO_GRACE_SECONDS);
+  // An external device (nominee device / ESP32) replaces Alice's in-process key.
+  const extDevice = await devicePublicKey().catch((e) => { warn(`device unreachable: ${describeErr(e)}`); return null; });
+  if (extDevice) {
+    alice.device = { sk: 0n, x: extDevice.x, y: extDevice.y };   // we never hold the device's secret
+    // Rebuild the owner tree so Alice's leaf commits to the external device.
+    cast.ownerTree = new SparseTree(hasher, OWNER_DEPTH,
+      cast.owners.map((o) => ownerLeaf(hasher, o.secret, o.willRoot, o.device)));
+    ok(`External device at ${DEVICE_URL} holds Alice's possession factor.`);
+  }
 
-  // On-chain execution is opt-in while the deploy path is being finished:
-  //   NOMINEE_LIVE=1 npx nominee demo
-  // Without it the whole story runs in the simulator, the same compiled
-  // circuits and the same assertions, with no proof and no ledger.
-  const wantLive = process.env.NOMINEE_LIVE === '1';
   let live: LiveSession | null = null;
-
   if (!wantLive) {
     note('Running in simulator mode (set NOMINEE_LIVE=1 to execute on the devnet).');
     note('Same compiled circuits, same assertions, no proof, no ledger.');
   } else try {
-    note('Connecting wallet, proof server and indexer…');
-    live = await LiveSession.connect(cast, { grace: DEMO_GRACE_SECONDS });
+    note('Connecting wallet, proof server and indexer, then deploying the registry…');
+    live = await LiveSession.connect(cast, { grace: GRACE, challenge: CHALLENGE });
     deployment.contractAddress = live.address;
     ok(`Contract deployed: ${chalk.bold(live.address)}`);
-    txs.push({ circuit: 'deploy', txHash: live.address, block: null, status: 'accepted' });
+    txs.push({ circuit: 'deploy', txHash: live.address, block: live.deployed?.deployTxData?.public?.blockHeight ?? null, status: 'accepted' });
+    for (const t of live.setupTxs) {
+      ok(`${t.circuit} accepted in block ${t.block ?? '?'}  (a 13-key deploy exceeds a block's write budget; the authority adds the last two)`);
+      txs.push({ circuit: t.circuit, txHash: t.txHash, block: t.block, status: 'accepted' });
+    }
   } catch (e) {
     warn('On-chain deploy unavailable, running the whole story in the simulator.');
     note(describeErr(e).split('\n')[0].slice(0, 160));
-    note('The circuits, assertions and privacy properties below are identical;');
-    note('only the proof and the ledger are absent.');
   }
 
-  const step = async <T>(label: string, fn: () => Promise<T>): Promise<T | null> => {
+  // Every heir leaf binds the heir's Zswap coin public key. Live, the payout
+  // must land in a wallet that can decrypt it, so all three nominees share the
+  // demo wallet's key. In the simulator a random key stands in.
+  const payoutKey = live ? live.coinPublicKey() : randKey();
+  const heirs = [makeHeir('Maya', 500n, payoutKey), makeHeir('Raj', 300n, payoutKey), makeHeir('Sam', 200n, payoutKey)];
+  setHeirs(cast, heirs);
+  live?.patch({ heirs, heirTree: cast.heirTree, totalValue: 1000n });
+
+  // The simulator session backs the refusals and mirrors the live chapters so
+  // its state matches the chain's. Same circuits either way.
+  const sim = new SimSession(cast, GRACE, CHALLENGE);
+  const simLastBeat = 1_000_000n;   // the simulator's clock is fixed at creation; any earlier timestamp passes
+  const mirror = !!live;
+
+  const step = async <T,>(label: string, fn: () => Promise<T>): Promise<T | null> => {
     if (!live) return null;
     try { return await fn(); }
     catch (e) {
@@ -101,131 +134,188 @@ export async function demo() {
       return null;
     }
   };
+  const push = (r: TxRecord | null) => { if (r) txs.push(r); };
 
   // ---- Chapter 1 ---------------------------------------------------------
   chapter(1, 'A life');
-
-  let r: TxRecord | null;
   let lastBeat = nowSeconds();
-  // The simulator has no chain clock advancing with wall time, so its
-  // blockTimeGte bound is checked against a fixed synthetic epoch. Live calls
-  // use real Unix seconds, which is what the node compares against.
-  const simLastBeat = 1_000_000n;
 
   if (live) {
-    r = await step('register', () => stepRegister(live!, alice));      if (r) txs.push(r);
+    push(await step('register', () => stepRegister(live!, alice)));
     const coin = { nonce: randKey(), color: new Uint8Array(32), value: 1000n };
-    r = await step('deposit', () => stepDeposit(live!, alice, coin));  if (r) txs.push(r);
-    r = await step('heartbeat', () => stepHeartbeat(live!, alice, nowSeconds())); if (r) txs.push(r);
-    r = await step('updateWill', () => stepUpdateWill(live!, alice, 1n)); if (r) txs.push(r);
+    push(await step('deposit', () => stepDeposit(live!, alice, coin)));
+    push(await step('heartbeat', () => stepHeartbeat(live!, alice, nowSeconds())));
+    push(await step('updateWill', () => stepUpdateWill(live!, alice, cast.heirTree.digest(), 1n)));
     lastBeat = nowSeconds();   // captured here so it is genuinely the latest
-    r = await step('heartbeat', () => stepHeartbeat(live!, alice, lastBeat, 'heartbeat, the last one'));
-    if (r) txs.push(r);
+    push(await step('heartbeat', () => stepHeartbeat(live!, alice, lastBeat, 'heartbeat, the last one')));
   }
-
-  // The simulator runs the same chapter regardless, so the vault is funded and
-  // the nominees have a beneficiary root to prove against in Chapter 4.
-  const mirror = !!live;   // live already narrated this chapter
+  // The simulator signs heartbeats in-process, unless an external device holds Alice's key.
+  const simBeat = async (now: bigint, label: string) => {
+    sim.patch({ deviceSignature: (await deviceSignature(now)) ?? undefined });
+    try { simHeartbeat(sim, alice, now, label, mirror); }
+    finally { sim.patch({ deviceSignature: undefined }); }
+  };
   simRegister(sim, alice, mirror);
   simDeposit(sim, alice, 1000n, mirror);
-  simHeartbeat(sim, alice, simLastBeat, 'heartbeat', mirror);
+  await simBeat(simLastBeat - 10n, 'heartbeat');
   simUpdateWill(sim, alice, cast.heirTree.digest(), mirror);
-  if (!mirror) simOnly.push('register', 'deposit', 'heartbeat', 'updateWill');
+  await simBeat(simLastBeat, 'heartbeat, the last one');
+  if (!mirror) simOnly.push('register', 'deposit', 'heartbeat', 'updateWill', 'heartbeat');
+
+  // The envelopes: delivered off-chain, one per nominee. Secrets live here, not on chain.
+  console.log();
+  const address = live?.address ?? sim.address;
+  for (let i = 0; i < heirs.length; i++) {
+    const file = writeEnvelope(exportEnvelope(cast, i, address, NETWORK, alice), heirs[i].name);
+    note(`Envelope for ${heirs[i].name}: ${file.replace(process.cwd() + '/', '')}`);
+  }
+  note('Each envelope holds the nominee\'s secret, share, payout key and Merkle path. Treat it like a seed phrase.');
 
   // ---- Chapter 2 ---------------------------------------------------------
   chapter(2, 'Silence');
   note('Alice stops checking in. The chain does not know why, and never will.');
   console.log();
-  await countdown(live ? Number(DEMO_GRACE_SECONDS) + 3 : 8);
+  await countdownUntil(live ? lastBeat + GRACE + 3n : nowSeconds() + 8n,
+    `Waiting for the ${GRACE}s grace period`, 'Grace period elapsed. No heartbeat.');
 
   // ---- Chapter 3 ---------------------------------------------------------
   chapter(3, 'Resolution');
-  if (live) {
-    r = await step('resolve', () => stepResolve(live!, alice, lastBeat + DEMO_GRACE_SECONDS));
-    if (r) txs.push(r);
-  }
-  simResolve(sim, simLastBeat + DEMO_GRACE_SECONDS, !!live);
-  if (!live) simOnly.push('resolve');
+  const deadline = lastBeat + GRACE;
+  const until = deadline + CHALLENGE;
+  if (live) push(await step('resolve', () => stepResolve(live!, alice, deadline, CHALLENGE)));
+  simResolve(sim, alice, simLastBeat + GRACE, mirror);
+  if (!mirror) simOnly.push('resolve');
+
+  note('The window is open. Alice (or her guardians) could still veto.');
+  console.log();
+  await countdownUntil(live ? until + 3n : nowSeconds() + 5n,
+    `Waiting for the ${CHALLENGE}s veto window`, 'Veto window closed. Nobody contested.');
+
+  if (live) push(await step('finalize', () => stepFinalize(live!, alice, until)));
+  simFinalize(sim, alice, simLastBeat + GRACE + CHALLENGE, mirror);
+  if (!mirror) simOnly.push('finalize');
 
   // ---- Chapter 4 ---------------------------------------------------------
   chapter(4, 'The nominees');
-  warn('Nominee claims run in simulator mode.');
-  note('The shielded payout path (sendShielded from a contract) is a Wave 2 gate.');
-  note(live
-    ? 'Deposit is proven live above. Payout logic is proven here, in the same circuit.'
-    : 'Every chapter here runs the same compiled circuits, only the proof and chain are absent.');
-
-  const simTag = sim.tag();
-  if (!sim.ledger.resolvedVault.member(simTag)) {
-    sim.call('resolve', simTag, simLastBeat + DEMO_GRACE_SECONDS);
+  const aliceTag = sim.tag(alice);
+  if (live) {
+    note('Three real shielded payouts from the contract. Each nominee claims to the key bound in their leaf.');
+    for (let i = 0; i < heirs.length; i++) {
+      const c = await step('claim', () => stepClaim(live!, alice, i, heirs[i]));
+      if (c) { const { remaining: _r, ...record } = c; push(record); }
+      simClaim(sim, aliceTag, i, heirs[i], true);
+    }
+  } else {
+    for (let i = 0; i < heirs.length; i++) {
+      simClaim(sim, aliceTag, i, heirs[i]);
+      simOnly.push('claim');
+    }
   }
-
-  for (let i = 0; i < heirs.length; i++) {
-    simClaim(sim, i, heirs[i], randKey());
-    simOnly.push('claim');
-  }
+  if (sim.remaining(aliceTag) === null) ok('Last claim took the exact remainder: heldCoin[tag] removed.');
 
   // ---- Chapter 5 ---------------------------------------------------------
   chapter(5, 'Attacks fail');
+  note('Refusals happen at circuit execution, before a proof exists, so they run in the simulator.');
 
   simAttack('double claim',
     ['Maya tries to claim a second time.', 'Her nullifier is already spent.'],
-    () => { sim.patch({ activeHeir: 0 }); sim.refreshCoin(); sim.call('claim', simTag, { bytes: randKey() }); },
+    () => sim.claim(aliceTag, 0),
     /already claimed/);
-  simOnly.push('doubleClaim');
 
-  simAttack('wrong nominee',
+  simAttack('stranger',
     ['A stranger tries to claim.', 'They are not in the beneficiary tree.'],
     () => {
-      const mallory = makeHeir('Mallory', 100n);
-      sim.patch({ heirs: [...heirs, mallory], activeHeir: heirs.length });
-      sim.refreshCoin();
-      sim.call('claim', simTag, { bytes: randKey() });
+      const mallory = makeHeir('Mallory', 100n, payoutKey);
+      sim.patch({ heirs: [...heirs, mallory] });
+      sim.claim(aliceTag, heirs.length);
     },
-    /not a beneficiary|heirPath/);
-  simOnly.push('wrongHeir');
+    /not a beneficiary/);
+  sim.patch({ heirs });
 
   simAttack('wrong share',
     ['Raj claims a larger share than the will allotted.', 'The share is bound into his leaf.'],
     () => {
-      sim.patch({ heirs: [heirs[0], { ...heirs[1], share: 900n }, heirs[2]], activeHeir: 1 });
-      sim.refreshCoin();
-      sim.call('claim', simTag, { bytes: randKey() });
+      sim.patch({ heirs: [heirs[0], { ...heirs[1], share: 900n }, heirs[2]] });
+      sim.claim(aliceTag, 1);
     },
-    /not a beneficiary|heirPath|exceeds/);
-  simOnly.push('wrongShare');
+    /not a beneficiary/);
+  sim.patch({ heirs });
+
+  simAttack('stolen seed, no device',
+    ['A thief has Alice\'s seed and knows her device\'s public key, but not the device.',
+     'They try to heartbeat with a fresh signing key.'],
+    () => {
+      sim.actAs({ ...alice, device: { ...alice.device, sk: randScalar() } });
+      sim.heartbeat(simLastBeat + 1n);
+    },
+    /Invalid attestation signature/);
+  sim.actAs(alice);
+
+  simAttack('stolen envelope, different payout key',
+    ['Someone steals Raj\'s envelope and claims to their OWN key.',
+     'The payout key is bound into the leaf, so the leaf is not in the tree.'],
+    () => sim.claim(aliceTag, 1, randKey()),
+    /not a beneficiary/);
+
+  const benTag = sim.tag(ben);
+  simAttack('replayed guardian signature',
+    ['Two guardians signed a resolve for Ben\'s vault.', 'The same signatures are presented against Alice\'s vault.'],
+    () => {
+      sim.patch({ attesting: [0, 1], guardianKind: 'resolve', guardianTag: benTag });
+      sim.call('guardianResolve2of3', aliceTag, 0n, 1n);
+    },
+    /Invalid attestation signature/);
 
   // ---- Chapter 6 ---------------------------------------------------------
-  chapter(6, 'The guardian path');
-  note('A second vault. Ben has named three guardians; two of them attest.');
+  chapter(6, 'Faked death');
+  note('A second vault. Ben\'s device is hidden, so he cannot heartbeat; his grace period lapses.');
+  note('Someone calls resolve to open his vault. Ben is alive.');
 
+  const vetoed = ['finalize after a veto',
+    ['The window was closed by Ben\'s veto. Finalize is attempted anyway.', 'There is no open challenge to finalize.']] as const;
   if (live) {
     live.actAs(ben);
-    r = await step('register', () => stepRegister(live!, ben));  if (r) txs.push(r);
-    r = await step('guardianResolve2of3', () => stepGuardianResolve(live!, ben, 0n, 1n));
-    if (r) txs.push(r);
+    push(await step('register', () => stepRegister(live!, ben)));
+    // lastSeen is 0 at registration; a vault that never heartbeats has lapsed by definition.
+    push(await step('resolve', () => stepResolve(live!, ben, GRACE, CHALLENGE)));
+    push(await step('veto', () => stepVeto(live!, ben, nowSeconds())));
+    push(await liveRefusal(vetoed[0], [...vetoed[1]], () => live!.finalize(live!.tag(ben), GRACE + CHALLENGE), /no open challenge/));
+    note('Later, Ben really is gone. His three guardians know; two of them act.');
+    push(await step('guardianResolve2of3', () => stepGuardianResolve(live!, ben, 0n, 1n)));
   } else {
-    const sim2 = new SimSession(cast, DEMO_GRACE_SECONDS);
-    sim2.patch({ owner: ben });
+    const sim2 = new SimSession(cast, GRACE, CHALLENGE);
+    sim2.actAs(ben);
     simRegister(sim2, ben);
+    simResolve(sim2, ben, GRACE);
+    simVeto(sim2, ben, simLastBeat);
+    simAttack(vetoed[0], [...vetoed[1]], () => sim2.finalize(sim2.tag(ben), GRACE + CHALLENGE), /no open challenge/);
+    note('Later, Ben really is gone. His three guardians know; two of them act.');
     simGuardianResolve(sim2, ben, 0n, 1n);
-    simOnly.push('guardianResolve2of3');
+    simOnly.push('register', 'resolve', 'veto', 'guardianResolve2of3');
   }
 
   // ---- Summary -----------------------------------------------------------
   chapter('', 'Summary');
   const accepted = txs.filter((t) => t.status === 'accepted').length;
+  const claims = txs.filter((t) => t.circuit === 'claim' && t.status === 'accepted').length;
   deployment.transactions = txs;
   deployment.simulatorOnly = simOnly;
-  save(deployment);
+  if (live) save(deployment);   // a simulator run never overwrites the live record
 
   summary({
-    circuits: 10, maxK: 15, keysMB: 40,
-    tests: '33 passing', leak: 'CLEAN',
-    txs: accepted, control: 'REJECTED',
+    circuits: 13, maxK: 16, keysMB: 65,
+    tests: '46 passing', leak: 'CLEAN',
+    txs: accepted, claims: live ? claims : 3, live: !!live,
   });
   console.log();
-  note(`Transaction record written to ${DEPLOYMENTS_PATH.replace(process.cwd() + '/', '')}`);
-  if (live) { note(`Contract: ${live.address}`); await live.close(); }
+  if (live) {
+    note(`Transaction record written to ${DEPLOYMENTS_PATH.replace(process.cwd() + '/', '')}`);
+    note(`Contract: ${live.address}`);
+    // The wallet SDK keeps subscriptions open; close it, but never let that hold the process.
+    await Promise.race([live.close(), new Promise((r) => setTimeout(r, 5000))]);
+  } else {
+    note('Simulator run: no transaction record written. Set NOMINEE_LIVE=1 for the real thing.');
+  }
   console.log();
+  process.exit(0);
 }

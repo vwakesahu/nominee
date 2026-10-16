@@ -10,24 +10,38 @@ import {
 } from '@midnight-ntwrk/compact-runtime';
 import { Contract, ledger, type Ledger } from '../../contract/out/contract/index.js';
 import {
-  SparseTree, guardianKeypair, guardianPk, heirLeaf, ownerLeaf, ownerTag,
+  SparseTree, guardianKeypair, deviceKeypair, heirLeaf, ownerLeaf, ownerTag, randScalar,
   type GuardianKey,
 } from '../../cli/src/crypto.js';
-import { makeWitnesses, OWNER_DEPTH, HEIR_DEPTH, type Heir, type Owner, type PrivateState } from '../../cli/src/witnesses.js';
+import {
+  makeWitnesses, OWNER_DEPTH, HEIR_DEPTH, WITNESS_NAMES,
+  type Heir, type Owner, type PrivateState,
+} from '../../cli/src/witnesses.js';
 
 export const GRACE = 60n;
+export const CHALLENGE = 30n;
 export const NATIVE = new Uint8Array(32);
 
+// A throwaway instance is needed first: the hashers live on the instance,
+// but the witness object needs a hasher. Build it with vacant witnesses.
+const vacant: any = {};
+for (const k of WITNESS_NAMES) vacant[k] = () => { throw new Error(`vacant witness ${k}`); };
+export const hasher: any = new Contract(vacant);
+
+export const randKey = () => new Uint8Array(randomBytes(32));
+
 export function makeOwner(name: string): Owner {
-  return { name, secret: new Uint8Array(randomBytes(32)), willRoot: new Uint8Array(randomBytes(32)) };
+  return { name, secret: randKey(), willRoot: randKey(), device: deviceKeypair(hasher) };
 }
-export function makeHeir(name: string, share: bigint): Heir {
-  return { name, secret: new Uint8Array(randomBytes(32)), share };
+export function makeHeir(name: string, share: bigint, key: Uint8Array = randKey()): Heir {
+  return { name, secret: randKey(), share, key };
 }
+/** The same owner with a device that has the right public key and the wrong secret: a seed thief. */
+export const withoutDevice = (o: Owner): Owner => ({ ...o, device: { ...o.device, sk: randScalar() } });
 
 export class Vault {
   readonly contract: any;
-  readonly hasher: any;
+  readonly hasher: any = hasher;
   ctx: CircuitContext<PrivateState>;
   readonly guardianKeys: GuardianKey[];
   readonly ownerTree: SparseTree;
@@ -38,24 +52,15 @@ export class Vault {
     heirs: Heir[];
     actingAs?: number;
     grace?: bigint;
+    challenge?: bigint;
   }) {
-    const { owners, heirs, actingAs = 0, grace = GRACE } = opts;
+    const { owners, heirs, actingAs = 0, grace = GRACE, challenge = CHALLENGE } = opts;
 
-    // A throwaway instance is needed first: the hashers live on the instance,
-    // but the witness object needs a hasher. Build it with vacant witnesses.
-    const vacant: any = {};
-    for (const k of [
-      'getSchnorrReduction', 'ownerSecret', 'willRoot', 'ownerPath', 'newVaultRoot',
-      'heirSecret', 'heirShare', 'heirPath', 'spendCoin', 'gSig0', 'gSig1', 'gSig2',
-      'totalValue', 'executorId', 'probateBlind', 'envelopeCipher', 'pin', 'decoyRoot',
-    ]) vacant[k] = () => { throw new Error(`vacant witness ${k}`); };
-    this.hasher = new Contract(vacant);
-
-    this.guardianKeys = [0, 1, 2].map(() => guardianKeypair(this.hasher));
-    this.ownerTree = new SparseTree(this.hasher, OWNER_DEPTH,
-      owners.map((o) => ownerLeaf(this.hasher, o.secret, o.willRoot)));
-    this.heirTree = new SparseTree(this.hasher, HEIR_DEPTH,
-      heirs.map((h) => heirLeaf(this.hasher, h.secret, h.share)));
+    this.guardianKeys = [0, 1, 2].map(() => guardianKeypair(hasher));
+    this.ownerTree = new SparseTree(hasher, OWNER_DEPTH,
+      owners.map((o) => ownerLeaf(hasher, o.secret, o.willRoot, o.device)));
+    this.heirTree = new SparseTree(hasher, HEIR_DEPTH,
+      heirs.map((h) => heirLeaf(hasher, h.secret, h.share, h.key)));
 
     const ps: PrivateState = {
       owner: owners[actingAs],
@@ -64,20 +69,24 @@ export class Vault {
       heirs,
       heirTree: this.heirTree,
       activeHeir: 0,
+      heartbeatNow: 0n,
       guardianKeys: this.guardianKeys,
       attesting: [0, 1],
+      guardianKind: 'resolve',
+      guardianTag: new Uint8Array(32),
       totalValue: heirs.reduce((a, h) => a + h.share, 0n),
-      executorId: new Uint8Array(randomBytes(32)),
-      probateBlind: new Uint8Array(randomBytes(32)),
-      envelopeCipher: new Uint8Array(randomBytes(32)),
+      executorId: randKey(),
+      probateBlind: randKey(),
+      envelopeCipher: randKey(),
       pin: 1234n,
     };
 
-    this.contract = new Contract(makeWitnesses(this.hasher));
+    this.contract = new Contract(makeWitnesses(hasher));
     const init = this.contract.initialState(
       createConstructorContext(ps, sampleContractAddress()),
       this.ownerTree.digest(),
       grace,
+      challenge,
       ...this.guardianKeys.flatMap((k) => [k.x, k.y]),
     );
     this.ctx = createCircuitContext(
@@ -94,9 +103,8 @@ export class Vault {
   }
 
   /** The acting owner's public tag. */
-  tag(): Uint8Array {
-    const o = this.ps.owner;
-    return ownerTag(this.hasher, o.secret, o.willRoot);
+  tag(owner: Owner = this.ps.owner): Uint8Array {
+    return ownerTag(hasher, owner.secret, owner.willRoot);
   }
 
   actAs(i: number) { this.patch({ owner: this.ps.cohort[i] }); }
@@ -107,18 +115,28 @@ export class Vault {
   }
 
   register()                    { return this.call('register'); }
-  heartbeat(now: bigint)        { return this.call('heartbeat', now); }
+  heartbeat(now: bigint)        { this.patch({ heartbeatNow: now }); return this.call('heartbeat', now); }
+  veto(now: bigint)             { return this.call('veto', now); }
   deposit(coin: any)            { return this.call('deposit', coin); }
   updateWill()                  { return this.call('updateWill'); }
   resolve(tag: Uint8Array, deadline: bigint) { return this.call('resolve', tag, deadline); }
-  guardianResolve2of3(tag: Uint8Array, g0: bigint, g1: bigint) {
+  finalize(tag: Uint8Array, until: bigint)   { return this.call('finalize', tag, until); }
+  /** Guardians sign for `signedTag` (default: the tag they are presented against). */
+  guardianResolve2of3(tag: Uint8Array, g0: bigint, g1: bigint, signedTag = tag) {
+    this.patch({ attesting: [Number(g0), Number(g1)], guardianKind: 'resolve', guardianTag: signedTag });
     return this.call('guardianResolve2of3', tag, g0, g1);
   }
   guardianResolve3of5(tag: Uint8Array, g0: bigint, g1: bigint, g2: bigint) {
+    this.patch({ attesting: [Number(g0), Number(g1), Number(g2)], guardianKind: 'resolve', guardianTag: tag });
     return this.call('guardianResolve3of5', tag, g0, g1, g2);
   }
-  claim(tag: Uint8Array, heirKey: Uint8Array) {
-    return this.call('claim', tag, { bytes: heirKey });
+  guardianVeto2of3(tag: Uint8Array, g0: bigint, g1: bigint, signedTag = tag) {
+    this.patch({ attesting: [Number(g0), Number(g1)], guardianKind: 'veto', guardianTag: signedTag });
+    return this.call('guardianVeto2of3', tag, g0, g1);
+  }
+  /** Heir `activeHeir` claims to `heirKey` (default: the key bound in their leaf). */
+  claim(tag: Uint8Array, heirKey?: Uint8Array) {
+    return this.call('claim', tag, { bytes: heirKey ?? this.ps.heirs[this.ps.activeHeir].key });
   }
   openProbate(tag: Uint8Array, vaultCommit: Uint8Array) {
     return this.call('openProbate', tag, vaultCommit);
@@ -127,20 +145,21 @@ export class Vault {
     return this.call('resolveUnderPin', tag, realCommit, decoyCommit);
   }
 
-  /** Fund the vault and record the qualification the next claimant needs. */
+  /** Fund the vault with a fresh native coin. */
   fund(value: bigint) {
-    const coin = { nonce: new Uint8Array(randomBytes(32)), color: NATIVE, value };
+    const coin = { nonce: randKey(), color: NATIVE, value };
     this.deposit(coin);
-    const held = this.ledger.heldCoin.lookup(this.tag());
-    this.patch({ spendCoin: { nonce: held.nonce, color: held.color, value: held.value, mt_index: 0n } });
     return coin;
   }
 
-  /** Refresh the qualification from the outstanding coin after a claim. */
-  refreshCoin() {
-    const held = this.ledger.heldCoin.lookup(this.tag());
-    this.patch({ spendCoin: { nonce: held.nonce, color: held.color, value: held.value, mt_index: 0n } });
+  /** Resolve and finalize in one go: the common path to an unlocked vault. */
+  unlock(tag: Uint8Array, lastSeen: bigint) {
+    this.resolve(tag, lastSeen + GRACE);
+    this.finalize(tag, lastSeen + GRACE + CHALLENGE);
+  }
+
+  /** The outstanding coin value, or null once the last claim removed the entry. */
+  remaining(tag: Uint8Array): bigint | null {
+    return this.ledger.heldCoin.member(tag) ? this.ledger.heldCoin.lookup(tag).value : null;
   }
 }
-
-export const randKey = () => new Uint8Array(randomBytes(32));

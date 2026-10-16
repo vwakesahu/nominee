@@ -36,6 +36,13 @@ program
   .action(async () => { const { registerDust } = await import('./commands/register-dust.js'); await registerDust(); });
 
 program
+  .command('device')
+  .description('stand-in hardware signer: holds a device key, signs heartbeats only while a pulse is present')
+  .option('--pulse', 'a pulse is present (or set NOMINEE_PULSE=1)')
+  .option('--port <port>', 'listen port', '7777')
+  .action(async (opts) => { const { device } = await import('./commands/device.js'); await device(opts); });
+
+program
   .command('doctor')
   .description('check the local devnet, proof server and contract build')
   .action(async () => { const { doctor } = await import('./commands/doctor.js'); await doctor(); });

@@ -18,7 +18,7 @@ export async function doctor() {
     if (!existsSync(ZK_CONFIG_PATH)) return false;
     const keys = readdirSync(`${ZK_CONFIG_PATH}/keys`).filter((f) => f.endsWith('.prover'));
     note(`  ${keys.length} proving keys`);
-    return keys.length === 10;
+    return keys.length === 13;
   });
 
   await probe('docker running', () => {

@@ -14,6 +14,8 @@ export interface TxRecord {
   block: number | null;
   status: 'accepted' | 'rejected';
   error?: string;
+  /** A refusal the story relies on (e.g. finalize after a veto). */
+  expected?: boolean;
 }
 
 export interface Deployment {
@@ -21,6 +23,7 @@ export interface Deployment {
   toolchain: string;
   contractAddress: string | null;
   graceSeconds: number;
+  challengeSeconds: number;
   transactions: TxRecord[];
   simulatorOnly: string[];
   timestamp: string;
@@ -32,6 +35,7 @@ export function emptyDeployment(): Deployment {
     toolchain: '0.31.1',
     contractAddress: null,
     graceSeconds: 60,
+    challengeSeconds: 30,
     transactions: [],
     simulatorOnly: [],
     timestamp: new Date().toISOString(),
@@ -47,5 +51,7 @@ export function load(): Deployment {
 export function save(d: Deployment) {
   d.timestamp = new Date().toISOString();
   mkdirSync(dirname(DEPLOYMENTS_PATH), { recursive: true });
-  writeFileSync(DEPLOYMENTS_PATH, JSON.stringify(d, null, 2) + '\n');
+  // Ledger values are bigints; never let one abort the record after a live run.
+  const json = JSON.stringify(d, (_k, v) => (typeof v === 'bigint' ? v.toString() : v), 2);
+  writeFileSync(DEPLOYMENTS_PATH, json + '\n');
 }

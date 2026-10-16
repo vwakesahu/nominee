@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 import { describe, it, expect, beforeEach } from 'vitest';
-import { Vault, makeOwner, makeHeir, randKey, GRACE } from './harness.js';
+import { Vault, makeOwner, makeHeir, randKey } from './harness.js';
 import type { Heir } from '../../cli/src/witnesses.js';
 
 describe('claim', () => {
@@ -18,13 +18,12 @@ describe('claim', () => {
     v.heartbeat(NOW);
     v.patch({ newVaultRoot: v.heirTree.digest() });
     v.updateWill();
-    v.resolve(tag, NOW + GRACE);
+    v.unlock(tag, NOW);
   });
 
-  const claimAs = (i: number) => {
+  const claimAs = (i: number, key?: Uint8Array) => {
     v.patch({ activeHeir: i });
-    v.refreshCoin();
-    return v.claim(tag, randKey());
+    return v.claim(tag, key);
   };
 
   it('three nominees claim in sequence and the residual falls to zero', () => {
@@ -41,31 +40,43 @@ describe('claim', () => {
     expect(() => claimAs(2)).not.toThrow();
   });
 
+  it('the exact-remainder claim removes the heldCoin entry', () => {
+    claimAs(0); claimAs(1);
+    expect(v.remaining(tag)).toBe(200n);
+    claimAs(2);
+    expect(v.ledger.heldCoin.member(tag)).toBe(false);
+    expect(v.remaining(tag)).toBeNull();
+  });
+
+  it('the coin read from the ledger carries its Merkle index', () => {
+    const held = v.ledger.heldCoin.lookup(tag);
+    expect(typeof held.mt_index).toBe('bigint');
+    expect(held.value).toBe(1000n);
+  });
+
   it('rejects a double claim via the nullifier', () => {
     claimAs(0);
     expect(() => claimAs(0)).toThrow(/already claimed/);
   });
 
-  it('rejects a stale coin qualification', () => {
-    v.patch({ activeHeir: 0 });
-    v.refreshCoin();
-    const stale = { ...v.ps.spendCoin! };
-    claimAs(0);
-    // second nominee replays the coin as it was before the first claim
-    v.patch({ activeHeir: 1, spendCoin: stale });
-    expect(() => v.claim(tag, randKey())).toThrow(/stale coin/);
-  });
-
   it('rejects a non-beneficiary', () => {
     const stranger = makeHeir('Mallory', 100n);
     v.patch({ heirs: [...heirs, stranger] });
-    expect(() => claimAs(3)).toThrow();
+    expect(() => claimAs(3)).toThrow(/not a beneficiary/);
   });
 
   it('rejects a nominee claiming the wrong share', () => {
     // same secret, inflated share -> different leaf -> not in the tree
     v.patch({ heirs: [{ ...heirs[0], share: 900n }, heirs[1], heirs[2]] });
-    expect(() => claimAs(0)).toThrow();
+    expect(() => claimAs(0)).toThrow(/not a beneficiary/);
+  });
+
+  it('rejects a claim to a payout key other than the one bound in the leaf', () => {
+    // a stolen envelope: right secret, right share, thief's own key
+    expect(() => claimAs(0, randKey())).toThrow(/not a beneficiary/);
+    expect(v.ledger.spent.size()).toBe(0n);
+    // the real nominee is unaffected
+    expect(() => claimAs(0)).not.toThrow();
   });
 
   it('rejects a share larger than the remaining balance', () => {
@@ -76,6 +87,8 @@ describe('claim', () => {
 });
 
 describe('claim before resolution', () => {
+  const NOW = 1_000_000n;
+
   it('is rejected while the vault is unresolved', () => {
     const heirs = [makeHeir('Maya', 100n)];
     const v = new Vault({ owners: [makeOwner('Alice')], heirs });
@@ -84,7 +97,19 @@ describe('claim before resolution', () => {
     v.fund(100n);
     v.patch({ newVaultRoot: v.heirTree.digest() });
     v.updateWill();
-    v.refreshCoin();
-    expect(() => v.claim(tag, randKey())).toThrow(/not resolved/);
+    expect(() => v.claim(tag)).toThrow(/not resolved/);
+  });
+
+  it('is rejected while the veto window is still open', () => {
+    const heirs = [makeHeir('Maya', 100n)];
+    const v = new Vault({ owners: [makeOwner('Alice')], heirs });
+    v.register();
+    const tag = v.tag();
+    v.fund(100n);
+    v.heartbeat(NOW);
+    v.patch({ newVaultRoot: v.heirTree.digest() });
+    v.updateWill();
+    v.resolve(tag, NOW + 60n);
+    expect(() => v.claim(tag)).toThrow(/not resolved/);
   });
 });

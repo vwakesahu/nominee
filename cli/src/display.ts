@@ -91,7 +91,7 @@ export function panel(title: string, left: string[], right: Row[], tag?: string)
 }
 
 export function chapter(n: number | string, title: string) {
-  const head = `━━━ Chapter ${n}: ${title} `;
+  const head = n === '' ? `━━━ ${title} ` : `━━━ Chapter ${n}: ${title} `;
   console.log('\n' + chalk.bold.magenta(head + '━'.repeat(Math.max(0, 74 - head.length))) + '\n');
 }
 
@@ -111,37 +111,46 @@ export function warn(s: string) { console.log(chalk.yellow('  ⚠ ' + s)); }
 export function ok(s: string)   { console.log(chalk.green('  ✓ ' + s)); }
 export function fail(s: string) { console.log(chalk.red('  ❌ ' + s)); }
 
-/** Live countdown for the grace period. */
-export async function countdown(seconds: number, label = 'Waiting for grace period') {
-  for (let left = seconds; left > 0; left--) {
+/** Live countdown to a Unix time (seconds). */
+export async function countdownUntil(target: bigint, label = 'Waiting for grace period', done = 'Grace period elapsed. No heartbeat.') {
+  for (;;) {
+    const left = Number(target) - Math.floor(Date.now() / 1000);
+    if (left <= 0) break;
     process.stdout.write(
       `\r  ${chalk.yellow('⏳')} ${label}... ${chalk.bold(`[${left}s remaining]`)}   `,
     );
     await new Promise((r) => setTimeout(r, 1000));
   }
   process.stdout.write('\r' + ' '.repeat(72) + '\r');
-  console.log(chalk.yellow('  ⏳ Grace period elapsed. No heartbeat.'));
+  console.log(chalk.yellow('  ⏳ ' + done));
 }
+
+/** Live countdown for a number of seconds. */
+export const countdown = (seconds: number, label?: string) =>
+  countdownUntil(BigInt(Math.floor(Date.now() / 1000) + seconds), label);
 
 export function summary(stats: {
   circuits: number; maxK: number; keysMB: number;
-  tests: string; leak: string; txs: number; control: string;
+  tests: string; leak: string; txs: number; claims: number; live: boolean;
 }) {
   const W = 69;
   const row = (s = '') => console.log('│' + padEnd(' ' + s, W) + '│');
   console.log('\n' + chalk.bold.green('┌' + '─'.repeat(W) + '┐'));
   row(`Circuits: ${stats.circuits} compiled  │  Max k=${stats.maxK}  │  Keys: ${stats.keysMB} MB`);
   row(`Tests: ${stats.tests}  │  Leak check: ${stats.leak}`);
-  row(`Devnet txs: ${stats.txs} accepted  │  Custom(192) control: ${stats.control}`);
+  row(stats.live
+    ? `Devnet txs: ${stats.txs} accepted  │  Shielded payouts on chain: ${stats.claims}`
+    : `Simulator run  │  Shielded payouts (simulated): ${stats.claims}`);
   row();
   row('The chain never learned:');
   ['Who the owner is', 'Who the nominees are', 'How much each nominee received',
-    'How many nominees exist', 'Why the heartbeat stopped']
+    'How many nominees exist', 'Why the heartbeat stopped', 'The owner\'s device key']
     .forEach((s) => row(chalk.red('  ✗ ') + s));
   row();
   row('What the chain did learn:');
-  ['A vault exists', 'A heartbeat stopped', '3 anonymous claims were made',
-    'No double-claims succeeded']
+  ['A vault exists', 'A heartbeat stopped; a veto window opened and closed',
+    `${stats.claims} anonymous claims were made`, 'No double-claim, stolen seed or replay succeeded',
+    'A second vault was vetoed by its owner, then guardian-resolved']
     .forEach((s) => row(chalk.green('  ✓ ') + s));
   console.log(chalk.bold.green('└' + '─'.repeat(W) + '┘'));
 }

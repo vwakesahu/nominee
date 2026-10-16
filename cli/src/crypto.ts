@@ -24,19 +24,27 @@ export type JubjubPoint = any;
 export type SchnorrSignature = { announcement: JubjubPoint; response: bigint };
 
 /** The subset of the generated contract we borrow. */
-// Variant indices are read off contract/out/contract/index.js for THIS contract:
-//   _persistentHash_1  LeafPreimage{domain_sep: Bytes<6>, data: Bytes<32>}  (Merkle leaf)
-//   _persistentHash_2  Uint<128>                                            (share)
-//   _persistentHash_3  Vector<2, Bytes<32>>                                 (leaves, nullifier)
-//   _persistentHash_4  Vector<3, Bytes<32>>                                 (owner tag)
+// Variant indices are read off contract/out/contract/index.js for THIS contract
+// (13 circuits, toolchain 0.31.1). They SHIFT whenever the contract changes:
+//   _persistentHash_0  Vector<2, Field>                                     (device commitment)
+//   _persistentHash_1  CoinPreimage                                         (stdlib, unused here)
+//   _persistentHash_2  LeafPreimage{domain_sep: Bytes<6>, data: Bytes<32>}  (Merkle leaf)
+//   _persistentHash_3  Uint<128>                                            (share)
+//   _persistentHash_4  Vector<2, Bytes<32>>                                 (nullifier)
+//   _persistentHash_5  Vector<3, Bytes<32>>                                 (owner tag, owner leaf, heir leaf)
+//   _persistentHash_6  Uint<16>                                             (PIN)
 //   _transientHash_0   SchnorrHashInput                                     (challenge)
 //   _transientHash_1   Vector<2, Field>                                     (Merkle node)
 export interface Hasher {
   _ownerTag_0(sk: Uint8Array, wr: Uint8Array): Uint8Array;
-  _persistentHash_1(v: { domain_sep: Uint8Array; data: Uint8Array }): Uint8Array;
-  _persistentHash_2(v: bigint): Uint8Array;
-  _persistentHash_3(v: [Uint8Array, Uint8Array]): Uint8Array;
-  _persistentHash_4(v: [Uint8Array, Uint8Array, Uint8Array]): Uint8Array;
+  _deviceCommit_0(x: bigint, y: bigint): Uint8Array;
+  _guardianMsg_0(kind: bigint, tag: Uint8Array): bigint[];
+  _persistentHash_0(v: [bigint, bigint]): Uint8Array;
+  _persistentHash_2(v: { domain_sep: Uint8Array; data: Uint8Array }): Uint8Array;
+  _persistentHash_3(v: bigint): Uint8Array;
+  _persistentHash_4(v: [Uint8Array, Uint8Array]): Uint8Array;
+  _persistentHash_5(v: [Uint8Array, Uint8Array, Uint8Array]): Uint8Array;
+  _persistentHash_6(v: bigint): Uint8Array;
   _transientHash_0(v: any): bigint;   // SchnorrHashInput, the Schnorr challenge
   _transientHash_1(v: [bigint, bigint]): bigint;  // Vector<2,Field>, Merkle node
   _degradeToTransient_0(b: Uint8Array): bigint;
@@ -72,7 +80,7 @@ export class SparseTree {
 
   constructor(private c: Hasher, readonly depth: number, leaves: Uint8Array[]) {
     const leafDigest = (b: Uint8Array) =>
-      c._degradeToTransient_0(c._persistentHash_1({ domain_sep: MDN_LH, data: b }));
+      c._degradeToTransient_0(c._persistentHash_2({ domain_sep: MDN_LH, data: b }));
     this.base = leaves.map(leafDigest);
     let e = leafDigest(new Uint8Array(32));
     for (let l = 0; l < depth; l++) { this.emptyAt.push(e); e = c._transientHash_1([e, e]); }
@@ -103,24 +111,8 @@ export class SparseTree {
   digest(): { field: bigint } { return { field: this.root() }; }
 }
 
-/** Owner leaf: persistentHash([ownerSecret, willRoot]) */
-export const ownerLeaf = (c: Hasher, sk: Uint8Array, willRoot: Uint8Array) =>
-  c._persistentHash_3([sk, willRoot]);
-
-/** Owner tag, the contract's own circuit, so it cannot drift. */
-export const ownerTag = (c: Hasher, sk: Uint8Array, willRoot: Uint8Array) =>
-  c._ownerTag_0(sk, willRoot);
-
-/** Heir leaf: persistentHash([heirSecret, persistentHash(share)]) */
-export const heirLeaf = (c: Hasher, sk: Uint8Array, share: bigint) =>
-  c._persistentHash_3([sk, c._persistentHash_2(share)]);
-
-/** Nullifier: persistentHash([pad32("nominee:nf:v1"), heirSecret]) */
-export const nullifier = (c: Hasher, sk: Uint8Array) =>
-  c._persistentHash_3([pad32('nominee:nf:v1'), sk]);
-
 // ---------------------------------------------------------------------------
-// Schnorr over Jubjub, matches contract/src/schnorr.compact exactly
+// Keys: guardians and devices share one shape
 // ---------------------------------------------------------------------------
 
 const randScalar = (): bigint => {
@@ -130,7 +122,8 @@ const randScalar = (): bigint => {
 };
 
 /**
- * Guardian keys are stored as PLAIN COORDINATES, never as live wasm objects.
+ * Guardian and device keys are stored as PLAIN COORDINATES, never as live
+ * wasm objects.
  *
  * A wasm-bindgen value is consumed when it is passed into another wasm call.
  * The deploy path hands the private state to the SDK *and* passes guardian
@@ -140,6 +133,8 @@ const randScalar = (): bigint => {
  * point on each access keeps every use independent.
  */
 export interface GuardianKey { sk: bigint; x: bigint; y: bigint }
+/** The owner's possession factor. Same shape as a guardian key. */
+export type DeviceKey = GuardianKey;
 
 /** A fresh JubjubPoint for this key. Never cache the result. */
 export const guardianPk = (k: GuardianKey): JubjubPoint => constructJubjubPoint(k.x, k.y);
@@ -149,6 +144,42 @@ export function guardianKeypair(c: Hasher): GuardianKey {
   const p = c._ecMulGenerator_0(sk);
   return { sk, x: jubjubPointX(p), y: jubjubPointY(p) };
 }
+export const deviceKeypair = (c: Hasher): DeviceKey => guardianKeypair(c);
+export { randScalar };
+
+// ---------------------------------------------------------------------------
+// Leaves, tags, messages: each one is the contract's own formula
+// ---------------------------------------------------------------------------
+
+/** Device commitment: persistentHash([x, y]). The key itself never reaches the chain. */
+export const deviceCommit = (c: Hasher, d: { x: bigint; y: bigint }) => c._deviceCommit_0(d.x, d.y);
+
+/** Owner leaf: persistentHash([ownerSecret, willRoot, deviceCommit]). Knowledge AND possession. */
+export const ownerLeaf = (c: Hasher, sk: Uint8Array, willRoot: Uint8Array, device: { x: bigint; y: bigint }) =>
+  c._persistentHash_5([sk, willRoot, deviceCommit(c, device)]);
+
+/** Owner tag, the contract's own circuit, so it cannot drift. */
+export const ownerTag = (c: Hasher, sk: Uint8Array, willRoot: Uint8Array) =>
+  c._ownerTag_0(sk, willRoot);
+
+/** Heir leaf: persistentHash([heirSecret, persistentHash(share), heirKey]). The payout key is bound in. */
+export const heirLeaf = (c: Hasher, sk: Uint8Array, share: bigint, heirKey: Uint8Array) =>
+  c._persistentHash_5([sk, c._persistentHash_3(share), heirKey]);
+
+/** Nullifier: persistentHash([pad32("nominee:nf:v1"), heirSecret]) */
+export const nullifier = (c: Hasher, sk: Uint8Array) =>
+  c._persistentHash_4([pad32('nominee:nf:v1'), sk]);
+
+/** The message the owner's device signs for a heartbeat: [2, now, 0, 0]. */
+export const deviceMsg = (now: bigint): bigint[] => [2n, now, 0n, 0n];
+/** Guardian resolve message, bound to the vault: [1, degradeToTransient(tag), 0, 0]. */
+export const guardianMsg = (c: Hasher, tag: Uint8Array): bigint[] => c._guardianMsg_0(1n, tag);
+/** Guardian veto message, bound to the vault: [3, degradeToTransient(tag), 0, 0]. */
+export const guardianVetoMsg = (c: Hasher, tag: Uint8Array): bigint[] => c._guardianMsg_0(3n, tag);
+
+// ---------------------------------------------------------------------------
+// Schnorr over Jubjub, matches contract/src/schnorr.compact exactly
+// ---------------------------------------------------------------------------
 
 /** The challenge the circuit will recompute, and its 248-bit reduction. */
 export function schnorrChallenge(
@@ -182,5 +213,13 @@ export function schnorrReduction(cFull: bigint): [bigint, bigint] {
   return [cFull / TWO_248, cFull % TWO_248];
 }
 
-/** The message both guardian circuits sign: [1, 0, 0, 0]. */
-export const GUARDIAN_MSG: bigint[] = [1n, 0n, 0n, 0n];
+/** A signature as plain numbers, safe to serialise or send over HTTP. */
+export interface PlainSignature { announcement: { x: string; y: string }; response: string }
+export const toPlainSignature = (s: SchnorrSignature): PlainSignature => ({
+  announcement: { x: jubjubPointX(s.announcement).toString(), y: jubjubPointY(s.announcement).toString() },
+  response: s.response.toString(),
+});
+export const fromPlainSignature = (p: PlainSignature): SchnorrSignature => ({
+  announcement: constructJubjubPoint(BigInt(p.announcement.x), BigInt(p.announcement.y)),
+  response: BigInt(p.response),
+});

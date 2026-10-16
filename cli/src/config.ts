@@ -66,4 +66,13 @@ export const MNEMONIC = process.env.NOMINEE_MNEMONIC ?? '';
  *  blockTime* takes Unix SECONDS; the indexer reports MILLISECONDS. */
 export const DEMO_GRACE_SECONDS = BigInt(process.env.NOMINEE_GRACE ?? '60');
 
+/** Veto window opened by `resolve`, in SECONDS. `finalize` unlocks once it has closed. */
+export const DEMO_CHALLENGE_SECONDS = BigInt(process.env.NOMINEE_CHALLENGE ?? '30');
+
+/**
+ * A stand-in hardware signer (`nominee device`, or an ESP32 with a MAX30102
+ * speaking the same two endpoints). Unset: the demo signs heartbeats in-process.
+ */
+export const DEVICE_URL = process.env.NOMINEE_DEVICE_URL ?? '';
+
 export const DEPLOYMENTS_FILE = `deployments/${NETWORK}.json`;
