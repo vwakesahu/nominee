@@ -62,15 +62,24 @@ export async function withRetries<T>(
       return await build();
     } catch (e: any) {
       last = e;
-      if (errorCode(e) !== '170') throw e;
+      const code = errorCode(e);
+      // Wallet.Proving "Failed to prove transaction" is raised by the wallet SDK
+      // when the transaction cannot be assembled for proving locally, before the
+      // proof server is contacted. On Preprod it appeared right after a wallet
+      // sync and cleared on a rebuild, the same remedy as Custom(170).
+      const provingHiccup = /Failed to prove transaction/i.test(describe(e));
+      if (code !== '170' && !provingHiccup) throw e;
       console.log(
         chalk.yellow(
-          `  ↻ ${label}: attempt ${i}/${attempts} hit Custom(170) InvalidDustSpendProof ` +
-            ` dust state moved while proving, rebuilding and re-proving…`,
+          code === '170'
+            ? `  ↻ ${label}: attempt ${i}/${attempts} hit Custom(170) InvalidDustSpendProof ` +
+              ` dust state moved while proving, rebuilding and re-proving…`
+            : `  ↻ ${label}: attempt ${i}/${attempts} could not assemble the proof ` +
+              ` (wallet state still settling), rebuilding and re-proving…`,
         ),
       );
       if (i === attempts) break;
-      await new Promise((r) => setTimeout(r, 1500 + i * 800));
+      await new Promise((r) => setTimeout(r, provingHiccup ? 10_000 * i : 1500 + i * 800));
     }
   }
   throw last;

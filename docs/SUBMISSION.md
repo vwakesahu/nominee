@@ -194,11 +194,7 @@ managers, wasm ownership and undocumented units.
 
 ## What's next for Nominee
 
-Preprod. The contract runs end to end on the local devnet, and the deployment
-to Preprod is the next step; when it lands, `deployments/preprod.json` carries
-the address and every transaction hash.
-
-Then the hardware. The device factor is real in the contract and the CLI ships
+The hardware. The device factor is real in the contract and the CLI ships
 a stand-in signer with the two HTTP calls a device needs. An ESP32 with a pulse
 sensor that signs only while it reads a pulse is the obvious next build, and it
 should be said plainly: that raises the cost of faking liveness, it does not
@@ -261,7 +257,9 @@ and answered the judge's questions in the contract itself.
 - Landing page: https://nominee.world
 - Live run: `deployments/devnet.json` (17 accepted transactions, contract
   `5da98e56…e5cc67`)
-- Preprod: pending. The record will be `deployments/preprod.json`.
+- Preprod run: `deployments/preprod.json` (19 accepted transactions, contract
+  `f3989203…7f1247`, blocks 3,023,384 to 3,023,703, including three claims and
+  the heir web page's claim)
 
 ### The payout is live
 
@@ -275,6 +273,22 @@ transaction. `heldCoin` is now a `Map<Bytes<32>, QualifiedShieldedCoinInfo>`,
 contract on a real node: blocks 659 and 663 from the CLI, and block 681 from
 the heir web page, `heldCoin` going 1000 → 500 → 200 → removed. No simulator
 anywhere on that path.
+
+### It runs on Preprod
+
+The whole story ran on the public Preprod network:
+`deployments/preprod.json` lists 19 accepted transactions on contract
+`f3989203…7f1247`, blocks 3,023,384 to 3,023,703. That includes the deposit,
+the device-signed heartbeats and will update, resolve and finalize, three
+claims, the faked-death veto and the guardian path. Sam's claim is in block
+3,023,703. Sam pasted an envelope into the heir web page, and the page's server
+proved and submitted the claim. Anyone can check every hash on the Preprod
+indexer.
+
+The vault there holds tNOM, a testnet-only shielded token from
+`contract/token`. The funded wallet's NIGHT is unshielded, and NIGHT cannot be
+shielded. Nominee accepts a coin of any colour, so the vault contract is the
+same one.
 
 ### The judge's questions, answered in the contract
 
@@ -329,6 +343,12 @@ budget (`Transaction would exhaust the block limits`, 33,474 bytes written,
 inserts them in two follow-up transactions, 0.06 of a block each. Written up in
 `docs/ARCHITECTURE.md` §9 for the next person.
 
+Midnight's own Preprod indexer shut on 9 October, so Preprod now goes through
+Blockfrost. A Preprod wallet must scan about 1.7 million DUST events before
+its first transaction. That is half an hour with the laptop awake, and it
+stalls if the laptop sleeps. The CLI now waits for that scan, batches it, and
+checkpoints it, so the second run starts in seconds.
+
 ### Still true
 
 The proof server sees every witness and owners must self-host it. Deposit
@@ -348,7 +368,7 @@ commitment. The README and the threat model say so.
 - Veto window: resolve opens, heartbeat/veto/guardians close, finalize unlocks
 - Guardian messages bound to the vault tag; payout key bound into the heir leaf
 - Heir web app: paste an envelope, no wallet, no CLI
-- Deploy to Preprod: pending
+- Deployed to Preprod, the whole story including the payout and the heir page
 
 ## 3rd Wave
 

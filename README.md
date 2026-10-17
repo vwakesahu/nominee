@@ -130,8 +130,33 @@ the heir web page: the run held Sam back with `NOMINEE_HOLD_HEIR=sam`, then
 Sam's envelope was pasted into the claim server, which proved and submitted
 the claim in block 681.
 
-Preprod: pending. When it lands the record will be `deployments/preprod.json`,
-same format, with an explorer link per transaction.
+**On Preprod.** The same story ran on the public Preprod network, recorded in
+[`deployments/preprod.json`](deployments/preprod.json): **19 accepted
+transactions** on contract `f3989203…7f1247`, blocks 3,023,384 to 3,023,703.
+That covers deploy, register, a deposit, device-signed heartbeats and will
+update, `resolve`, `finalize`, three claims, the faked-death veto and the
+guardian path. Two claims came from the CLI. Sam's came from the heir web page
+in block 3,023,703. Anyone can look up any hash on the Preprod indexer.
+
+One difference from the devnet. The funded Preprod wallet holds unshielded
+NIGHT, and NIGHT cannot be shielded, so the vault there holds **tNOM**. tNOM is
+a testnet-only shielded token from [`contract/token`](contract/token) that
+mints to the wallet. Nominee's `deposit` and `claim` accept a coin of any
+colour, so the vault contract is identical.
+
+To reproduce it, you need a funded, DUST-registered Preprod wallet and a
+Blockfrost project id for Midnight Preprod. Midnight shut its own Preprod
+indexer on 9 October 2026, and Blockfrost now serves Preprod. Use Node 22.
+
+```bash
+NOMINEE_NETWORK=preprod NOMINEE_LIVE=1 \
+NOMINEE_BLOCKFROST=<project id> NOMINEE_MNEMONIC="<24 words>" \
+fnm exec --using=22 node cli/dist/index.js demo
+```
+
+The first run scans about 1.7 million DUST events, which takes about 30
+minutes with the machine awake. It checkpoints to `~/.nominee/`, so later runs
+start in seconds.
 
 ## Architecture
 
@@ -245,6 +270,7 @@ Named here because a judge will find them anyway, and because the validation fou
 - **Heartbeat cadence is a timing fingerprint.** The shared registry blunts it, an observer sees *someone* checked in, but it does not erase it.
 - **A long hospital stay executes the will.** The veto window and guardians lengthen the fuse. They do not remove it.
 - **A deploy with all 13 verifier keys does not fit in one block** on node 1.0.0. The deploy omits two keys and the maintenance authority inserts them in two follow-up transactions. See ARCHITECTURE §9.
+- **On Preprod the vault holds a testnet token, not NIGHT.** NIGHT is unshielded and cannot be shielded, so the Preprod run deposits tNOM. The vault contract is the same; a mainnet vault would hold a shielded asset.
 - **Lace has no plugin mechanism**, Nominee is its own DApp that wallets connect to, not a wallet feature.
 - **Legally this is a transfer mechanism, not a will.** Lead with the probate-disclosure feature, not the privacy feature.
 
@@ -276,7 +302,7 @@ keeps one instance) while failing under `tsx`.
 ## Roadmap
 
 - **Wave 1**, contract, CLI demo, validation trail
-- **Wave 2** (this wave), live shielded payout, device factor, veto window, heir web app. Preprod deployment: pending
+- **Wave 2** (this wave), live shielded payout, device factor, veto window, heir web app, Preprod deployment
 - **Wave 3**, probate disclosure and duress decoy wired into the CLI, DAO successor-signer, multi-asset vaults
 
 ## Validation trail

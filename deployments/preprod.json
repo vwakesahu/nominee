@@ -1,0 +1,135 @@
+{
+  "network": "preprod",
+  "toolchain": "0.31.1",
+  "contractAddress": "f3989203a7124ab71b8453582e6bf606cc762fe20a63faf83f91470cfd7f1247",
+  "graceSeconds": 60,
+  "challengeSeconds": 30,
+  "transactions": [
+    {
+      "circuit": "deploy",
+      "txHash": "f3989203a7124ab71b8453582e6bf606cc762fe20a63faf83f91470cfd7f1247",
+      "block": 3023384,
+      "status": "accepted"
+    },
+    {
+      "circuit": "insertVerifierKey(openProbate)",
+      "txHash": "70aad3ab1d8401093dad262d55be36af95561f881fb00496061c58909984d9d9",
+      "block": 3023389,
+      "status": "accepted"
+    },
+    {
+      "circuit": "insertVerifierKey(resolveUnderPin)",
+      "txHash": "6e6cefa8e3830b96ebbd57aa16f9cd0e3cdd1690d25c242e3788929649b772e4",
+      "block": 3023395,
+      "status": "accepted"
+    },
+    {
+      "circuit": "register",
+      "txHash": "c93d6d0a20ca82d1bd7582580eb4a7a6d043f1060b1afeaada7cb2fd79b95cae",
+      "block": 3023402,
+      "status": "accepted"
+    },
+    {
+      "circuit": "demotoken deploy",
+      "txHash": "6ef34f1eb2b05a5b30528911067332415d613fe263f62c525562c624a5b544ff",
+      "block": 3023407,
+      "status": "accepted"
+    },
+    {
+      "circuit": "demotoken mint",
+      "txHash": "cf775dc97d139145c95c3da4f7a508893a97095305eeb788d70705a6af5f42f6",
+      "block": 3023412,
+      "status": "accepted"
+    },
+    {
+      "circuit": "deposit",
+      "txHash": "6a1aed9ff9716524d470a72d025fbb168335936d141485c2a375746eaa71a5f7",
+      "block": 3023418,
+      "status": "accepted"
+    },
+    {
+      "circuit": "heartbeat",
+      "txHash": "2fee36e65d996a237036cb1d00a0626e08ac29f5071f49c045677a078697234a",
+      "block": 3023431,
+      "status": "accepted"
+    },
+    {
+      "circuit": "updateWill",
+      "txHash": "85610ceeb75e702e44fd1fd6945216f4db480aaeedd255710b50b00f749be6e5",
+      "block": 3023437,
+      "status": "accepted"
+    },
+    {
+      "circuit": "heartbeat, the last one",
+      "txHash": "29a406571024d5402214ccf2e6871e44eaf1f0579f757e56c3e6300a060ba0d3",
+      "block": 3023442,
+      "status": "accepted"
+    },
+    {
+      "circuit": "resolve",
+      "txHash": "a14898b10aef0bd4ec786ee417e3461a1cb1ced963a1841f04227b548a1800df",
+      "block": 3023452,
+      "status": "accepted"
+    },
+    {
+      "circuit": "finalize",
+      "txHash": "5156479e043b8dda2e0313a0e97a398dcaa61691d6e08a45992afddda2c538b7",
+      "block": 3023457,
+      "status": "accepted"
+    },
+    {
+      "circuit": "claim",
+      "txHash": "a35680518a7f9486d16423c374e849fe7670134f2ebf5cc4c7e9eeb2624b18d5",
+      "block": 3023463,
+      "status": "accepted"
+    },
+    {
+      "circuit": "claim",
+      "txHash": "83cad77b8bf1c856c245a73e3fdb4bc0b13e8dadb14d25246c0c14ab56261a28",
+      "block": 3023468,
+      "status": "accepted"
+    },
+    {
+      "circuit": "register",
+      "txHash": "e00a7f58ab18329ddcf8fad66375bbf534dc032f0c448d7d27af31dbbdd1f17c",
+      "block": 3023473,
+      "status": "accepted"
+    },
+    {
+      "circuit": "resolve",
+      "txHash": "67f7cd1bdedcc222b26d3285e87c8cdbe48d2160030364e95ff7675b3ee17e55",
+      "block": 3023477,
+      "status": "accepted"
+    },
+    {
+      "circuit": "veto",
+      "txHash": "ecca9ac934fea030a47b7cc33c9a71dbe9e38a4f745bceeb9ee3c13e9da33fb9",
+      "block": 3023482,
+      "status": "accepted"
+    },
+    {
+      "circuit": "finalize after a veto",
+      "txHash": null,
+      "block": null,
+      "status": "rejected",
+      "error": "no open challenge",
+      "expected": true
+    },
+    {
+      "circuit": "guardianResolve2of3",
+      "txHash": "e658a1eae1c13c4f4e9bc0d64dbc179055ecc97c1c3fbfddd48b01170d2bba4a",
+      "block": 3023487,
+      "status": "accepted"
+    },
+    {
+      "circuit": "claim (heir web page)",
+      "txHash": "a1309d692321aaee73933ff2060bafe1275e8b0a0edb87fda28dbe9d0c450914",
+      "block": 3023703,
+      "status": "accepted"
+    }
+  ],
+  "simulatorOnly": [],
+  "timestamp": "2026-10-17T17:39:32.690Z",
+  "tokenContract": "b3a482119cdf16e12bec2666c369d1c3b9abcfe61db402371cc7dd75df20e71f",
+  "depositAsset": "tNOM"
+}
