@@ -10,6 +10,9 @@ out/
 # judge can run the CLI without installing the Compact toolchain.
 !contract/out/
 !contract/out/**
+# ...and the testnet demo token's (contract/token), for the same reason.
+!contract/token/out/
+!contract/token/out/**
 
 # proving keys are large and reproducible — except the product contract's
 *.prover
@@ -18,6 +21,9 @@ keys/
 !contract/out/keys/
 !contract/out/keys/*.prover
 !contract/out/keys/*.verifier
+!contract/token/out/keys/
+!contract/token/out/keys/*.prover
+!contract/token/out/keys/*.verifier
 
 # third-party repositories cloned for prior-art review.
 # These are other people's code with their own git history and licences.

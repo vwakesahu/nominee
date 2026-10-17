@@ -1,0 +1,8 @@
+{
+  "version": 3,
+  "file": "index.js",
+  "sourceRoot": "../../src/",
+  "sources": ["demotoken.compact", "compiler/standard-library.compact"],
+  "names": [],
+  "mappings": ";;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;EAYA;;;;;;;;;;MAWA,AAAA,IAKC;;;;;cALmB,QAAgB;cAAE,OAAgB;cAAE,IAAsB;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;yCAA1D,QAAgB,+BAAE,OAAgB,+BAAE,IAAsB;;;;;;;;;sCAA1D,QAAgB;sCAAE,OAAgB;sCAAE,IAAsB;;;OAK7E;;;;GACA;EAjBD;;;;;;;;;;;;;;;;;;;;;;;;;;;IAKA;;;;;;;;;yEAA+B;IAG/B;;;;;;;;;yEAA8B;;;;;;;GAS7B;ECQD,AAAA,QAA0B;kCACkB;;EAkF5C,AAAA,aAAyB,cAAuB;qCACC,cAAY;;;EAG7D,AAAA;;uBACE;uBACA;uBACA;uBACA;;UAEM,kBAAiC;;yCAAwB;iEAAY;;;;;;;;;;;;4BAAuB;IAClG;;;;;;;;;;;2HAAoB;;;;;;2HAAY;;;;;;;;;;;;;yDACd,QAAM;UAClB,8BAAoB,QAAM;IAChC;;;;;;;;;;;2HAA2B;;;;;;SAEtB;;sBAAqB;8CAAyB;;;;;;;;;;;;;MACjD;;;;;;;;;;;6HAA6B;;;;;;;WAExB;;EAgHT,AAAA,kBACE,QACA;;;0CAKU;8CACI;;sCACJ;sCAAoB;sCAAuB;;EApQvD,AAAA,kBAAA;qEAAA;;;EAAA,AAAA,oBAAA,SAAA;;uDAAA;uDAAA;;;EAAA,AAAA,gDAAA,QAAA;;wDAAA;wDAAA;;;;;;;EDuBA,AAAA,OAKC,4BALmB,QAAgB,EAAE,OAAgB,EAAE,IAAsB;UACtE,MACiF;;;6CADnB,QAAM;6CAAY,OAAK;0DACT,IAAE;UACpF,KAAK,GAAG,MAAI;IAAZ;;;;;;;2HAAA,KAAK;;yEAAA;UACL,KAAM;IAAN;;;;;;;;;;6FAAA,KAAM;;;;wEAAA;;GACP;;;;;;;;;;;;;;;;;;;;IAXD;qCAAA;;;;;;;;;;;0GAA+B;KAAA;IAG/B;qCAAA;;;;;;;;;;;0GAA8B;KAAA;;;;;;;;;;"
+}

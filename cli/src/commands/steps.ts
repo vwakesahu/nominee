@@ -16,6 +16,9 @@ import {
   panel, short, NOWHERE, HIDDEN, NEVER, UNDISCLOSED, ok, fail, note,
 } from '../display.js';
 import type { TxRecord } from '../state.js';
+import {
+  deployOrAttachToken, waitForShieldedBalance, TOKEN_SYMBOL, type DemoToken,
+} from '../token.js';
 
 export const nowSeconds = () => BigInt(Math.floor(Date.now() / 1000));
 export const randomBytes32 = () => new Uint8Array(randomBytes(32));
@@ -68,6 +71,7 @@ export async function stepRegister(s: LiveSession, owner: Owner): Promise<TxReco
 
 export async function stepDeposit(
   s: LiveSession, owner: Owner, coin: { nonce: Uint8Array; color: Uint8Array; value: bigint },
+  colourLabel = 'native',
 ): Promise<TxRecord> {
   const r = await s.call('deposit', coin);
   panel('deposit', [
@@ -76,12 +80,63 @@ export async function stepDeposit(
   ], [
     ['ownerTag', short(s.tag(owner))],
     ['coin nonce', short(coin.nonce)],
+    ['coin colour', colourLabel],
     ['coin value', `${coin.value} (public: the coin is a circuit argument)`],
     ['who deposited', NOWHERE],
     ['linked wallet', NOWHERE],
     txRow(r), blockRow(r),
   ]);
   return rec('deposit', r);
+}
+
+/**
+ * Testnet only: deploy (or attach to) the tNOM demo token. A public testnet
+ * wallet holds unshielded NIGHT and no shielded native coin, so the demo
+ * mints itself a shielded tNOM coin to deposit instead.
+ */
+export async function stepTokenDeploy(s: LiveSession): Promise<{ token: DemoToken; record: TxRecord | null }> {
+  const token = await deployOrAttachToken(s.providers);
+  if (!token.deployTx) {
+    ok(`Attached to the ${TOKEN_SYMBOL} demo token at ${short(token.address)} (NOMINEE_TOKEN_CONTRACT).`);
+    return { token, record: null };
+  }
+  ok(`${TOKEN_SYMBOL} demo token deployed: ${token.address}  (block ${token.deployTx.block ?? '?'}, testnet only)`);
+  return { token, record: rec('demotoken deploy', token.deployTx) };
+}
+
+/** Mint `amount` tNOM to this wallet, read the colour from the token's ledger, and wait until the wallet can spend it. */
+export async function stepTokenMint(
+  s: LiveSession, owner: Owner, token: DemoToken, amount: bigint, timeoutMs: number,
+): Promise<{ record: TxRecord; color: Uint8Array; visible: boolean }> {
+  const r = await token.mintToSelf(amount);
+  const color = await token.color();
+  const started = Date.now();
+  let lastDraw = 0;
+  let balance: bigint | null = null;
+  try {
+    balance = await waitForShieldedBalance(s.facade, color, amount, timeoutMs, (_bal, p) => {
+      if (Date.now() - lastDraw < 1000) return;
+      lastDraw = Date.now();
+      const scan = p ? ` shielded scan ${p.appliedIndex}/${p.highestRelevantWalletIndex ?? p.highestIndex}` : '';
+      process.stdout.write(`\r  waiting for the shielded wallet to see the mint…${scan} (${Math.floor((Date.now() - started) / 1000)}s)   `);
+    });
+  } catch (e) {
+    if (lastDraw) process.stdout.write('\n');
+    fail(describeErr(e).slice(0, 200));
+  }
+  if (lastDraw && balance !== null) process.stdout.write('\n');
+  panel('demotoken mint', [
+    `${owner.name} mints herself ${amount} ${TOKEN_SYMBOL}, a shielded testnet token, to deposit in the vault.`,
+    'Testnet scaffolding: this wallet holds unshielded NIGHT, which cannot be shielded. The vault takes a shielded coin of any colour. The mint is permissionless and never ships to mainnet.',
+  ], [
+    ['token contract', short(token.address)],
+    ['colour', `${short(color)} (${TOKEN_SYMBOL})`],
+    ['amount', `${amount} (public: a circuit argument)`],
+    ['recipient', `${short(r.to)}, this wallet`],
+    ['wallet shielded balance', balance === null ? 'not visible yet (timed out)' : `${balance} ${TOKEN_SYMBOL}`],
+    txRow(r), blockRow(r),
+  ]);
+  return { record: rec('demotoken mint', r), color, visible: balance !== null };
 }
 
 export async function stepHeartbeat(

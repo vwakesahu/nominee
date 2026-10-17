@@ -22,6 +22,10 @@ export interface Deployment {
   network: string;
   toolchain: string;
   contractAddress: string | null;
+  /** The testnet demo token the deposit was minted from, when NOMINEE_DEPOSIT=token. */
+  tokenContract?: string;
+  /** What the vault was funded with; absent means a native shielded coin. */
+  depositAsset?: string;
   graceSeconds: number;
   challengeSeconds: number;
   transactions: TxRecord[];

@@ -103,3 +103,17 @@ export const DEPLOYMENTS_FILE = `deployments/${NETWORK}.json`;
  */
 export const DUST_CHECKPOINT_FILE =
   process.env.NOMINEE_DUST_CHECKPOINT ?? path.join(os.homedir(), '.nominee', `dust-${NETWORK}.json`);
+
+/**
+ * What the demo deposits into the vault:  NOMINEE_DEPOSIT = native | token
+ *   native  a shielded native coin (colour = 32 zero bytes). Only the local
+ *           devnet's genesis wallet holds those.
+ *   token   tNOM, minted by the testnet-only demo token (contract/token) to
+ *           this wallet first. The default on public testnets, where the
+ *           funded wallet holds unshielded NIGHT only and NIGHT cannot be
+ *           shielded. Nominee's deposit and claim accept any colour.
+ */
+export const DEPOSIT_ASSET = process.env.NOMINEE_DEPOSIT ?? (NETWORK === 'undeployed' ? 'native' : 'token');
+
+/** Address of an already deployed demo token to attach to. Unset: the demo deploys a fresh one. */
+export const TOKEN_CONTRACT = process.env.NOMINEE_TOKEN_CONTRACT ?? '';

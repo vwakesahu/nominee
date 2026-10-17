@@ -15,13 +15,14 @@ import {
   LiveSession, SimSession, buildCast, setHeirs, makeHasher, makeHeir, randKey, randScalar, describeErr,
   type Cast,
 } from '../session.js';
-import { DEMO_GRACE_SECONDS, DEMO_CHALLENGE_SECONDS, DEVICE_URL, NETWORK, HOLD_HEIR } from '../config.js';
+import { DEMO_GRACE_SECONDS, DEMO_CHALLENGE_SECONDS, DEVICE_URL, NETWORK, HOLD_HEIR, DEPOSIT_ASSET } from '../config.js';
+import { TOKEN_SYMBOL } from '../token.js';
 import { emptyDeployment, save, DEPLOYMENTS_PATH, type TxRecord } from '../state.js';
 import { exportEnvelope, writeEnvelope } from '../envelope.js';
 import { SparseTree, ownerLeaf } from '../crypto.js';
 import { OWNER_DEPTH } from '../witnesses.js';
 import {
-  nowSeconds, stepRegister, stepDeposit, stepHeartbeat, stepUpdateWill,
+  nowSeconds, stepRegister, stepDeposit, stepTokenDeploy, stepTokenMint, stepHeartbeat, stepUpdateWill,
   stepResolve, stepFinalize, stepVeto, stepGuardianResolve, stepClaim, liveRefusal, deviceSignature,
   simClaim, simAttack, simRegister, simDeposit, simHeartbeat, simUpdateWill,
   simResolve, simFinalize, simVeto, simGuardianResolve,
@@ -142,8 +143,31 @@ export async function demo() {
 
   if (live) {
     push(await step('register', () => stepRegister(live!, alice)));
-    const coin = { nonce: randKey(), color: new Uint8Array(32), value: 1000n };
-    push(await step('deposit', () => stepDeposit(live!, alice, coin)));
+    // Testnet: the wallet has no shielded native coin, so deposit a minted tNOM coin instead.
+    // Claims are unchanged: they pay out whatever colour the vault holds.
+    let color: Uint8Array = new Uint8Array(32);
+    let colourLabel = 'native';
+    if (DEPOSIT_ASSET === 'token') {
+      note(`Deposit asset: ${TOKEN_SYMBOL}, a testnet-only shielded demo token (NOMINEE_DEPOSIT=token).`);
+      const t = await step('demotoken deploy', () => stepTokenDeploy(live!));
+      if (t) {
+        push(t.record);
+        deployment.tokenContract = t.token.address;
+        const waitMs = NETWORK === 'undeployed' ? 5 * 60_000 : 30 * 60_000;
+        const m = await step('demotoken mint', () => stepTokenMint(live!, alice, t.token, 1000n, waitMs));
+        if (m) {
+          push(m.record);
+          // Deposit the token even if the wallet has not shown it yet; a failed balance is recorded as such.
+          if (!m.visible) warn(`The wallet does not show the minted ${TOKEN_SYMBOL} yet; trying the deposit anyway.`);
+          deployment.depositAsset = TOKEN_SYMBOL;
+          color = m.color;
+          colourLabel = `${TOKEN_SYMBOL} (testnet token)`;
+        }
+      }
+      if (colourLabel === 'native') warn(`No ${TOKEN_SYMBOL} to deposit; falling back to a native coin.`);
+    }
+    const coin = { nonce: randKey(), color, value: 1000n };
+    push(await step('deposit', () => stepDeposit(live!, alice, coin, colourLabel)));
     push(await step('heartbeat', () => stepHeartbeat(live!, alice, nowSeconds())));
     push(await step('updateWill', () => stepUpdateWill(live!, alice, cast.heirTree.digest(), 1n, nowSeconds())));
     lastBeat = nowSeconds();   // captured here so it is genuinely the latest

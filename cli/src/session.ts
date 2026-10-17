@@ -310,6 +310,9 @@ export class LiveSession {
     return new LiveSession(hasher, providers, deployed, address, cast ?? null, bundle, ref, setupTxs);
   }
 
+  /** The wallet facade this session balances and submits with (shielded balances live on its state). */
+  get facade(): any { return this.bundle?.facade; }
+
   /** The connected wallet's Zswap coin public key, 32 bytes: the only key it can receive shielded coins at. */
   coinPublicKey(): Uint8Array {
     const hex = String(this.providers.walletProvider.getCoinPublicKey()).replace(/^0x/, '');

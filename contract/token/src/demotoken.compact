@@ -1,0 +1,29 @@
+// SPDX-License-Identifier: Apache-2.0
+//
+// tNOM, a TESTNET DEMO TOKEN. Never deploy this on mainnet.
+//
+// The mint is permissionless: anyone may mint any amount to any coin public
+// key. It exists only so the Nominee demo has a shielded coin to deposit on a
+// public testnet, where the funded wallet holds unshielded NIGHT and no
+// shielded native coins. Nominee's `deposit` and `claim` accept a shielded coin
+// of any colour, so the vault behaves exactly as it does with native coins.
+//
+// Colour = tokenType(pad(32, "nominee:tnom:v1"), <this contract's address>),
+// so each deployment of this contract mints its own distinct colour.
+pragma language_version >= 0.23;
+
+import CompactStandardLibrary;
+
+/** The colour this contract mints, written on the first mint. */
+export ledger color: Bytes<32>;
+
+/** How many mints have happened. */
+export ledger minted: Counter;
+
+/** Mint `amount` tNOM as a fresh shielded coin owned by the coin public key `to`. */
+export circuit mint(amount: Uint<64>, nonce: Bytes<32>, to: ZswapCoinPublicKey): [] {
+  const coin = mintShieldedToken(pad(32, "nominee:tnom:v1"), disclose(amount), disclose(nonce),
+                                 left<ZswapCoinPublicKey, ContractAddress>(disclose(to)));
+  color = coin.color;
+  minted.increment(1);
+}
