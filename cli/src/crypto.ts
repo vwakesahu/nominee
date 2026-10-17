@@ -170,8 +170,14 @@ export const heirLeaf = (c: Hasher, sk: Uint8Array, share: bigint, heirKey: Uint
 export const nullifier = (c: Hasher, sk: Uint8Array) =>
   c._persistentHash_4([pad32('nominee:nf:v1'), sk]);
 
-/** The message the owner's device signs for a heartbeat: [2, now, 0, 0]. */
-export const deviceMsg = (now: bigint): bigint[] => [2n, now, 0n, 0n];
+/** What the owner's device is asked to sign: kind 2 = heartbeat, kind 4 = updateWill. */
+export type DeviceKind = 2 | 4;
+export const DEVICE_KIND_HEARTBEAT: DeviceKind = 2;
+export const DEVICE_KIND_UPDATE_WILL: DeviceKind = 4;
+/** The message the owner's device signs: [kind, now, 0, 0]. Different kinds, so a heartbeat signature cannot amend the will. */
+export const deviceMsg = (now: bigint, kind: DeviceKind = DEVICE_KIND_HEARTBEAT): bigint[] => [BigInt(kind), now, 0n, 0n];
+export const heartbeatMsg = (now: bigint): bigint[] => deviceMsg(now, DEVICE_KIND_HEARTBEAT);
+export const updateWillMsg = (now: bigint): bigint[] => deviceMsg(now, DEVICE_KIND_UPDATE_WILL);
 /** Guardian resolve message, bound to the vault: [1, degradeToTransient(tag), 0, 0]. */
 export const guardianMsg = (c: Hasher, tag: Uint8Array): bigint[] => c._guardianMsg_0(1n, tag);
 /** Guardian veto message, bound to the vault: [3, degradeToTransient(tag), 0, 0]. */

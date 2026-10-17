@@ -1,5 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // Local Midnight devnet endpoints (docker-compose.yml at the repo root).
+import * as os from 'node:os';
+import * as path from 'node:path';
 import { NetworkId } from '@midnight-ntwrk/wallet-sdk';
 
 /**
@@ -10,6 +12,11 @@ import { NetworkId } from '@midnight-ntwrk/wallet-sdk';
 export type NetworkName = 'undeployed' | 'preview' | 'preprod';
 export const NETWORK: NetworkName =
   (process.env.NOMINEE_NETWORK as NetworkName) ?? 'undeployed';
+
+/** Blockfrost project id for Preprod (prefix `nightpreprod`). NOMINEE_BLOCKFROST=<id>. */
+export const BLOCKFROST_PROJECT_ID = process.env.NOMINEE_BLOCKFROST ?? '';
+const withBlockfrost = (url: string) =>
+  BLOCKFROST_PROJECT_ID ? `${url}?project_id=${BLOCKFROST_PROJECT_ID}` : url;
 
 const PRESETS: Record<NetworkName, { indexerHttpUrl: string; indexerWsUrl: string; node: string }> = {
   undeployed: {
@@ -22,10 +29,13 @@ const PRESETS: Record<NetworkName, { indexerHttpUrl: string; indexerWsUrl: strin
     indexerWsUrl:   'wss://indexer.preview.midnight.network/api/v4/graphql/ws',
     node:           'wss://rpc.preview.midnight.network',
   },
+  // Midnight shut its public Preprod indexer and RPC on 2026-10-09; Preprod is
+  // served by Blockfrost and needs a per-network project id, passed as a query
+  // parameter because the SDK cannot set headers (blockfrost.dev/start-building/midnight).
   preprod: {
-    indexerHttpUrl: 'https://indexer.preprod.midnight.network/api/v4/graphql',
-    indexerWsUrl:   'wss://indexer.preprod.midnight.network/api/v4/graphql/ws',
-    node:           'wss://rpc.preprod.midnight.network',
+    indexerHttpUrl: withBlockfrost('https://midnight-preprod.blockfrost.io/api/v0'),
+    indexerWsUrl:   withBlockfrost('wss://midnight-preprod.blockfrost.io/api/v0/ws'),
+    node:           withBlockfrost('wss://rpc.midnight-preprod.blockfrost.io'),
   },
 };
 
@@ -75,4 +85,21 @@ export const DEMO_CHALLENGE_SECONDS = BigInt(process.env.NOMINEE_CHALLENGE ?? '3
  */
 export const DEVICE_URL = process.env.NOMINEE_DEVICE_URL ?? '';
 
+/**
+ * Name of an heir whose claim the demo SKIPS (e.g. `sam`), so the heir web
+ * page can claim it afterwards from the envelope. Unset: all nominees claim.
+ */
+export const HOLD_HEIR = (process.env.NOMINEE_HOLD_HEIR ?? '').trim().toLowerCase();
+
 export const DEPLOYMENTS_FILE = `deployments/${NETWORK}.json`;
+
+/**
+ * Where the DUST wallet snapshot is persisted between runs, OUTSIDE the repo.
+ * On a public network the DUST wallet replays every generation event since
+ * genesis (1.67M on Preprod, Oct 2026; about 30 min even with large batches),
+ * so wallet.ts restores from this file and refreshes it while syncing.
+ * NOMINEE_DUST_CHECKPOINT=<file> relocates it, `off` forces a cold scan.
+ * Never used on the local devnet, whose chain is reset too often.
+ */
+export const DUST_CHECKPOINT_FILE =
+  process.env.NOMINEE_DUST_CHECKPOINT ?? path.join(os.homedir(), '.nominee', `dust-${NETWORK}.json`);

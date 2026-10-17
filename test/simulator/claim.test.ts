@@ -17,7 +17,7 @@ describe('claim', () => {
     v.fund(1000n);
     v.heartbeat(NOW);
     v.patch({ newVaultRoot: v.heirTree.digest() });
-    v.updateWill();
+    v.updateWill(NOW);
     v.unlock(tag, NOW);
   });
 
@@ -96,7 +96,7 @@ describe('claim before resolution', () => {
     const tag = v.tag();
     v.fund(100n);
     v.patch({ newVaultRoot: v.heirTree.digest() });
-    v.updateWill();
+    v.updateWill(NOW);
     expect(() => v.claim(tag)).toThrow(/not resolved/);
   });
 
@@ -108,7 +108,7 @@ describe('claim before resolution', () => {
     v.fund(100n);
     v.heartbeat(NOW);
     v.patch({ newVaultRoot: v.heirTree.digest() });
-    v.updateWill();
+    v.updateWill(NOW);
     v.resolve(tag, NOW + 60n);
     expect(() => v.claim(tag)).toThrow(/not resolved/);
   });

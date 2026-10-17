@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // register / heartbeat / update-will, the owner's side of the vault.
 import { describe, it, expect, beforeEach } from 'vitest';
-import { Vault, makeOwner, makeHeir } from './harness.js';
+import { Vault, makeOwner, makeHeir, withoutDevice } from './harness.js';
 import type { Owner } from '../../cli/src/witnesses.js';
 
 describe('register', () => {
@@ -77,28 +77,46 @@ describe('heartbeat', () => {
 });
 
 describe('updateWill', () => {
+  const alice = makeOwner('Alice');
+  const NOW = 1_000_000n;
   let v: Vault;
   beforeEach(() => {
-    v = new Vault({ owners: [makeOwner('Alice')], heirs: [makeHeir('Maya', 100n)] });
+    v = new Vault({ owners: [alice], heirs: [makeHeir('Maya', 100n)] });
     v.register();
+    v.patch({ newVaultRoot: v.heirTree.digest() });
   });
 
-  it('replaces the beneficiary root and bumps the version', () => {
-    v.patch({ newVaultRoot: v.heirTree.digest() });
-    v.updateWill();
+  it('replaces the beneficiary root and bumps the version (secret AND device)', () => {
+    v.updateWill(NOW);
     expect(v.ledger.willVersion.lookup(v.tag())).toBe(1n);
     expect(v.ledger.vaultRoot.lookup(v.tag()).field).toBe(v.heirTree.root());
   });
 
   it('increments the version on every amendment', () => {
-    v.patch({ newVaultRoot: v.heirTree.digest() });
-    v.updateWill(); v.updateWill(); v.updateWill();
+    v.updateWill(NOW); v.updateWill(NOW + 1n); v.updateWill(NOW + 2n);
     expect(v.ledger.willVersion.lookup(v.tag())).toBe(3n);
   });
 
   it('rejects an unregistered owner', () => {
     const other = new Vault({ owners: [makeOwner('Alice')], heirs: [makeHeir('Maya', 100n)] });
     other.patch({ newVaultRoot: other.heirTree.digest() });
-    expect(() => other.updateWill()).toThrow(/unknown owner/);
+    expect(() => other.updateWill(NOW)).toThrow(/unknown owner/);
+  });
+
+  it('is refused without the device key (a stolen seed cannot rewrite the will)', () => {
+    v.patch({ owner: withoutDevice(alice) });
+    expect(() => v.updateWill(NOW)).toThrow(/Invalid attestation signature/);
+    expect(v.ledger.willVersion.lookup(v.tag())).toBe(0n);
+  });
+
+  it('refuses a heartbeat device signature replayed into updateWill (different message kind)', () => {
+    // the device signed [2, now, 0, 0]; updateWill verifies [4, now, 0, 0]
+    v.patch({ heartbeatNow: NOW, deviceKind: 2 });
+    expect(() => v.rawCall('updateWill', NOW)).toThrow(/Invalid attestation signature/);
+    expect(v.ledger.willVersion.lookup(v.tag())).toBe(0n);
+  });
+
+  it('refuses a timestamp in the future', () => {
+    expect(() => v.updateWill(BigInt(Math.floor(Date.now() / 1000)) + 3600n)).toThrow(/timestamp in the future/);
   });
 });

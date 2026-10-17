@@ -7,8 +7,9 @@
 // pulse. This process does the same with a flag standing in for the sensor.
 //
 //   GET  /pubkey        -> { x, y }                      the device's public key (decimal strings)
-//   POST /sign { now }  -> { announcement: { x, y }, response }   Schnorr over [2, now, 0, 0]
-//                       -> 409 { error: "no pulse" }    when nobody is wearing the device
+//   POST /sign { kind, now } -> { announcement: { x, y }, response }   Schnorr over [kind, now, 0, 0]
+//                             kind 2 = heartbeat, kind 4 = updateWill; anything else -> 400
+//                             -> 409 { error: "no pulse" }    when nobody is wearing the device
 //
 // The key lives in deployments/device.json (gitignored). The demo uses this
 // signer when NOMINEE_DEVICE_URL is set and signs in-process otherwise.
@@ -18,7 +19,7 @@ import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { ok, note, warn } from '../display.js';
 import { makeHasher } from '../session.js';
-import { deviceKeypair, deviceMsg, schnorrSign, toPlainSignature, type DeviceKey } from '../crypto.js';
+import { deviceKeypair, deviceMsg, schnorrSign, toPlainSignature, type DeviceKey, type DeviceKind } from '../crypto.js';
 
 const ROOT = resolve(fileURLToPath(new URL('../../..', import.meta.url)));
 export const DEVICE_FILE = resolve(ROOT, 'deployments/device.json');
@@ -56,9 +57,12 @@ export async function device(opts: { pulse?: boolean; port?: string } = {}) {
       req.on('end', () => {
         if (!pulse) { warn('sign refused: no pulse'); return json(res, 409, { error: 'no pulse' }); }
         try {
-          const now = BigInt(JSON.parse(body || '{}').now);
-          const sig = toPlainSignature(schnorrSign(hasher, key, deviceMsg(now)));
-          ok(`signed heartbeat for t=${now}`);
+          const req = JSON.parse(body || '{}');
+          const kind = Number(req.kind ?? 2);
+          if (kind !== 2 && kind !== 4) return json(res, 400, { error: `unknown message kind ${String(req.kind)} (2 = heartbeat, 4 = updateWill)` });
+          const now = BigInt(req.now);
+          const sig = toPlainSignature(schnorrSign(hasher, key, deviceMsg(now, kind as DeviceKind)));
+          ok(`signed ${kind === 2 ? 'heartbeat' : 'updateWill'} for t=${now}`);
           json(res, 200, sig);
         } catch (e: any) { json(res, 400, { error: String(e?.message ?? e) }); }
       });
@@ -70,7 +74,7 @@ export async function device(opts: { pulse?: boolean; port?: string } = {}) {
   await new Promise<void>((r) => server.listen(port, '127.0.0.1', r));
   console.log();
   ok(`nominee device listening on http://127.0.0.1:${port}  (pulse: ${pulse ? 'present' : 'ABSENT, signing refused'})`);
-  note('GET /pubkey, POST /sign {now}. An ESP32 + MAX30102 implements the same two endpoints.');
+  note('GET /pubkey, POST /sign {kind, now} (2 = heartbeat, 4 = updateWill). An ESP32 + MAX30102 implements the same two endpoints.');
   note(`Run the demo with NOMINEE_DEVICE_URL=http://127.0.0.1:${port}`);
   console.log();
 }

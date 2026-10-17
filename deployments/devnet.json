@@ -1,104 +1,98 @@
 {
   "network": "local-devnet",
   "toolchain": "0.31.1",
-  "contractAddress": "95c19e419b29552963221387417d171ad3794e12519436efb242433e5c218c39",
+  "contractAddress": "5da98e562fea1f262ad81731880a3681ab90012dab8d2923fc6e71a333e5cc67",
   "graceSeconds": 60,
   "challengeSeconds": 30,
   "transactions": [
     {
       "circuit": "deploy",
-      "txHash": "95c19e419b29552963221387417d171ad3794e12519436efb242433e5c218c39",
-      "block": 273,
+      "txHash": "5da98e562fea1f262ad81731880a3681ab90012dab8d2923fc6e71a333e5cc67",
+      "block": 613,
       "status": "accepted"
     },
     {
       "circuit": "insertVerifierKey(openProbate)",
-      "txHash": "ced10a226f33ca8d7beefad99932e42347b2be236c73f9762a89b9862f434fda",
-      "block": 276,
+      "txHash": "bb4e771219c0d572679d3f9464b26081877d631d48e687a266912c5f8d121c58",
+      "block": 616,
       "status": "accepted"
     },
     {
       "circuit": "insertVerifierKey(resolveUnderPin)",
-      "txHash": "0d71f71d882770c6cf6dfef6b8b5ad7d555bb9bdfeaabd3cf8106fff6b5ca16c",
-      "block": 279,
+      "txHash": "6d4687bc5acc462b930717e1665518fb0f7a4898295e5f1ff7eb060b6eff7e7b",
+      "block": 619,
       "status": "accepted"
     },
     {
       "circuit": "register",
-      "txHash": "67ac245a8d6a5d0cb887143652c04da31672b0fd7e4e8db6379fbb6097884087",
-      "block": 282,
+      "txHash": "f7cd772b6411c4ea204a12e2adf499fda9c0251b2c6801feaf69a68dfef98b42",
+      "block": 622,
       "status": "accepted"
     },
     {
       "circuit": "deposit",
-      "txHash": "0c623e757d10742f5aaab356ea1614d4ada22baa98f20c6d5d43c6ae7beaae15",
-      "block": 286,
+      "txHash": "8da98c83cdf504c703126fe0cd14f68114f969594e9aeca5d16375e5b98f62d6",
+      "block": 627,
       "status": "accepted"
     },
     {
       "circuit": "heartbeat",
-      "txHash": "c11df33e2490805b7ab05763f1d298e4677720a0633ac764546642ea6f8b1110",
-      "block": 290,
+      "txHash": "51811949d9a2c646933f22da26f6620bf045c8619d8846add813cfb5cd8438d7",
+      "block": 631,
       "status": "accepted"
     },
     {
       "circuit": "updateWill",
-      "txHash": "3d40f44034a256ebf78848742b5bc16e46a61b2117ded088e1dea12d4720dafc",
-      "block": 293,
+      "txHash": "e61835d659d7427bf25232e6b978cee41656bcb7914b0675460568cbdef01adc",
+      "block": 635,
       "status": "accepted"
     },
     {
       "circuit": "heartbeat, the last one",
-      "txHash": "4779afd55c9c7de608db77898e2887eab829d171847ec321702660afe80d19d1",
-      "block": 297,
+      "txHash": "001a4f59880836c0653235f79fef7d1117e0a96ee861eb1d55387fbeac76e551",
+      "block": 639,
       "status": "accepted"
     },
     {
       "circuit": "resolve",
-      "txHash": "beb590f78ec6c3a14046bc71536afef5264a5ee41a69929650e70db0c101b4db",
-      "block": 307,
+      "txHash": "009e6169de578139d1d0ae31179813acf96a5cfb9598df8e766e030faa7d2066",
+      "block": 649,
       "status": "accepted"
     },
     {
       "circuit": "finalize",
-      "txHash": "08051d473eb40317a7560d89e627f2b1bd323f9e3fd49fdfac8896d1f5cabdf1",
-      "block": 312,
+      "txHash": "2d240c46dceb1ae2127ffdb1a5d907337febebd02369b6f7ec9a05cf467c2f9f",
+      "block": 654,
       "status": "accepted"
     },
     {
       "circuit": "claim",
-      "txHash": "113f653cf7675dab7e97cc947a5377572000c80fdcd6f9059004cad55898e00a",
-      "block": 316,
+      "txHash": "5bcd3cb47dcd1d734946d0bf128cb3f8d798df5db09f06e22f6ee92c61225c49",
+      "block": 659,
       "status": "accepted"
     },
     {
       "circuit": "claim",
-      "txHash": "35db84ee96a8ee80bcfe9ef4ba0ae42d5ef9d8626658c20c2d5af9f39d9bf037",
-      "block": 320,
-      "status": "accepted"
-    },
-    {
-      "circuit": "claim",
-      "txHash": "9abb5701b49df7e2b8d1f386c3c58c6cc3ef13688900abd5bdc0d2347e1a389f",
-      "block": 324,
+      "txHash": "fe84f4a9af63f9d148ba8ca85a0d7c19cbd1178b2017eab4776a3add5d25da87",
+      "block": 663,
       "status": "accepted"
     },
     {
       "circuit": "register",
-      "txHash": "cee55e2f019f8ba9a83e72428ed96adda62bbb101003b70a1d40882beff75a98",
-      "block": 327,
+      "txHash": "4491930d3c0220159fa7306f522397448b2165a61a19a147363493c219d57483",
+      "block": 666,
       "status": "accepted"
     },
     {
       "circuit": "resolve",
-      "txHash": "c69dc73355f58c87ad7b4b17ed81438f68e013e5e3ee2b2227db00e8c127376a",
-      "block": 330,
+      "txHash": "cf9189c0be1ed70304210a809a56a002899189bb49712b37df3fb6b04f3cfde2",
+      "block": 669,
       "status": "accepted"
     },
     {
       "circuit": "veto",
-      "txHash": "1fd1d1124cbb735fd3b1a267f3359b9b1e15d78f6d7b973e3510e9e536beaed3",
-      "block": 333,
+      "txHash": "8d7ba9da244e5ee6c6e9c90b13be6e4a6e17090c1f35e8ab0527e9e2e785c4d7",
+      "block": 672,
       "status": "accepted"
     },
     {
@@ -111,11 +105,17 @@
     },
     {
       "circuit": "guardianResolve2of3",
-      "txHash": "e91ecbe5b61b9bd80166017892b2e688b50d54b98a168a24c29a5c160f71e9d8",
-      "block": 336,
+      "txHash": "0cc66f342d2713fd11ee2bc2270cbbd38aeee0b13b325c180b1d13b22adbaed5",
+      "block": 675,
+      "status": "accepted"
+    },
+    {
+      "circuit": "claim (heir web page)",
+      "txHash": "aebe8df7b90f9e242025e90287eba49d8dd45fbc8b218f12a76a627b4f36d36a",
+      "block": 681,
       "status": "accepted"
     }
   ],
   "simulatorOnly": [],
-  "timestamp": "2026-10-16T18:37:44.509Z"
+  "timestamp": "2026-10-16T19:12:30.849183Z"
 }

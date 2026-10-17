@@ -15,7 +15,7 @@ import {
   LiveSession, SimSession, buildCast, setHeirs, makeHasher, makeHeir, randKey, randScalar, describeErr,
   type Cast,
 } from '../session.js';
-import { DEMO_GRACE_SECONDS, DEMO_CHALLENGE_SECONDS, DEVICE_URL, NETWORK } from '../config.js';
+import { DEMO_GRACE_SECONDS, DEMO_CHALLENGE_SECONDS, DEVICE_URL, NETWORK, HOLD_HEIR } from '../config.js';
 import { emptyDeployment, save, DEPLOYMENTS_PATH, type TxRecord } from '../state.js';
 import { exportEnvelope, writeEnvelope } from '../envelope.js';
 import { SparseTree, ownerLeaf } from '../crypto.js';
@@ -145,28 +145,28 @@ export async function demo() {
     const coin = { nonce: randKey(), color: new Uint8Array(32), value: 1000n };
     push(await step('deposit', () => stepDeposit(live!, alice, coin)));
     push(await step('heartbeat', () => stepHeartbeat(live!, alice, nowSeconds())));
-    push(await step('updateWill', () => stepUpdateWill(live!, alice, cast.heirTree.digest(), 1n)));
+    push(await step('updateWill', () => stepUpdateWill(live!, alice, cast.heirTree.digest(), 1n, nowSeconds())));
     lastBeat = nowSeconds();   // captured here so it is genuinely the latest
     push(await step('heartbeat', () => stepHeartbeat(live!, alice, lastBeat, 'heartbeat, the last one')));
   }
-  // The simulator signs heartbeats in-process, unless an external device holds Alice's key.
-  const simBeat = async (now: bigint, label: string) => {
-    sim.patch({ deviceSignature: (await deviceSignature(now)) ?? undefined });
-    try { simHeartbeat(sim, alice, now, label, mirror); }
+  // The simulator signs device messages in-process, unless an external device holds Alice's key.
+  const withDevice = async (now: bigint, kind: 2 | 4, fn: () => void) => {
+    sim.patch({ deviceSignature: (await deviceSignature(now, kind)) ?? undefined });
+    try { fn(); }
     finally { sim.patch({ deviceSignature: undefined }); }
   };
   simRegister(sim, alice, mirror);
   simDeposit(sim, alice, 1000n, mirror);
-  await simBeat(simLastBeat - 10n, 'heartbeat');
-  simUpdateWill(sim, alice, cast.heirTree.digest(), mirror);
-  await simBeat(simLastBeat, 'heartbeat, the last one');
+  await withDevice(simLastBeat - 10n, 2, () => simHeartbeat(sim, alice, simLastBeat - 10n, 'heartbeat', mirror));
+  await withDevice(simLastBeat - 5n, 4, () => simUpdateWill(sim, alice, cast.heirTree.digest(), simLastBeat - 5n, mirror));
+  await withDevice(simLastBeat, 2, () => simHeartbeat(sim, alice, simLastBeat, 'heartbeat, the last one', mirror));
   if (!mirror) simOnly.push('register', 'deposit', 'heartbeat', 'updateWill', 'heartbeat');
 
   // The envelopes: delivered off-chain, one per nominee. Secrets live here, not on chain.
   console.log();
   const address = live?.address ?? sim.address;
   for (let i = 0; i < heirs.length; i++) {
-    const file = writeEnvelope(exportEnvelope(cast, i, address, NETWORK, alice), heirs[i].name);
+    const file = writeEnvelope(exportEnvelope(cast, i, address, NETWORK, alice), heirs[i].name, { live: !!live });
     note(`Envelope for ${heirs[i].name}: ${file.replace(process.cwd() + '/', '')}`);
   }
   note('Each envelope holds the nominee\'s secret, share, payout key and Merkle path. Treat it like a seed phrase.');
@@ -198,20 +198,24 @@ export async function demo() {
   // ---- Chapter 4 ---------------------------------------------------------
   chapter(4, 'The nominees');
   const aliceTag = sim.tag(alice);
+  const held = (h: { name: string }) => h.name.toLowerCase() === HOLD_HEIR;
   if (live) {
-    note('Three real shielded payouts from the contract. Each nominee claims to the key bound in their leaf.');
+    note('Real shielded payouts from the contract. Each nominee claims to the key bound in their leaf.');
     for (let i = 0; i < heirs.length; i++) {
+      if (held(heirs[i])) { note(`${heirs[i].name} has not claimed yet; see the heir page.`); continue; }
       const c = await step('claim', () => stepClaim(live!, alice, i, heirs[i]));
       if (c) { const { remaining: _r, ...record } = c; push(record); }
       simClaim(sim, aliceTag, i, heirs[i], true);
     }
   } else {
     for (let i = 0; i < heirs.length; i++) {
+      if (held(heirs[i])) { note(`${heirs[i].name} has not claimed yet; see the heir page.`); continue; }
       simClaim(sim, aliceTag, i, heirs[i]);
       simOnly.push('claim');
     }
   }
   if (sim.remaining(aliceTag) === null) ok('Last claim took the exact remainder: heldCoin[tag] removed.');
+  else if (HOLD_HEIR) note(`heldCoin[tag] still holds ${sim.remaining(aliceTag)} for the nominee who has not claimed.`);
 
   // ---- Chapter 5 ---------------------------------------------------------
   chapter(5, 'Attacks fail');
@@ -303,8 +307,8 @@ export async function demo() {
   if (live) save(deployment);   // a simulator run never overwrites the live record
 
   summary({
-    circuits: 13, maxK: 16, keysMB: 65,
-    tests: '46 passing', leak: 'CLEAN',
+    circuits: 13, maxK: 16, keysMB: 75,
+    tests: '49 passing', leak: 'CLEAN',
     txs: accepted, claims: live ? claims : 3, live: !!live,
   });
   console.log();

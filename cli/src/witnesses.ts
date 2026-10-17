@@ -5,7 +5,7 @@
 // EVERY secret in Nominee arrives through one of these. Circuit *arguments*
 // are public; only witnesses are private. This is enforced by the ZKIR leak
 // check in test/privacy/leakcheck.py.
-import type { DeviceKey, Entry, GuardianKey, SchnorrSignature } from './crypto.js';
+import type { DeviceKey, DeviceKind, Entry, GuardianKey, SchnorrSignature } from './crypto.js';
 import {
   SparseTree, heirLeaf, ownerLeaf, schnorrReduction, schnorrSign,
   deviceMsg, guardianMsg, guardianVetoMsg, fromPlainSignature, type PlainSignature,
@@ -48,8 +48,10 @@ export interface PrivateState {
   /** Duress decoy root. */
   decoyRoot?: { field: bigint };
 
-  /** The timestamp the next heartbeat will carry; the device signs it. Set before each heartbeat. */
+  /** The timestamp the next heartbeat / updateWill carries; the device signs it. Set before each call. */
   heartbeatNow: bigint;
+  /** Which device message the next call verifies: 2 = heartbeat, 4 = updateWill. */
+  deviceKind: DeviceKind;
   /** A signature produced by an external device (nominee device / ESP32), used instead of in-process signing. */
   deviceSignature?: PlainSignature;
 
@@ -154,7 +156,7 @@ export function makeWitnesses(hasher: any, ref?: StateRef): any {
       const ps = st(ctx);
       const s = ps.deviceSignature
         ? fromPlainSignature(ps.deviceSignature)
-        : schnorrSign(hasher, ps.owner.device, deviceMsg(ps.heartbeatNow));
+        : schnorrSign(hasher, ps.owner.device, deviceMsg(ps.heartbeatNow, ps.deviceKind ?? 2));
       return [ctx.privateState, s];
     },
 

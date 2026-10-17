@@ -52,9 +52,8 @@ export class LiveBackend implements Backend {
    * witnesses are swapped per claim through `witnessOverrides`.
    */
   private session(address: string, overrides: Record<string, Function>): Promise<any> {
-    // TODO(cli-live): LiveSession.connect(cast?, { address, witnessOverrides })
-    // is being added in cli/src/session.ts (SPEC §1.3). Until the rebuilt
-    // cli/dist lands this call fails with a clear error instead of a stale one.
+    // LiveSession.connect(null, { address, witnessOverrides }) attaches to the
+    // deployed registry; a missing export means cli/dist is stale.
     const key = address.toLowerCase();
     let p = this.sessions.get(key);
     if (!p) {

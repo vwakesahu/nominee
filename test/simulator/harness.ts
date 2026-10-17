@@ -70,6 +70,7 @@ export class Vault {
       heirTree: this.heirTree,
       activeHeir: 0,
       heartbeatNow: 0n,
+      deviceKind: 2,
       guardianKeys: this.guardianKeys,
       attesting: [0, 1],
       guardianKind: 'resolve',
@@ -115,10 +116,13 @@ export class Vault {
   }
 
   register()                    { return this.call('register'); }
-  heartbeat(now: bigint)        { this.patch({ heartbeatNow: now }); return this.call('heartbeat', now); }
+  heartbeat(now: bigint)        { this.patch({ heartbeatNow: now, deviceKind: 2 }); return this.call('heartbeat', now); }
   veto(now: bigint)             { return this.call('veto', now); }
   deposit(coin: any)            { return this.call('deposit', coin); }
-  updateWill()                  { return this.call('updateWill'); }
+  /** Amend the will; needs the device (kind-4 signature). Set `newVaultRoot` first. */
+  updateWill(now: bigint = 1_000_000n) { this.patch({ heartbeatNow: now, deviceKind: 4 }); return this.call('updateWill', now); }
+  /** Raw call with whatever device state is set, for replay tests. */
+  rawCall(name: string, ...args: any[]) { return this.call(name, ...args); }
   resolve(tag: Uint8Array, deadline: bigint) { return this.call('resolve', tag, deadline); }
   finalize(tag: Uint8Array, until: bigint)   { return this.call('finalize', tag, until); }
   /** Guardians sign for `signedTag` (default: the tag they are presented against). */

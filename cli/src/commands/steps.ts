@@ -11,6 +11,7 @@ import type { LiveSession, SimSession } from '../session.js';
 import { describeErr } from '../session.js';
 import type { Heir, Owner } from '../witnesses.js';
 import { DEVICE_URL } from '../config.js';
+import type { DeviceKind } from '../crypto.js';
 import {
   panel, short, NOWHERE, HIDDEN, NEVER, UNDISCLOSED, ok, fail, note,
 } from '../display.js';
@@ -31,11 +32,11 @@ const remainingText = (v: bigint | null) => v === null ? 'none, entry removed' :
  * endpoints) to sign the heartbeat timestamp. Returns null when no device is
  * configured, in which case the owner's key signs in-process.
  */
-export async function deviceSignature(now: bigint) {
+export async function deviceSignature(now: bigint, kind: DeviceKind = 2) {
   if (!DEVICE_URL) return null;
   const r = await fetch(`${DEVICE_URL.replace(/\/$/, '')}/sign`, {
     method: 'POST', headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ now: now.toString() }),
+    body: JSON.stringify({ kind, now: now.toString() }),
   });
   if (r.status === 409) throw new Error('device: no pulse, the heartbeat is refused by the device itself');
   if (!r.ok) throw new Error(`device: HTTP ${r.status}`);
@@ -86,7 +87,7 @@ export async function stepDeposit(
 export async function stepHeartbeat(
   s: LiveSession, owner: Owner, now: bigint, label = 'heartbeat',
 ): Promise<TxRecord> {
-  const ext = await deviceSignature(now);
+  const ext = await deviceSignature(now, 2);
   s.patch({ deviceSignature: ext ?? undefined });
   let r;
   try { r = await s.heartbeat(now); }
@@ -108,17 +109,21 @@ export async function stepHeartbeat(
 }
 
 export async function stepUpdateWill(
-  s: LiveSession, owner: Owner, newRoot: { field: bigint }, version: bigint,
+  s: LiveSession, owner: Owner, newRoot: { field: bigint }, version: bigint, now: bigint,
 ): Promise<TxRecord> {
-  s.patch({ newVaultRoot: newRoot });
-  const r = await s.call('updateWill');
+  const ext = await deviceSignature(now, 4);
+  s.patch({ newVaultRoot: newRoot, deviceSignature: ext ?? undefined });
+  let r;
+  try { r = await s.updateWill(now); }
+  finally { s.patch({ deviceSignature: undefined }); }
   panel('update-will', [
     `${owner.name} writes her will: three nominees, three shares, each bound to the nominee's own payout key.`,
-    'Only the Merkle root is published. Neither version of the will is revealed.',
+    'Amending needs both factors: her secret and her device (a distinct signature kind, so a heartbeat signature cannot rewrite the will). Only the Merkle root is published.',
   ], [
     ['ownerTag', short(s.tag(owner))],
     ['vaultRoot', short(newRoot.field)],
     ['willVersion', String(version)],
+    ['device signature', 'verified in-circuit'],
     ['beneficiaries', HIDDEN],
     ['how many', NOWHERE],
     ['shares', HIDDEN],
@@ -341,17 +346,18 @@ export function simHeartbeat(sim: SimSession, owner: Owner, now: bigint, label =
   ], SIM);
 }
 
-export function simUpdateWill(sim: SimSession, owner: Owner, newRoot: { field: bigint }, quiet = false) {
+export function simUpdateWill(sim: SimSession, owner: Owner, newRoot: { field: bigint }, now: bigint, quiet = false) {
   sim.patch({ newVaultRoot: newRoot });
-  sim.call('updateWill');
+  sim.updateWill(now);
   if (quiet) return;
   panel('update-will', [
     `${owner.name} writes her will: three nominees, three shares, each bound to the nominee's own payout key.`,
-    'Only the Merkle root is published. Neither version of the will is revealed.',
+    'Amending needs both factors: her secret and her device (a distinct signature kind). Only the Merkle root is published.',
   ], [
     ['ownerTag', short(sim.tag(owner))],
     ['vaultRoot', short(newRoot.field)],
     ['willVersion', String(sim.ledger.willVersion.lookup(sim.tag(owner)))],
+    ['device signature', 'verified in-circuit'],
     ['beneficiaries', HIDDEN],
     ['how many', NOWHERE],
     ['shares', HIDDEN],

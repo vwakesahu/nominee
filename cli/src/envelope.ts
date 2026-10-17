@@ -80,10 +80,19 @@ export const envelopeKey = (env: Envelope) => unhex(env.heirKey);
 const ROOT = resolve(fileURLToPath(new URL('../..', import.meta.url)));
 export const ENVELOPES_DIR = resolve(ROOT, 'deployments/envelopes');
 
-/** deployments/envelopes/<heirname>.json (gitignored: it holds the heir's secret). */
-export function writeEnvelope(env: Envelope, heirName: string): string {
-  mkdirSync(ENVELOPES_DIR, { recursive: true });
-  const file = resolve(ENVELOPES_DIR, `${heirName.toLowerCase().replace(/[^a-z0-9]+/g, '-')}.json`);
+/**
+ * deployments/envelopes/<heirname>.json (gitignored: it holds the heir's secret).
+ *
+ * The flat path is reserved for LIVE runs on the local devnet (SPEC §2 pastes
+ * `deployments/envelopes/maya.json`). Other networks write under
+ * `<network>/`, simulator runs under `simulator/`, so a concurrent Preprod or
+ * simulator run cannot overwrite the devnet envelopes a judge is about to use.
+ */
+export function writeEnvelope(env: Envelope, heirName: string, opts: { live: boolean } = { live: true }): string {
+  const sub = !opts.live ? 'simulator' : env.network === 'undeployed' ? '' : env.network;
+  const dir = sub ? resolve(ENVELOPES_DIR, sub) : ENVELOPES_DIR;
+  mkdirSync(dir, { recursive: true });
+  const file = resolve(dir, `${heirName.toLowerCase().replace(/[^a-z0-9]+/g, '-')}.json`);
   writeFileSync(file, JSON.stringify(env, null, 2) + '\n', { mode: 0o600 });
   return file;
 }

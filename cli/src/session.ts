@@ -97,6 +97,7 @@ export function initialPrivateState(cast?: Cast | null): PrivateState {
     heirTree: cast?.heirTree,
     activeHeir: 0,
     heartbeatNow: 0n,
+    deviceKind: 2,
     guardianKeys: cast?.guardianKeys ?? [],
     attesting: [0, 1],
     guardianKind: 'resolve',
@@ -148,7 +149,9 @@ export class SimSession {
     return this.ledger;
   }
 
-  heartbeat(now: bigint) { this.patch({ heartbeatNow: now }); return this.call('heartbeat', now); }
+  heartbeat(now: bigint) { this.patch({ heartbeatNow: now, deviceKind: 2 }); return this.call('heartbeat', now); }
+  /** Amend the will: knowledge AND the device (kind-4 signature over `now`). Set `newVaultRoot` first. */
+  updateWill(now: bigint) { this.patch({ heartbeatNow: now, deviceKind: 4 }); return this.call('updateWill', now); }
   veto(now: bigint) { return this.call('veto', now); }
   finalize(tag: Uint8Array, until: bigint) { return this.call('finalize', tag, until); }
   guardianResolve2of3(tag: Uint8Array, g0: bigint, g1: bigint) {
@@ -324,7 +327,9 @@ export class LiveSession {
     };
   }
 
-  heartbeat(now: bigint) { this.patch({ heartbeatNow: now }); return this.call('heartbeat', now); }
+  heartbeat(now: bigint) { this.patch({ heartbeatNow: now, deviceKind: 2 }); return this.call('heartbeat', now); }
+  /** Amend the will: knowledge AND the device (kind-4 signature over `now`). Set `newVaultRoot` first. */
+  updateWill(now: bigint) { this.patch({ heartbeatNow: now, deviceKind: 4 }); return this.call('updateWill', now); }
   veto(now: bigint) { return this.call('veto', now); }
   finalize(tag: Uint8Array, until: bigint) { return this.call('finalize', tag, until); }
   guardianResolve2of3(tag: Uint8Array, g0: bigint, g1: bigint) {
