@@ -50,7 +50,7 @@ export type ImpureCircuits<PS> = {
   veto(context: __compactRuntime.CircuitContext<PS>, now_0: bigint): __compactRuntime.CircuitResults<PS, []>;
   deposit(context: __compactRuntime.CircuitContext<PS>,
           coin_0: { nonce: Uint8Array, color: Uint8Array, value: bigint }): __compactRuntime.CircuitResults<PS, []>;
-  updateWill(context: __compactRuntime.CircuitContext<PS>): __compactRuntime.CircuitResults<PS, []>;
+  updateWill(context: __compactRuntime.CircuitContext<PS>, now_0: bigint): __compactRuntime.CircuitResults<PS, []>;
   resolve(context: __compactRuntime.CircuitContext<PS>,
           tag_0: Uint8Array,
           deadline_0: bigint): __compactRuntime.CircuitResults<PS, []>;
@@ -88,7 +88,7 @@ export type ProvableCircuits<PS> = {
   veto(context: __compactRuntime.CircuitContext<PS>, now_0: bigint): __compactRuntime.CircuitResults<PS, []>;
   deposit(context: __compactRuntime.CircuitContext<PS>,
           coin_0: { nonce: Uint8Array, color: Uint8Array, value: bigint }): __compactRuntime.CircuitResults<PS, []>;
-  updateWill(context: __compactRuntime.CircuitContext<PS>): __compactRuntime.CircuitResults<PS, []>;
+  updateWill(context: __compactRuntime.CircuitContext<PS>, now_0: bigint): __compactRuntime.CircuitResults<PS, []>;
   resolve(context: __compactRuntime.CircuitContext<PS>,
           tag_0: Uint8Array,
           deadline_0: bigint): __compactRuntime.CircuitResults<PS, []>;
@@ -129,7 +129,7 @@ export type Circuits<PS> = {
   veto(context: __compactRuntime.CircuitContext<PS>, now_0: bigint): __compactRuntime.CircuitResults<PS, []>;
   deposit(context: __compactRuntime.CircuitContext<PS>,
           coin_0: { nonce: Uint8Array, color: Uint8Array, value: bigint }): __compactRuntime.CircuitResults<PS, []>;
-  updateWill(context: __compactRuntime.CircuitContext<PS>): __compactRuntime.CircuitResults<PS, []>;
+  updateWill(context: __compactRuntime.CircuitContext<PS>, now_0: bigint): __compactRuntime.CircuitResults<PS, []>;
   resolve(context: __compactRuntime.CircuitContext<PS>,
           tag_0: Uint8Array,
           deadline_0: bigint): __compactRuntime.CircuitResults<PS, []>;

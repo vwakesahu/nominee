@@ -146,11 +146,18 @@ export circuit deposit(coin: ShieldedCoinInfo): [] {
                       right<ZswapCoinPublicKey, ContractAddress>(kernel.self()));
 }
 
-// 4. Rewrite the will. Old and new contents both stay private.
-export circuit updateWill(): [] {
+// 4. Rewrite the will. Old and new contents both stay private. TWO factors,
+//    like heartbeat: the device signs [4, now, 0, 0]. A stolen seed alone can
+//    neither keep the vault alive nor redirect who it pays.
+export circuit updateWill(now: Uint<64>): [] {
   const sk = ownerSecret(); const wr = willRoot();
   const tag = disclose(ownerTag(sk, wr));
   assert(lastSeen.member(tag), "unknown owner");
+  assert(blockTimeGte(disclose(now)), "timestamp in the future");
+  const leaf = ownerLeafOf(sk, wr);
+  assert(ownerSet.field == disclose(merkleTreePathRoot<16, Bytes<32>>(ownerPath(leaf))).field, "not a registered owner");
+  const devMsg: Vector<4, Field> = [4 as Field, disclose(now) as Field, 0 as Field, 0 as Field];
+  Schnorr_schnorrVerify<4>(devMsg, deviceSig(), constructJubjubPoint(devicePkX(), devicePkY()));
   vaultRoot.insert(tag, disclose(newVaultRoot()));
   willVersion.insert(tag, (willVersion.lookup(tag) + 1) as Uint<64>);
 }

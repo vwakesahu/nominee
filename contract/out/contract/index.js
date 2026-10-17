@@ -512,25 +512,36 @@ export class Contract {
         return { result: result_0, context: context, proofData: partialProofData, gasCost: context.gasCost };
       },
       updateWill: (...args_1) => {
-        if (args_1.length !== 1) {
-          throw new __compactRuntime.CompactError(`updateWill: expected 1 argument (as invoked from Typescript), received ${args_1.length}`);
+        if (args_1.length !== 2) {
+          throw new __compactRuntime.CompactError(`updateWill: expected 2 arguments (as invoked from Typescript), received ${args_1.length}`);
         }
         const contextOrig_0 = args_1[0];
+        const now_0 = args_1[1];
         if (!(typeof(contextOrig_0) === 'object' && contextOrig_0.currentQueryContext != undefined)) {
           __compactRuntime.typeError('updateWill',
                                      'argument 1 (as invoked from Typescript)',
-                                     'nominee.compact line 150 char 1',
+                                     'nominee.compact line 152 char 1',
                                      'CircuitContext',
                                      contextOrig_0)
         }
+        if (!(typeof(now_0) === 'bigint' && now_0 >= 0n && now_0 <= 18446744073709551615n)) {
+          __compactRuntime.typeError('updateWill',
+                                     'argument 1 (argument 2 as invoked from Typescript)',
+                                     'nominee.compact line 152 char 1',
+                                     'Uint<0..18446744073709551616>',
+                                     now_0)
+        }
         const context = { ...contextOrig_0, gasCost: __compactRuntime.emptyRunningCost() };
         const partialProofData = {
-          input: { value: [], alignment: [] },
+          input: {
+            value: _descriptor_5.toValue(now_0),
+            alignment: _descriptor_5.alignment()
+          },
           output: undefined,
           publicTranscript: [],
           privateTranscriptOutputs: []
         };
-        const result_0 = this._updateWill_0(context, partialProofData);
+        const result_0 = this._updateWill_0(context, partialProofData, now_0);
         partialProofData.output = { value: [], alignment: [] };
         return { result: result_0, context: context, proofData: partialProofData, gasCost: context.gasCost };
       },
@@ -544,21 +555,21 @@ export class Contract {
         if (!(typeof(contextOrig_0) === 'object' && contextOrig_0.currentQueryContext != undefined)) {
           __compactRuntime.typeError('resolve',
                                      'argument 1 (as invoked from Typescript)',
-                                     'nominee.compact line 162 char 1',
+                                     'nominee.compact line 169 char 1',
                                      'CircuitContext',
                                      contextOrig_0)
         }
         if (!(tag_0.buffer instanceof ArrayBuffer && tag_0.BYTES_PER_ELEMENT === 1 && tag_0.length === 32)) {
           __compactRuntime.typeError('resolve',
                                      'argument 1 (argument 2 as invoked from Typescript)',
-                                     'nominee.compact line 162 char 1',
+                                     'nominee.compact line 169 char 1',
                                      'Bytes<32>',
                                      tag_0)
         }
         if (!(typeof(deadline_0) === 'bigint' && deadline_0 >= 0n && deadline_0 <= 18446744073709551615n)) {
           __compactRuntime.typeError('resolve',
                                      'argument 2 (argument 3 as invoked from Typescript)',
-                                     'nominee.compact line 162 char 1',
+                                     'nominee.compact line 169 char 1',
                                      'Uint<0..18446744073709551616>',
                                      deadline_0)
         }
@@ -589,21 +600,21 @@ export class Contract {
         if (!(typeof(contextOrig_0) === 'object' && contextOrig_0.currentQueryContext != undefined)) {
           __compactRuntime.typeError('finalize',
                                      'argument 1 (as invoked from Typescript)',
-                                     'nominee.compact line 170 char 1',
+                                     'nominee.compact line 177 char 1',
                                      'CircuitContext',
                                      contextOrig_0)
         }
         if (!(tag_0.buffer instanceof ArrayBuffer && tag_0.BYTES_PER_ELEMENT === 1 && tag_0.length === 32)) {
           __compactRuntime.typeError('finalize',
                                      'argument 1 (argument 2 as invoked from Typescript)',
-                                     'nominee.compact line 170 char 1',
+                                     'nominee.compact line 177 char 1',
                                      'Bytes<32>',
                                      tag_0)
         }
         if (!(typeof(until_0) === 'bigint' && until_0 >= 0n && until_0 <= 18446744073709551615n)) {
           __compactRuntime.typeError('finalize',
                                      'argument 2 (argument 3 as invoked from Typescript)',
-                                     'nominee.compact line 170 char 1',
+                                     'nominee.compact line 177 char 1',
                                      'Uint<0..18446744073709551616>',
                                      until_0)
         }
@@ -635,28 +646,28 @@ export class Contract {
         if (!(typeof(contextOrig_0) === 'object' && contextOrig_0.currentQueryContext != undefined)) {
           __compactRuntime.typeError('guardianResolve2of3',
                                      'argument 1 (as invoked from Typescript)',
-                                     'nominee.compact line 179 char 1',
+                                     'nominee.compact line 186 char 1',
                                      'CircuitContext',
                                      contextOrig_0)
         }
         if (!(tag_0.buffer instanceof ArrayBuffer && tag_0.BYTES_PER_ELEMENT === 1 && tag_0.length === 32)) {
           __compactRuntime.typeError('guardianResolve2of3',
                                      'argument 1 (argument 2 as invoked from Typescript)',
-                                     'nominee.compact line 179 char 1',
+                                     'nominee.compact line 186 char 1',
                                      'Bytes<32>',
                                      tag_0)
         }
         if (!(typeof(g0_0) === 'bigint' && g0_0 >= 0n && g0_0 <= 65535n)) {
           __compactRuntime.typeError('guardianResolve2of3',
                                      'argument 2 (argument 3 as invoked from Typescript)',
-                                     'nominee.compact line 179 char 1',
+                                     'nominee.compact line 186 char 1',
                                      'Uint<0..65536>',
                                      g0_0)
         }
         if (!(typeof(g1_0) === 'bigint' && g1_0 >= 0n && g1_0 <= 65535n)) {
           __compactRuntime.typeError('guardianResolve2of3',
                                      'argument 3 (argument 4 as invoked from Typescript)',
-                                     'nominee.compact line 179 char 1',
+                                     'nominee.compact line 186 char 1',
                                      'Uint<0..65536>',
                                      g1_0)
         }
@@ -690,35 +701,35 @@ export class Contract {
         if (!(typeof(contextOrig_0) === 'object' && contextOrig_0.currentQueryContext != undefined)) {
           __compactRuntime.typeError('guardianResolve3of5',
                                      'argument 1 (as invoked from Typescript)',
-                                     'nominee.compact line 190 char 1',
+                                     'nominee.compact line 197 char 1',
                                      'CircuitContext',
                                      contextOrig_0)
         }
         if (!(tag_0.buffer instanceof ArrayBuffer && tag_0.BYTES_PER_ELEMENT === 1 && tag_0.length === 32)) {
           __compactRuntime.typeError('guardianResolve3of5',
                                      'argument 1 (argument 2 as invoked from Typescript)',
-                                     'nominee.compact line 190 char 1',
+                                     'nominee.compact line 197 char 1',
                                      'Bytes<32>',
                                      tag_0)
         }
         if (!(typeof(g0_0) === 'bigint' && g0_0 >= 0n && g0_0 <= 65535n)) {
           __compactRuntime.typeError('guardianResolve3of5',
                                      'argument 2 (argument 3 as invoked from Typescript)',
-                                     'nominee.compact line 190 char 1',
+                                     'nominee.compact line 197 char 1',
                                      'Uint<0..65536>',
                                      g0_0)
         }
         if (!(typeof(g1_0) === 'bigint' && g1_0 >= 0n && g1_0 <= 65535n)) {
           __compactRuntime.typeError('guardianResolve3of5',
                                      'argument 3 (argument 4 as invoked from Typescript)',
-                                     'nominee.compact line 190 char 1',
+                                     'nominee.compact line 197 char 1',
                                      'Uint<0..65536>',
                                      g1_0)
         }
         if (!(typeof(g2_0) === 'bigint' && g2_0 >= 0n && g2_0 <= 65535n)) {
           __compactRuntime.typeError('guardianResolve3of5',
                                      'argument 4 (argument 5 as invoked from Typescript)',
-                                     'nominee.compact line 190 char 1',
+                                     'nominee.compact line 197 char 1',
                                      'Uint<0..65536>',
                                      g2_0)
         }
@@ -752,28 +763,28 @@ export class Contract {
         if (!(typeof(contextOrig_0) === 'object' && contextOrig_0.currentQueryContext != undefined)) {
           __compactRuntime.typeError('guardianVeto2of3',
                                      'argument 1 (as invoked from Typescript)',
-                                     'nominee.compact line 204 char 1',
+                                     'nominee.compact line 211 char 1',
                                      'CircuitContext',
                                      contextOrig_0)
         }
         if (!(tag_0.buffer instanceof ArrayBuffer && tag_0.BYTES_PER_ELEMENT === 1 && tag_0.length === 32)) {
           __compactRuntime.typeError('guardianVeto2of3',
                                      'argument 1 (argument 2 as invoked from Typescript)',
-                                     'nominee.compact line 204 char 1',
+                                     'nominee.compact line 211 char 1',
                                      'Bytes<32>',
                                      tag_0)
         }
         if (!(typeof(g0_0) === 'bigint' && g0_0 >= 0n && g0_0 <= 65535n)) {
           __compactRuntime.typeError('guardianVeto2of3',
                                      'argument 2 (argument 3 as invoked from Typescript)',
-                                     'nominee.compact line 204 char 1',
+                                     'nominee.compact line 211 char 1',
                                      'Uint<0..65536>',
                                      g0_0)
         }
         if (!(typeof(g1_0) === 'bigint' && g1_0 >= 0n && g1_0 <= 65535n)) {
           __compactRuntime.typeError('guardianVeto2of3',
                                      'argument 3 (argument 4 as invoked from Typescript)',
-                                     'nominee.compact line 204 char 1',
+                                     'nominee.compact line 211 char 1',
                                      'Uint<0..65536>',
                                      g1_0)
         }
@@ -805,21 +816,21 @@ export class Contract {
         if (!(typeof(contextOrig_0) === 'object' && contextOrig_0.currentQueryContext != undefined)) {
           __compactRuntime.typeError('claim',
                                      'argument 1 (as invoked from Typescript)',
-                                     'nominee.compact line 217 char 1',
+                                     'nominee.compact line 224 char 1',
                                      'CircuitContext',
                                      contextOrig_0)
         }
         if (!(tag_0.buffer instanceof ArrayBuffer && tag_0.BYTES_PER_ELEMENT === 1 && tag_0.length === 32)) {
           __compactRuntime.typeError('claim',
                                      'argument 1 (argument 2 as invoked from Typescript)',
-                                     'nominee.compact line 217 char 1',
+                                     'nominee.compact line 224 char 1',
                                      'Bytes<32>',
                                      tag_0)
         }
         if (!(typeof(heirKey_0) === 'object' && heirKey_0.bytes.buffer instanceof ArrayBuffer && heirKey_0.bytes.BYTES_PER_ELEMENT === 1 && heirKey_0.bytes.length === 32)) {
           __compactRuntime.typeError('claim',
                                      'argument 2 (argument 3 as invoked from Typescript)',
-                                     'nominee.compact line 217 char 1',
+                                     'nominee.compact line 224 char 1',
                                      'struct ZswapCoinPublicKey<bytes: Bytes<32>>',
                                      heirKey_0)
         }
@@ -850,21 +861,21 @@ export class Contract {
         if (!(typeof(contextOrig_0) === 'object' && contextOrig_0.currentQueryContext != undefined)) {
           __compactRuntime.typeError('openProbate',
                                      'argument 1 (as invoked from Typescript)',
-                                     'nominee.compact line 242 char 1',
+                                     'nominee.compact line 249 char 1',
                                      'CircuitContext',
                                      contextOrig_0)
         }
         if (!(tag_0.buffer instanceof ArrayBuffer && tag_0.BYTES_PER_ELEMENT === 1 && tag_0.length === 32)) {
           __compactRuntime.typeError('openProbate',
                                      'argument 1 (argument 2 as invoked from Typescript)',
-                                     'nominee.compact line 242 char 1',
+                                     'nominee.compact line 249 char 1',
                                      'Bytes<32>',
                                      tag_0)
         }
         if (!(vaultCommit_0.buffer instanceof ArrayBuffer && vaultCommit_0.BYTES_PER_ELEMENT === 1 && vaultCommit_0.length === 32)) {
           __compactRuntime.typeError('openProbate',
                                      'argument 2 (argument 3 as invoked from Typescript)',
-                                     'nominee.compact line 242 char 1',
+                                     'nominee.compact line 249 char 1',
                                      'Bytes<32>',
                                      vaultCommit_0)
         }
@@ -896,28 +907,28 @@ export class Contract {
         if (!(typeof(contextOrig_0) === 'object' && contextOrig_0.currentQueryContext != undefined)) {
           __compactRuntime.typeError('resolveUnderPin',
                                      'argument 1 (as invoked from Typescript)',
-                                     'nominee.compact line 250 char 1',
+                                     'nominee.compact line 257 char 1',
                                      'CircuitContext',
                                      contextOrig_0)
         }
         if (!(tag_0.buffer instanceof ArrayBuffer && tag_0.BYTES_PER_ELEMENT === 1 && tag_0.length === 32)) {
           __compactRuntime.typeError('resolveUnderPin',
                                      'argument 1 (argument 2 as invoked from Typescript)',
-                                     'nominee.compact line 250 char 1',
+                                     'nominee.compact line 257 char 1',
                                      'Bytes<32>',
                                      tag_0)
         }
         if (!(realCommit_0.buffer instanceof ArrayBuffer && realCommit_0.BYTES_PER_ELEMENT === 1 && realCommit_0.length === 32)) {
           __compactRuntime.typeError('resolveUnderPin',
                                      'argument 2 (argument 3 as invoked from Typescript)',
-                                     'nominee.compact line 250 char 1',
+                                     'nominee.compact line 257 char 1',
                                      'Bytes<32>',
                                      realCommit_0)
         }
         if (!(decoyCommit_0.buffer instanceof ArrayBuffer && decoyCommit_0.BYTES_PER_ELEMENT === 1 && decoyCommit_0.length === 32)) {
           __compactRuntime.typeError('resolveUnderPin',
                                      'argument 3 (argument 4 as invoked from Typescript)',
-                                     'nominee.compact line 250 char 1',
+                                     'nominee.compact line 257 char 1',
                                      'Bytes<32>',
                                      decoyCommit_0)
         }
@@ -2325,7 +2336,7 @@ export class Contract {
                                                                                                              n: 1 } }]) : (() => { throw new __compactRuntime.CompactError(`nominee.compact line 145 char 3: Coin commitment not found. Check the coin has been received (or call 'createZswapOutput')`); })();
     return [];
   }
-  _updateWill_0(context, partialProofData) {
+  _updateWill_0(context, partialProofData, now_0) {
     const sk_0 = this._ownerSecret_0(context, partialProofData);
     const wr_0 = this._willRoot_0(context, partialProofData);
     const tag_0 = this._ownerTag_0(sk_0, wr_0);
@@ -2346,6 +2357,37 @@ export class Contract {
                                                                                        { popeq: { cached: true,
                                                                                                   result: undefined } }]).value),
                             'unknown owner');
+    __compactRuntime.assert(this._blockTimeGte_0(context,
+                                                 partialProofData,
+                                                 now_0),
+                            'timestamp in the future');
+    const leaf_0 = this._ownerLeafOf_0(context, partialProofData, sk_0, wr_0);
+    __compactRuntime.assert(_descriptor_2.fromValue(__compactRuntime.queryLedgerState(context,
+                                                                                      partialProofData,
+                                                                                      [
+                                                                                       { dup: { n: 0 } },
+                                                                                       { idx: { cached: false,
+                                                                                                pushPath: false,
+                                                                                                path: [
+                                                                                                       { tag: 'value',
+                                                                                                         value: { value: _descriptor_32.toValue(0n),
+                                                                                                                  alignment: _descriptor_32.alignment() } }] } },
+                                                                                       { popeq: { cached: false,
+                                                                                                  result: undefined } }]).value).field
+                            ===
+                            this._merkleTreePathRoot_0(this._ownerPath_0(context,
+                                                                         partialProofData,
+                                                                         leaf_0)).field,
+                            'not a registered owner');
+    const devMsg_0 = [4n, now_0, 0n, 0n];
+    this._schnorrVerify_0(context,
+                          partialProofData,
+                          devMsg_0,
+                          this._deviceSig_0(context, partialProofData),
+                          this._constructJubjubPoint_0(this._devicePkX_0(context,
+                                                                         partialProofData),
+                                                       this._devicePkY_0(context,
+                                                                         partialProofData)));
     const tmp_0 = this._newVaultRoot_0(context, partialProofData);
     __compactRuntime.queryLedgerState(context,
                                       partialProofData,
@@ -2366,7 +2408,7 @@ export class Contract {
                                        { ins: { cached: true, n: 1 } }]);
     const tmp_1 = ((t1) => {
                     if (t1 > 18446744073709551615n) {
-                      throw new __compactRuntime.CompactError('nominee.compact line 155 char 27: cast from Field or Uint value to smaller Uint value failed: ' + t1 + ' is greater than 18446744073709551615');
+                      throw new __compactRuntime.CompactError('nominee.compact line 162 char 27: cast from Field or Uint value to smaller Uint value failed: ' + t1 + ' is greater than 18446744073709551615');
                     }
                     return t1;
                   })(_descriptor_5.fromValue(__compactRuntime.queryLedgerState(context,
@@ -2429,7 +2471,7 @@ export class Contract {
     __compactRuntime.assert(this._equal_2(deadline_0,
                                           ((t1) => {
                                             if (t1 > 18446744073709551615n) {
-                                              throw new __compactRuntime.CompactError('nominee.compact line 164 char 32: cast from Field or Uint value to smaller Uint value failed: ' + t1 + ' is greater than 18446744073709551615');
+                                              throw new __compactRuntime.CompactError('nominee.compact line 171 char 32: cast from Field or Uint value to smaller Uint value failed: ' + t1 + ' is greater than 18446744073709551615');
                                             }
                                             return t1;
                                           })(_descriptor_5.fromValue(__compactRuntime.queryLedgerState(context,
@@ -2470,7 +2512,7 @@ export class Contract {
                             'grace not elapsed');
     const tmp_0 = ((t1) => {
                     if (t1 > 18446744073709551615n) {
-                      throw new __compactRuntime.CompactError('nominee.compact line 166 char 40: cast from Field or Uint value to smaller Uint value failed: ' + t1 + ' is greater than 18446744073709551615');
+                      throw new __compactRuntime.CompactError('nominee.compact line 173 char 40: cast from Field or Uint value to smaller Uint value failed: ' + t1 + ' is greater than 18446744073709551615');
                     }
                     return t1;
                   })(deadline_0
@@ -3097,7 +3139,7 @@ export class Contract {
                                                                                                      { ins: { cached: false,
                                                                                                               n: 1 } },
                                                                                                      { ins: { cached: true,
-                                                                                                              n: 1 } }]) : (() => { throw new __compactRuntime.CompactError(`nominee.compact line 234 char 5: Coin commitment not found. Check the coin has been received (or call 'createZswapOutput')`); })();
+                                                                                                              n: 1 } }]) : (() => { throw new __compactRuntime.CompactError(`nominee.compact line 241 char 5: Coin commitment not found. Check the coin has been received (or call 'createZswapOutput')`); })();
     } else {
       __compactRuntime.queryLedgerState(context,
                                         partialProofData,

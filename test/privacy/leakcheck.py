@@ -20,7 +20,10 @@ def arity(op):
 
 # Two witnesses are Merkle roots that MUST become public: heirs prove against
 # them. Each is consumed by exactly one declare_pub_input and nothing else.
-ALLOWED = {('updateWill', 16), ('resolveUnderPin', 24)}
+# The variable numbers are positions in the circuit's ZKIR and move whenever
+# the circuit changes; re-verify with: grep -c '"var": <n>' <circuit>.zkir == 1
+# and that the single use is a declare_pub_input.
+ALLOWED = {('updateWill', 142), ('resolveUnderPin', 24)}
 
 bad = 0
 print(f"{'CIRCUIT':<22} {'priv':>5} {'pub':>5} {'vars':>6}  RESULT")
