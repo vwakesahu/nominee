@@ -42,6 +42,19 @@ list. If you named three, nobody watching can tell it wasn't one, or seven.
 And if waiting out a grace period is absurd because everyone already knows what
 happened, two of the three guardians you picked can open it early.
 
+Silence is not death, so the vault never treats it as death. When the grace
+period lapses, anyone can ask the chain to open the vault, and what they get is
+a window, not a payout. You close the window by checking in. If your device is
+lost, your secret alone closes it. Your guardians can close it. Only if nobody
+does, for the whole window, does the vault open. The check-in itself takes two
+things: the secret you know and a signature from a device you hold, so a copied
+seed phrase is not you.
+
+The people you named need no wallet to claim. You fix each nominee's payout key
+when you write the will, hand them a small envelope file, and when the time
+comes they paste it into a web page. The chain pays that key and no other, so
+even a stolen envelope pays the person you named.
+
 ## The problem it solves
 
 There's about $68.7 billion of Bitcoin sitting in wallets nobody can open. Some
@@ -105,6 +118,21 @@ That one result decided the architecture. And is `blockTime` seconds or
 milliseconds, which changes every grace period in the contract? Seconds, proven
 on chain rather than assumed.
 
+The payout was the one I could not settle in Wave 1. A contract can hold a
+shielded coin but cannot spend it without the coin's position in the Zswap
+commitment tree, and the documented way to read that position back came up 0
+every time. The answer was in midnightntwrk/servicedesk#187, where ekacin had
+reported the same thing and Midnight confirmed it is 0 by construction for
+contract-owned coins; the supported pattern is to capture the index with
+`insertCoin` in the transaction that receives the coin. The ledger field became
+a `QualifiedShieldedCoinInfo` map, `deposit` and `claim` write into it, and the
+payout went live.
+
+Then the deploy stopped fitting in a block. Thirteen verifier keys in one
+transaction exceed node 1.0.0's per-block write budget (`Transaction would
+exhaust the block limits`, 33,474 bytes written). The deploy now omits two keys
+and the maintenance authority inserts them in two follow-up transactions.
+
 ## Technologies I used
 
 Compact 0.31.1 for the circuits, against ledger-8.0.2 and runtime 0.16.0,
@@ -135,19 +163,20 @@ will would turn each heartbeat into a per-person fingerprint and quietly undo
 the whole point, and I'd never have noticed if I hadn't already sat down and
 worked out what an observer could correlate.
 
-Ten circuits, 97,628 rows, max k=15, 40MB of proving keys, nineteen seconds to
-build. Claim is the expensive one at 32,623 rows, because the share stays inside
-a Zswap commitment.
+Thirteen circuits, 151,714 rows, max k=16, 75 MB of proving keys. Claim is the
+expensive one at 37,866 rows, because the share stays inside a Zswap commitment
+and the circuit now spends the ledger's own qualified coin.
 
 Then the demo. It runs the whole story with two panels side by side: what
 actually happened on the left, what the chain got out of it on the right. That's
 the entire pitch in one screen. You don't have to believe me about what stays
 private, you just read the right-hand column and see what isn't there.
 
-33 simulator tests. A privacy scan that walks the ZKIR and checks no private
-variable ever reaches the public transcript, clean across all ten circuits. And
-a recorded live run of 9 accepted transactions on a real node, deploy through
-`guardianResolve2of3`.
+49 simulator tests. A privacy scan that walks the ZKIR and checks no private
+variable ever reaches the public transcript, clean across all 13 circuits. And
+a recorded live run of 17 accepted transactions on a real node, deploy through
+`guardianResolve2of3`, with three shielded payouts from the contract in the
+middle.
 
 ## What we learned
 
@@ -165,17 +194,21 @@ managers, wasm ownership and undocumented units.
 
 ## What's next for Nominee
 
-The payout is the one piece that isn't live yet. Sending a shielded coin back
-out from inside a contract isn't something Midnight can do today, so that step
-runs in the simulator against the same circuit and the same checks, and the
-precise diagnosis is written up in `validation/VALIDATION_FINAL.md`.
+Preprod. The contract runs end to end on the local devnet, and the deployment
+to Preprod is the next step; when it lands, `deployments/preprod.json` carries
+the address and every transaction hash.
 
-So: that payout path, then Preprod, then a frontend so this stops being a CLI.
+Then the hardware. The device factor is real in the contract and the CLI ships
+a stand-in signer with the two HTTP calls a device needs. An ESP32 with a pulse
+sensor that signs only while it reads a pulse is the obvious next build, and it
+should be said plainly: that raises the cost of faking liveness, it does not
+make it impossible. A circuit verifies a signature, never a pulse.
 
-After that there are two circuits already compiled and sitting there unwired.
-Probate disclosure lets an executor open exactly what a court needs and nothing
-more. And a duress decoy proves one of two commitments matched without revealing
-which, so a PIN handed over under coercion opens a different vault entirely.
+After that there are two circuits already compiled, keyed and deployed but not
+yet driven by the CLI. Probate disclosure lets an executor open exactly what a
+court needs and nothing more. And a duress decoy proves one of two commitments
+matched without revealing which, so a PIN handed over under coercion opens a
+different vault entirely.
 
 Honestly the legal framing matters more here than the cryptography. This is a
 transfer mechanism, not a will, and probate disclosure is the thing that makes
@@ -216,135 +249,111 @@ Docker
 
 ## Updates in this Wave
 
-This is Wave 1, so everything below was built from nothing during it.
+This is Wave 2. Wave 1 shipped the contract, the CLI demo and the validation
+trail, with the payout running in the simulator. Wave 2 made the payout live
+and answered the judge's questions in the contract itself.
 
 **Links**
 
 - Repo: https://github.com/vwakesahu/nominee
 - Demo video: https://youtu.be/Fb69qNrujFU
 - Deck: `docs/nominee-deck.pdf` in the repo
-- Landing page: https://nominee.world (placeholder for now, the product is a CLI
-  this wave)
+- Landing page: https://nominee.world
+- Live run: `deployments/devnet.json` (17 accepted transactions, contract
+  `5da98e56…e5cc67`)
+- Preprod: pending. The record will be `deployments/preprod.json`.
 
-### I validated the idea before building it
+### The payout is live
 
-Before writing a line of the product I spent the first stretch trying to kill
-the idea. That work is in `validation/`: three reports, five experiment
-harnesses, and the raw output behind them. Every claim is marked VERIFIED, FALSE
-or UNVERIFIABLE with the command output next to it.
+Wave 1's one unfinished piece. A contract could hold a shielded coin but not
+spend it, because the coin's Merkle index was unreadable after the fact.
+Midnight confirmed in midnightntwrk/servicedesk#187 (reported by ekacin, closed
+2026-09-22) that the documented read is 0 by construction for contract-owned
+coins and that the supported pattern is `insertCoin` in the receiving
+transaction. `heldCoin` is now a `Map<Bytes<32>, QualifiedShieldedCoinInfo>`,
+`deposit` and `claim` write into it, and the three nominees are paid by the
+contract on a real node: blocks 659 and 663 from the CLI, and block 681 from
+the heir web page, `heldCoin` going 1000 → 500 → 200 → removed. No simulator
+anywhere on that path.
 
-Two results changed the architecture:
+### The judge's questions, answered in the contract
 
-- **Shielded custody works, unshielded does not.** I ran both deposit paths
-  against a live node in the same block window. Shielded was accepted;
-  unshielded came back `Custom(192)`. That is a controlled result, not a
-  reading of the docs.
-- **`blockTime` is seconds, not milliseconds.** Nobody could tell me, and it
-  changes every grace period in the contract. Resolved on chain.
+The Wave 1 feedback asked how a heart rate could be proven to be the owner's,
+whether proof of life comes from hardware, how identity theft and faked death
+are prevented, and whether heirs needing a wallet would break adoption. Each
+got a change to the circuits rather than a paragraph.
 
-A few things I had assumed were possible turned out not to be, including the
-shielded payout, which is why it is scoped honestly below instead of quietly
-missing.
+- **Two-factor heartbeat.** The owner leaf is now
+  `H(secret, willRoot, deviceCommit)`. A heartbeat needs the secret and a
+  Schnorr signature from the device over the timestamp, and so does
+  `updateWill`. The device key never reaches the chain. A stolen seed can
+  neither heartbeat nor rewrite who the vault pays. The CLI ships
+  `nominee device`, a stand-in signer that refuses to sign without a pulse flag
+  and exposes the same two HTTP calls an ESP32 with a pulse sensor would.
+  Stated plainly: a circuit verifies a signature, never a pulse. This raises
+  the cost of faking liveness; it does not make it impossible.
+- **Veto window.** `resolve` no longer unlocks the vault. It opens a window of
+  `challengeSeconds` (30 s in the demo, weeks when shipped). A heartbeat, a
+  `veto` with the secret alone, or two of three guardians close it. `finalize`
+  unlocks only after it passes unopposed. Death is never asserted, only
+  absence, and absence can be contested. On the devnet: Ben's device is hidden,
+  his vault is resolved against him, he vetoes with his secret, and the
+  follow-up `finalize` is refused with `no open challenge`.
+- **Payout key in the heir leaf.** `H(heirSecret, H(share), heirKey)`. A stolen
+  envelope pays the nominee the owner named, never the thief.
+- **Guardian signatures bound to the vault.** Wave 1's guardian message was the
+  same for every vault, so one signature was replayable against all of them.
+  It is now `[kind, tag, 0, 0]`; the demo replays Ben's signatures against
+  Alice's vault and watches them fail.
+- **No wallet to claim.** `bun run server` and `bun run web`: the nominee pastes
+  the envelope into a page, sees the vault's state in one sentence, and claims.
+  The owner fixed the payout key when writing the will. Proving runs on the
+  server's self-hosted prover, which is acceptable here because a nominee's
+  witnesses are only their own secret, share and path, never anything of the
+  owner's.
 
-### The contract
+### Numbers
 
-`contract/src/nominee.compact`, ten circuits, compiled on Compact 0.31.1 against
-ledger-8.0.2 and runtime 0.16.0, which is what every live Midnight network
-actually runs.
+13 circuits (was 10), max k=16, 151,714 rows, 75 MB of proving keys. 49
+simulator tests (was 33), including veto closes a window, finalize before the
+window fails, heartbeat without the device fails, claim with the wrong payout
+key fails, guardian replay across tags fails, and the exact-remainder claim
+removes the `heldCoin` entry. Leak check clean on all 13. 17 accepted
+transactions in the recorded run, plus one deliberately refused `finalize`.
 
-| circuit | k | rows |
-|---|---:|---:|
-| register | 14 | 11,099 |
-| heartbeat | 14 | 11,170 |
-| deposit | 14 | 10,971 |
-| updateWill | 13 | 4,528 |
-| resolve | 9 | 445 |
-| guardianResolve2of3 | 12 | 3,356 |
-| guardianResolve3of5 | 13 | 4,876 |
-| claim | 15 | 32,623 |
-| openProbate | 14 | 11,270 |
-| resolveUnderPin | 13 | 7,290 |
-| **total** | **max k=15** | **97,628** |
+### Found along the way
 
-40MB of proving keys, nineteen seconds to build. `contract/out/` is committed so
-nobody needs the Compact toolchain to run this.
+A deploy carrying all 13 verifier keys exceeds node 1.0.0's per-block write
+budget (`Transaction would exhaust the block limits`, 33,474 bytes written,
+0.67 of the budget). The deploy omits two keys and the maintenance authority
+inserts them in two follow-up transactions, 0.06 of a block each. Written up in
+`docs/ARCHITECTURE.md` §9 for the next person.
 
-The structural decision is that it is **one shared registry serving every
-owner**, not a contract per will. A contract per will would turn each heartbeat
-into a per-person fingerprint and undo the whole point.
+### Still true
 
-### The CLI and the demo
-
-A TypeScript CLI that talks to a self-hosted proof server, a local Midnight node
-and an indexer. Merkle trees and Schnorr signatures are hand-built on top of the
-contract's own `persistentHash` and `transientHash`, because Midnight 0.31.1 has
-no sha256, sha3, blake2b or poseidon, so the off-chain and in-circuit sides have
-to agree byte for byte.
-
-`./run-devnet.sh` brings up the devnet and runs the whole story in seven
-chapters. Every step prints two panels: what actually happened on the left, what
-the chain got out of it on the right. That is the demo. You do not have to take
-my word for what stays private, you read the right-hand column and see what is
-not there.
-
-The chapters are: a life (register, deposit, heartbeat, update-will, heartbeat),
-silence, resolution, the nominees claiming, three attacks failing, the guardian
-path, and a summary.
-
-### What is actually running on chain
-
-A recorded live run is in `deployments/devnet.json`: **nine accepted
-transactions** on a real node, deploy through `guardianResolve2of3`. Real
-proofs, real blocks, a contract that genuinely holds a shielded coin.
-
-Three attacks are run against it and all three are refused: a nominee claiming
-twice (nullifier already spent), a stranger claiming (not in the beneficiary
-tree), and a nominee claiming more than they were left (the share is bound into
-their leaf).
-
-### Tests and the privacy check
-
-- **33 simulator tests**, all passing, across registry, claim, resolution and an
-  end-to-end smoke test.
-- **A ZKIR privacy scan** (`test/privacy/leakcheck.py`) that walks the compiled
-  circuit and checks no private variable reaches the public transcript. It comes
-  back clean on all ten circuits. Two circuits have disclosures that are there
-  by design and are listed explicitly rather than suppressed.
-
-### Written down honestly
-
-The README names the limits before a judge finds them: the proof server sees
-every witness so it must be self-hosted, deposit amounts are public because
-circuit arguments are public, the outstanding balance is observable, heartbeat
-cadence is a timing fingerprint that the shared registry blunts but does not
-erase, a long hospital stay executes the will, and legally this is a transfer
-mechanism rather than a will.
-
-### The one thing not finished
-
-The payout. Sending a shielded coin back out from inside a contract is not
-something Midnight can do today. That step runs in the simulator against the
-same circuit and the same checks, it is marked as simulator everywhere it
-appears including in the deck and the demo output, and the precise diagnosis is
-in `validation/VALIDATION_FINAL.md` §A1b.
-
-### Next wave
-
-The live payout path, deployment to Preprod, and a frontend so this stops being
-a CLI. After that, two circuits that are already compiled but not wired up:
-probate disclosure, and a duress decoy that proves one of two commitments
-matched without revealing which.
+The proof server sees every witness and owners must self-host it. Deposit
+amounts and the remaining balance are public. Heartbeat cadence is a timing
+fingerprint. A long hospital stay still executes the will; the window and the
+guardians lengthen the fuse, they do not remove it. And losing the device
+freezes the will: `veto` still works with the secret alone, so resolution can
+always be stopped, but amending the will means a new registry with a new device
+commitment. The README and the threat model say so.
 
 ---
 
-## 2nd Wave
+## 2nd Wave (this wave)
 
-- Live shielded payout, so claim lands on chain instead of the simulator
-- Deploy to Preprod
-- Web frontend, connects to Lace, no CLI
+- Live shielded payout: claim lands on chain, three times in the recorded run
+- Two-factor heartbeat with a device key; `nominee device` stand-in signer
+- Veto window: resolve opens, heartbeat/veto/guardians close, finalize unlocks
+- Guardian messages bound to the vault tag; payout key bound into the heir leaf
+- Heir web app: paste an envelope, no wallet, no CLI
+- Deploy to Preprod: pending
 
 ## 3rd Wave
 
 - Probate disclosure: an executor opens what a court needs, nothing else
 - Duress decoy: a PIN given under coercion opens a different vault
+- Hardware device: ESP32 with a pulse sensor speaking the two signer calls
+- DAO successor-signer
 - Multi-asset vaults

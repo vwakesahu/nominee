@@ -1,8 +1,9 @@
 flowchart TD
     subgraph OFF ["Off chain, never leaves your machine"]
-        WILL["the will<br/>nominee to share"]
+        WILL["the will<br/>nominee to share to payout key"]
         SEC["owner secret"]
-        NK["nominee keys"]
+        DEV["device key<br/>signs the timestamp"]
+        NK["nominee envelope<br/>secret, share, path"]
         PS["proof server<br/>self hosted"]
     end
 
@@ -10,7 +11,8 @@ flowchart TD
         TAG["ownerTag"]
         SEEN["lastSeen"]
         ROOT["vaultRoot"]
-        COIN["heldCoin"]
+        COIN["heldCoin<br/>qualified shielded coin"]
+        WIN["challengeUntil<br/>veto window"]
         RES["resolvedVault"]
         NULL["spent nullifiers"]
     end
@@ -18,12 +20,17 @@ flowchart TD
     PS -.->|builds every proof, sees every witness| ON
     SEC -->|register| TAG
     SEC -->|heartbeat| SEEN
+    DEV -->|heartbeat, second factor| SEEN
     WILL -->|Merkle root only| ROOT
-    DEP["shielded deposit"] --> COIN
-    SEEN -->|grace elapsed| RES
-    GUARD["2 of 3 guardians"] -->|open early| RES
+    DEP["shielded deposit"] -->|insertCoin| COIN
+    SEEN -->|grace elapsed, resolve| WIN
+    WIN -->|window passed, finalize| RES
+    SEC -->|veto closes| WIN
+    GUARD["2 of 3 guardians<br/>signatures bound to the tag"] -->|veto closes| WIN
+    GUARD -->|open early| RES
     RES --> CLAIM{{claim}}
     ROOT --> CLAIM
     NK --> CLAIM
+    COIN --> CLAIM
     CLAIM --> NULL
-    CLAIM -->|share stays inside a Zswap commitment| OUT["the nominee's coin"]
+    CLAIM -->|share stays inside a Zswap commitment| OUT["the nominee's coin<br/>at the key bound in their leaf"]
