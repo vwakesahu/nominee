@@ -75,3 +75,6 @@ midnight-level-db/
 deployments/envelopes/
 deployments/device.json
 server/dist/
+
+# the video script is personal working material, kept local
+docs/SCRIPT.md

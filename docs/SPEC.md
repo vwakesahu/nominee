@@ -157,7 +157,7 @@ Delivered off-chain. Contains the heir's secrets; treat like a seed phrase.
 
 ## 5. Docs (owner: docs, runs last)
 
-Inputs: the final numbers from §1 and §4. Outputs: `README.md` (run instructions for CLI, server and web; the new circuit table; a section "The judge's four questions", each answered in two or three sentences with the limit stated), `docs/ARCHITECTURE.md` (state layout, circuits, envelope v2, threat model rows for device, veto window, replay), `docs/SUBMISSION.md` ("Updates in this Wave"), `docs/SCRIPT.md` (new chapters). Remove every statement that the payout is simulator-only. Keep the "Honest limits" list and add: the device raises the cost of faking liveness, it does not make it impossible; the proof-server rule is strict for owners and relaxed for heirs.
+Inputs: the final numbers from §1 and §4. Outputs: `README.md` (run instructions for CLI, server and web; the new circuit table; a section "The judge's four questions", each answered in two or three sentences with the limit stated), `docs/ARCHITECTURE.md` (state layout, circuits, envelope v2, threat model rows for device, veto window, replay), `docs/SUBMISSION.md` ("Updates in this Wave"), and the video script (kept local, not committed). Remove every statement that the payout is simulator-only. Keep the "Honest limits" list and add: the device raises the cost of faking liveness, it does not make it impossible; the proof-server rule is strict for owners and relaxed for heirs.
 
 ---
 
