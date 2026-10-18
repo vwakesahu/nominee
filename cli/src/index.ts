@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
+import './redact.js';   // first: masks the Blockfrost id in all output
 import { Command } from 'commander';
 import chalk from 'chalk';
 import { demo } from './commands/demo.js';

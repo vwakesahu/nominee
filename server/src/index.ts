@@ -7,6 +7,7 @@
 //   GET  /api/vault/:tag      -> public ledger view for one owner tag
 //   POST /api/claim           -> { txHash, block, received, remaining, ... } | { error, reason }
 //   GET  /api/demo-envelope   -> simulator only, a valid envelope for the seeded vault
+import './redact.js';   // first: masks the Blockfrost id in all output
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http';
 import type { Backend } from './backend.js';
 import { ClaimError } from './backend.js';

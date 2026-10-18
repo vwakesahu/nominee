@@ -149,10 +149,12 @@ Blockfrost project id for Midnight Preprod. Midnight shut its own Preprod
 indexer on 9 October 2026, and Blockfrost now serves Preprod. Use Node 22.
 
 ```bash
-NOMINEE_NETWORK=preprod NOMINEE_LIVE=1 \
-NOMINEE_BLOCKFROST=<project id> NOMINEE_MNEMONIC="<24 words>" \
-fnm exec --using=22 node cli/dist/index.js demo
+NOMINEE_BLOCKFROST=<project id> NOMINEE_MNEMONIC="<24 words>" ./run-preprod.sh
+NOMINEE_DRY_RUN=1 ... ./run-preprod.sh    # check the setup, submit nothing
 ```
+
+The script picks Node 22 and starts a local proof server 8.1.3 on port 6301. It
+masks the Blockfrost id in all output.
 
 The first run scans about 1.7 million DUST events, which takes about 30
 minutes with the machine awake. It checkpoints to `~/.nominee/`, so later runs
