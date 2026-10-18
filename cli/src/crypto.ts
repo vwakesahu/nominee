@@ -139,12 +139,13 @@ export type DeviceKey = GuardianKey;
 /** A fresh JubjubPoint for this key. Never cache the result. */
 export const guardianPk = (k: GuardianKey): JubjubPoint => constructJubjubPoint(k.x, k.y);
 
-export function guardianKeypair(c: Hasher): GuardianKey {
-  const sk = randScalar();
+/** Pass `sk` to derive a reproducible guardian key; omit it for a fresh one. */
+export function guardianKeypair(c: Hasher, sk: bigint = randScalar()): GuardianKey {
   const p = c._ecMulGenerator_0(sk);
   return { sk, x: jubjubPointX(p), y: jubjubPointY(p) };
 }
-export const deviceKeypair = (c: Hasher): DeviceKey => guardianKeypair(c);
+/** Pass `sk` to derive a reproducible device key; omit it for a fresh one. */
+export const deviceKeypair = (c: Hasher, sk?: bigint): DeviceKey => guardianKeypair(c, sk);
 export { randScalar };
 
 // ---------------------------------------------------------------------------

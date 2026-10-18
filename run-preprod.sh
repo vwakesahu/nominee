@@ -55,22 +55,20 @@ if ! curl -sf "http://127.0.0.1:$PS_PORT/health" >/dev/null 2>&1; then
 fi
 curl -sf "http://127.0.0.1:$PS_PORT/health" >/dev/null || { echo "proof server did not come up on $PS_PORT"; exit 1; }
 
-echo "==> build"
 [ -d node_modules ] || bun install --silent   # always from the repo root
-bun run --cwd cli build >/dev/null
 
-export NOMINEE_NETWORK=preprod NOMINEE_LIVE=1 NOMINEE_BLOCKFROST NOMINEE_MNEMONIC
+export NOMINEE_NETWORK=preprod NOMINEE_BLOCKFROST NOMINEE_MNEMONIC
 export NOMINEE_PROOF_SERVER="http://127.0.0.1:$PS_PORT"
 
 if [ "${NOMINEE_DRY_RUN:-}" = "1" ]; then
   echo "==> dry run: node $("${NODE[@]}" -v), proof server $(curl -s "http://127.0.0.1:$PS_PORT/version"), wallet words: $(wc -w <<<"$NOMINEE_MNEMONIC" | tr -d ' ')"
-  "${NODE[@]}" cli/dist/index.js address
+  "${NODE[@]}" cli/bin/nominee.mjs --network preprod address
   exit 0
 fi
 
 echo "==> demo (live on Preprod)"
 if command -v caffeinate >/dev/null 2>&1; then
-  exec caffeinate -dimsu "${NODE[@]}" cli/dist/index.js demo
+  exec caffeinate -dimsu "${NODE[@]}" cli/bin/nominee.mjs --network preprod demo --live
 else
-  exec "${NODE[@]}" cli/dist/index.js demo
+  exec "${NODE[@]}" cli/bin/nominee.mjs --network preprod demo --live
 fi

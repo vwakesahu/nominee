@@ -1,17 +1,20 @@
 // SPDX-License-Identifier: Apache-2.0
 //
-// A session is either LIVE (real circuits, real proofs, real devnet) or
+// A session is either LIVE (real circuits, real proofs, real network) or
 // SIMULATOR (real circuits, no proofs, no network). Both run the same compiled
 // contract, so a simulator result is the circuit's real behaviour, only the
 // proof and the ledger are absent.
 import { Buffer } from 'node:buffer';
 import { randomBytes } from 'node:crypto';
 // NOTE: the generated contract imports '@midnight-ntwrk/compact-runtime', so
-// everything that touches a ContractState must come from that same specifier.
-// '@midnight-ntwrk/midnight-js-protocol' carries a second copy of the wasm
-// bindings; loading both puts two instances in the graph and a ContractState
-// built by one is rejected by the other:
+// everything that touches a ContractState must resolve to that same MODULE
+// INSTANCE. Two instances in the graph and a ContractState built by one is
+// rejected by the other:
 //   'contractState' parameter ContractState (...) has unexpected type
+// The cause turned out not to be a duplicated package but a missing
+// `"type": "module"` in contract/package.json, which made Node load the ESM
+// bindings in contract/out as CommonJS and instantiate compact-runtime twice.
+// Vitest hid it by bundling through Vite. Keep that field, or this returns.
 import {
   createCircuitContext, createConstructorContext, sampleContractAddress, ContractState,
 } from '@midnight-ntwrk/compact-runtime';
@@ -21,10 +24,10 @@ import {
   createCircuitCallTxInterface, createCircuitMaintenanceTxInterfaces,
 } from '@midnight-ntwrk/midnight-js-contracts';
 import { Contract, ledger as readLedger, type Ledger } from '../../contract/out/contract/index.js';
-import { DEMO_GRACE_SECONDS, DEMO_CHALLENGE_SECONDS } from './config.js';
-import { resolveSeed } from './seed.js';
+import { DEMO_GRACE_SECONDS, DEMO_CHALLENGE_SECONDS, walletSeedHex, networkConfig } from './config.js';
+import { randomSecrets, type SecretSource } from './secrets.js';
 import { initializeNetwork } from './netid.js';
-import { buildWallet, startAndSync } from './wallet.js';
+import { buildWallet, startAndSync, readFunds, releaseWallet } from './wallet.js';
 import { createProviders, ZK_CONFIG_PATH } from './providers.js';
 import { withRetries, describe as describeErr, errorCode } from './retry.js';
 import {
@@ -45,13 +48,21 @@ export function makeHasher(): any {
 
 export const randKey = () => new Uint8Array(randomBytes(32));
 
-/** An owner: two secrets (knowledge) and a device key (possession). */
-export const makeOwner = (hasher: Hasher, name: string): Owner => ({
-  name, secret: randKey(), willRoot: randKey(), device: deviceKeypair(hasher),
+/**
+ * An owner: two secrets (knowledge) and a device key (possession). Pass a
+ * seeded `SecretSource` to make them reproducible from the wallet seed.
+ */
+export const makeOwner = (hasher: Hasher, name: string, s: SecretSource = randomSecrets()): Owner => ({
+  name,
+  secret: s.bytes32(`owner|${name}|secret`),
+  willRoot: s.bytes32(`owner|${name}|will`),
+  device: deviceKeypair(hasher, s.scalar(`owner|${name}|device`)),
 });
 /** An heir: a claim secret, a share, and the coin public key the payout is bound to. */
-export const makeHeir = (name: string, share: bigint, key: Uint8Array = randKey()): Heir => ({
-  name, secret: randKey(), share, key,
+export const makeHeir = (
+  name: string, share: bigint, key: Uint8Array = randKey(), s: SecretSource = randomSecrets(),
+): Heir => ({
+  name, secret: s.bytes32(`heir|${name}|secret`), share, key,
 });
 
 export interface Cast {
@@ -66,10 +77,18 @@ export interface Cast {
 export const buildHeirTree = (hasher: Hasher, heirs: Heir[]) =>
   new SparseTree(hasher, HEIR_DEPTH, heirs.map((h) => heirLeaf(hasher, h.secret, h.share, h.key)));
 
-/** Build the off-chain cohort: owner tree, heir tree, guardian keys. */
-export function buildCast(hasher: Hasher, ownerNames: string[], heirs: Heir[]): Cast {
-  const owners = ownerNames.map((n) => makeOwner(hasher, n));
-  const guardianKeys = [0, 1, 2].map(() => guardianKeypair(hasher));
+/**
+ * Build the off-chain cohort: owner tree, heir tree, guardian keys.
+ *
+ * Pass a seeded `SecretSource` when the deployment has to be reachable after
+ * this process exits: the constructor commits to the owner root and the
+ * guardian points, and only the matching secrets can satisfy them again.
+ */
+export function buildCast(
+  hasher: Hasher, ownerNames: string[], heirs: Heir[], secrets: SecretSource = randomSecrets(),
+): Cast {
+  const owners = ownerNames.map((n) => makeOwner(hasher, n, secrets));
+  const guardianKeys = [0, 1, 2].map((i) => guardianKeypair(hasher, secrets.scalar(`guardian|${i}`)));
   const ownerTree = new SparseTree(hasher, OWNER_DEPTH,
     owners.map((o) => ownerLeaf(hasher, o.secret, o.willRoot, o.device)));
   return { hasher, owners, heirs, guardianKeys, ownerTree, heirTree: buildHeirTree(hasher, heirs) };
@@ -239,10 +258,32 @@ export class LiveSession {
   patch(p: Partial<PrivateState>) { this.ref.ps = { ...this.ref.ps, ...p }; }
   get ps(): PrivateState { return this.ref.ps; }
 
+  /** Populated on a fresh deploy; null when reconnecting to an existing address. */
+  deployTxHash: string | null = null;
+
   static async connect(cast: Cast | null | undefined, opts: ConnectOptions = {}) {
     initializeNetwork();
-    const bundle = await buildWallet(resolveSeed(), { useCheckpoint: false });
-    await startAndSync(bundle);
+    const bundle = await buildWallet(Buffer.from(walletSeedHex(), 'hex'), { useCheckpoint: false });
+    const synced = await startAndSync(bundle);
+
+    // Fail here, with the faucet URL, rather than deep inside balanceTx where an
+    // empty wallet surfaces as an opaque ledger error.
+    const net = networkConfig();
+    const { night, dust } = readFunds(synced);
+    if (night === 0n && !net.local) {
+      throw new Error(
+        `wallet has no tNIGHT on ${net.name}, nothing to pay fees with.\n` +
+          `  Address:  run \`nominee address\`\n` +
+          (net.faucet ? `  Faucet:   ${net.faucet}\n` : '') +
+          `  Fund it, wait for the transaction to land, then run this again.`,
+      );
+    }
+    if (night > 0n && dust === 0n && !net.local) {
+      console.warn(
+        `  ⚠ ${night} NIGHT but 0 DUST. DUST pays fees and is generated from ` +
+          `registered NIGHT; if this persists, run \`nominee register-dust\`.`,
+      );
+    }
     const providers = await createProviders(
       bundle.facade, bundle.zswapSecretKeys, bundle.dustSecretKey, bundle.keystore,
     );
@@ -265,6 +306,7 @@ export class LiveSession {
     let deployed: any;
     let address: string;
     const setupTxs: (CallResult & { circuit: string })[] = [];
+    let deployTxHash: string | null = null;
 
     if (opts.address) {
       deployed = await findDeployedContract(providers, {
@@ -294,6 +336,7 @@ export class LiveSession {
         } as any),
       );
       address = d.deployTxData.public.contractAddress;
+      deployTxHash = d.deployTxData.public.txHash ?? d.deployTxData.public.txId ?? null;
       // Complete the contract: the maintenance authority (this wallet) adds the deferred verifier keys.
       const maint: any = createCircuitMaintenanceTxInterfaces(providers, compiled, address);
       for (const c of DEFERRED_CIRCUITS) {
@@ -307,7 +350,9 @@ export class LiveSession {
         circuitMaintenanceTx: maint,
       };
     }
-    return new LiveSession(hasher, providers, deployed, address, cast ?? null, bundle, ref, setupTxs);
+    const session = new LiveSession(hasher, providers, deployed, address, cast ?? null, bundle, ref, setupTxs);
+    session.deployTxHash = deployTxHash;
+    return session;
   }
 
   /** The wallet facade this session balances and submits with (shielded balances live on its state). */
@@ -361,7 +406,10 @@ export class LiveSession {
 
   tag(owner: Owner): Uint8Array { return ownerTag(this.hasher, owner.secret, owner.willRoot); }
 
-  async close() { try { await this.bundle?.facade?.close?.(); } catch { /* best effort */ } }
+  async close() {
+    releaseWallet();
+    try { await this.bundle?.facade?.close?.(); } catch { /* best effort */ }
+  }
 }
 
 export { describeErr, errorCode, randScalar };

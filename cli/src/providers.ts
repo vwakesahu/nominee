@@ -7,12 +7,10 @@ import { indexerPublicDataProvider } from '@midnight-ntwrk/midnight-js-indexer-p
 import { levelPrivateStateProvider } from '@midnight-ntwrk/midnight-js-level-private-state-provider';
 import { NodeZkConfigProvider } from '@midnight-ntwrk/midnight-js-node-zk-config-provider';
 import * as Rx from 'rxjs';
-import { fileURLToPath } from 'node:url';
 import { networkConfig } from './config.js';
+import { ZK_CONFIG_PATH } from './zkconfig.js';
 
-/** The committed contract build: contract/out (keys/ + zkir/). */
-export const ZK_CONFIG_PATH =
-  process.env.NOMINEE_ZK_PATH ?? fileURLToPath(new URL('../../contract/out', import.meta.url));
+export { ZK_CONFIG_PATH };
 
 async function createWalletProvider(
   facade: any,
@@ -41,6 +39,7 @@ export async function createProviders(
   dustSecretKey: ledger.DustSecretKey,
   keystore: any,
 ) {
+  const net = networkConfig();
   const walletProvider = await createWalletProvider(facade, zswapSecretKeys, dustSecretKey);
   const zkConfigProvider = new NodeZkConfigProvider(ZK_CONFIG_PATH);
   const accountId =
@@ -51,17 +50,16 @@ export async function createProviders(
   return {
     // >= 16 chars, 3 character classes, enforced by the provider, no recovery.
     privateStateProvider: levelPrivateStateProvider({
-      privateStateStoreName: 'nominee-cli',
+      // Per-network store: private state keyed to a devnet deployment must not
+      // be handed to a preprod one.
+      privateStateStoreName: `nominee-cli-${net.name}`,
       privateStoragePasswordProvider: () =>
-        process.env.NOMINEE_STORAGE_PASSWORD ?? 'Nominee-Devnet-2026!',
+        process.env.NOMINEE_STORAGE_PASSWORD ?? 'Nominee-Local-Store-2026!',
       accountId,
     }),
-    publicDataProvider: indexerPublicDataProvider(
-      networkConfig.indexerHttpUrl,
-      networkConfig.indexerWsUrl,
-    ),
+    publicDataProvider: indexerPublicDataProvider(net.indexerHttpUrl, net.indexerWsUrl),
     zkConfigProvider,
-    proofProvider: httpClientProofProvider(networkConfig.proofServer, zkConfigProvider),
+    proofProvider: httpClientProofProvider(net.proofServer, zkConfigProvider),
     walletProvider,
     midnightProvider: walletProvider,
   } as any;

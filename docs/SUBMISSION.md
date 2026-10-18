@@ -95,12 +95,14 @@ earlier still deployed perfectly, and my own code still failed when I ran it
 from inside that probe's own `node_modules`. Same dependencies, same machine,
 one works and one doesn't.
 
-It was `tsx`. A transform-based TypeScript loader resolves the wasm bindings
-under a second module URL, so the process quietly ends up holding two copies of
-`ContractState`, and every `instanceof` check across that boundary returns
-false. I measured it in the end: `cs instanceof ContractState` is `false` under
-tsx and `true` under plain node, same object. The CLI now compiles with tsc and
-spawns `node dist/index.js`, and it will never do anything else.
+It looked like `tsx`. Under that TypeScript loader the process quietly held
+two copies of `ContractState`, and every `instanceof` check across that boundary
+returned false; under plain node it did not. For Wave 1 the CLI compiled with
+tsc and ran on node. In Wave 2 my teammate weshallsah found the real cause:
+`contract/package.json` had no `"type": "module"`, so Node loaded the ESM
+contract bindings as CommonJS and built a second module instance from the same
+files. One line fixed it, and the CLI now runs from source through tsx again,
+verified with live deploys on the devnet and Preprod.
 
 The rest were smaller but the same flavour. Guardian public keys are wasm-backed
 JubjubPoints, and handing one to `deployContract` corrupts the deploy path
@@ -139,8 +141,10 @@ Compact 0.31.1 for the circuits, against ledger-8.0.2 and runtime 0.16.0,
 because that's what every live Midnight network actually runs, not the newest
 version.
 
-A TypeScript CLI on plain Node, talking to a self-hosted proof server, a local
-Midnight node and an indexer through docker compose. The Merkle trees and
+A TypeScript CLI (run from source with tsx, `--network` picks the devnet,
+Preview, Preprod or Mainnet) talking to a self-hosted proof server, and to a
+local Midnight node and indexer through docker compose or to Preprod through
+Blockfrost. The Merkle trees and
 Schnorr signatures are hand-built in TypeScript on top of the contract's own
 hashers, so the off-chain side and the in-circuit side agree byte for byte.
 
@@ -256,9 +260,9 @@ and answered the judge's questions in the contract itself.
 - Deck: `docs/nominee-deck.pdf` in the repo
 - Landing page: https://nominee.world
 - Live run: `deployments/devnet.json` (17 accepted transactions, contract
-  `5da98e56…e5cc67`)
+  `7de3ca92…fee440`)
 - Preprod run: `deployments/preprod.json` (19 accepted transactions, contract
-  `f3989203…7f1247`, blocks 3,023,384 to 3,023,703, including three claims and
+  `82917563…ae8734`, blocks 3,030,390 to 3,030,516, including three claims and
   the heir web page's claim)
 
 ### The payout is live
@@ -270,7 +274,7 @@ Midnight confirmed in midnightntwrk/servicedesk#187 (reported by ekacin, closed
 coins and that the supported pattern is `insertCoin` in the receiving
 transaction. `heldCoin` is now a `Map<Bytes<32>, QualifiedShieldedCoinInfo>`,
 `deposit` and `claim` write into it, and the three nominees are paid by the
-contract on a real node: blocks 659 and 663 from the CLI, and block 681 from
+contract on a real node: blocks 5470 and 5475 from the CLI, and block 5499 from
 the heir web page, `heldCoin` going 1000 → 500 → 200 → removed. No simulator
 anywhere on that path.
 
@@ -278,10 +282,10 @@ anywhere on that path.
 
 The whole story ran on the public Preprod network:
 `deployments/preprod.json` lists 19 accepted transactions on contract
-`f3989203…7f1247`, blocks 3,023,384 to 3,023,703. That includes the deposit,
+`82917563…ae8734`, blocks 3,030,390 to 3,030,516. That includes the deposit,
 the device-signed heartbeats and will update, resolve and finalize, three
 claims, the faked-death veto and the guardian path. Sam's claim is in block
-3,023,703. Sam pasted an envelope into the heir web page, and the page's server
+3,030,516. Sam pasted an envelope into the heir web page, and the page's server
 proved and submitted the claim. Anyone can check every hash on the Preprod
 indexer.
 

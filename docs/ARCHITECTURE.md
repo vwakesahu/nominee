@@ -139,7 +139,7 @@ claim #1        → outstanding = heldCoin.lookup(tag)           // fully qualif
 claim #2, #3    → same, against the re-inserted change
 ```
 
-No indexer lookup, no `spendCoin` witness, no stale-coin asserts: the ledger is the source of truth. The circuit still enforces `share <= outstanding.value`. The live run shows the sequence: `heldCoin` 1000 → 500 → 200 → entry removed over blocks 659 and 663 (CLI) and 681 (the heir web page), contract `5da98e56…e5cc67`.
+No indexer lookup, no `spendCoin` witness, no stale-coin asserts: the ledger is the source of truth. The circuit still enforces `share <= outstanding.value`. The live run shows the sequence: `heldCoin` 1000 → 500 → 200 → entry removed over blocks 5470 and 5475 (CLI) and 5499 (the heir web page), contract `7de3ca92…fee440`.
 
 **Two traps that remain:**
 1. `sendShielded(...).change` is `Maybe<ShieldedCoinInfo>`. On the final claim (exact remainder) it is `none`, and `.value` silently yields the default. **Branch on `is_some`** or the outstanding coin becomes a zero-value ghost. Covered by the test "exact-remainder claim removes the `heldCoin` entry".
@@ -171,7 +171,7 @@ What changed from v1: `coinPublicKey` became `heirKey` and moved into the leaf, 
 
 ### The heir web app
 
-`server/` is a plain Node API on `127.0.0.1:8787` (run with `node`, never `tsx`, see the README gotcha):
+`server/` is a plain Node API on `127.0.0.1:8787`. It runs the compiled CLI in `cli/dist` (`bun run server` builds both):
 
 | Route | Returns |
 |---|---|
@@ -180,7 +180,7 @@ What changed from v1: `coinPublicKey` became `heirKey` and moved into the leaf, 
 | `POST /api/claim` `{ envelope }` | `{ txHash, block, received, remaining, nullifier, heirKey }`, or 409 with the circuit's reason (`vault not resolved`, `challenge window open until …`) |
 | `GET /api/demo-envelope` | simulator mode only: a valid envelope for the seeded vault |
 
-Live mode: `NOMINEE_LIVE=1 NOMINEE_CONTRACT=<address> bun run server`. It opens a `LiveSession` on the contract with the envelope's three witnesses merged over the defaults (`witnessOverrides`) and calls `claim(tag, heirKey)`. `web/` is one Next.js page: paste, status line, claim, then the two-panel "what the chain saw" list.
+Live mode: `NOMINEE_LIVE=1 NOMINEE_NETWORK=<network> NOMINEE_CONTRACT=<address> bun run server`. It opens a `LiveSession` on the contract with the envelope's three witnesses merged over the defaults (`witnessOverrides`) and calls `claim(tag, heirKey)`. `web/` is one Next.js page: paste, status line, claim, then the two-panel "what the chain saw" list.
 
 **Proof-server rule, split by role.** The prover sees every witness. For an owner the witnesses are the owner secret and the will root, so an owner must prove on their own machine, and `getProvingProvider()` (the wallet's prover) is out. For an heir the witnesses are only their own secret, share and path, nothing owner-derived, so an heir proving on the claim server's self-hosted prover exposes only what the heir already holds. The page says so. It is still not a hosted third party.
 
@@ -231,6 +231,7 @@ Live mode: `NOMINEE_LIVE=1 NOMINEE_CONTRACT=<address> bun run server`. It opens 
 - **Use Node 22.** Node 23+ has a built-in WebSocket that drops Preprod RPC submissions with wallet SDK 1.2.0.
 - **Preprod is on Blockfrost.** Midnight's own Preprod indexer and RPC shut on 2026-10-09 (HTTP 410). The CLI builds the Preprod URLs from `NOMINEE_BLOCKFROST`, passing the project id as a `?project_id=` query parameter, because the SDK cannot set headers. The indexer path is `/api/v0`, not `/api/v4/graphql`. Blockfrost closes the websocket every few minutes and the SDK resubscribes on its own.
 - **The DUST wallet must be caught up before the first transaction.** Otherwise balancing fails with `Insufficient Funds: could not balance dust`. On Preprod a cold scan is about 1.7 million generation events, about 30 minutes awake. The CLI waits for it on public networks, batches sync updates, and checkpoints the DUST state to `~/.nominee/dust-<network>.json`. A sleeping laptop stalls the scan, so use `caffeinate`.
+- **Hold one wallet state subscriber for the life of the process.** Dropping the last subscriber lets the wallet facade tear down its services, and the node client goes with them; the next submission dies after `disconnected from wss://...: 1000:: Normal Closure`. `startAndSync` keeps one subscriber alive (found by weshallsah).
 - **`Failed to prove transaction` (Wallet.Proving) right after a sync is transient.** The wallet SDK raises it before contacting the proof server, and a rebuild clears it. The retry loop treats it like `Custom(170)`.
 - **Preprod lists proof server 8.1.3.** The devnet runs 8.1.0 with node 1.0.0. The Preprod run used a second container on port 6301 (`NOMINEE_PROOF_SERVER`).
 - `levelPrivateStateProvider` enforces a ≥16-char password with 3 character classes and **has no recovery**.

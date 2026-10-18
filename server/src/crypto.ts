@@ -69,7 +69,8 @@ export const heirLeaf = (c: Hasher, sk: Uint8Array, share: bigint, heirKey: Uint
 export const nullifier = (c: Hasher, sk: Uint8Array) =>
   c._persistentHash_4([pad32('nominee:nf:v1'), sk]) as Uint8Array;
 
-export const deviceMsg = (now: bigint): bigint[] => [2n, now, 0n, 0n];
+/** Device message: [kind, now, 0, 0]. Kind 2 is a heartbeat, kind 4 a will update. */
+export const deviceMsg = (now: bigint, kind: 2 | 4 = 2): bigint[] => [BigInt(kind), now, 0n, 0n];
 export const guardianMsg = (c: Hasher, tag: Uint8Array): bigint[] => c._guardianMsg_0(1n, tag);
 export const guardianVetoMsg = (c: Hasher, tag: Uint8Array): bigint[] => c._guardianMsg_0(3n, tag);
 

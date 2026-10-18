@@ -20,7 +20,7 @@ export const WEB_ORIGINS: string[] = (
   process.env.NOMINEE_WEB_ORIGIN ?? 'http://localhost:3000,http://127.0.0.1:3000'
 ).split(',').map((s) => s.trim()).filter(Boolean);
 
-export type NetworkName = 'undeployed' | 'preview' | 'preprod';
+export type NetworkName = 'undeployed' | 'preview' | 'preprod' | 'mainnet';
 
 export interface CliConfig {
   NETWORK: NetworkName;
@@ -45,10 +45,17 @@ const FALLBACK_INDEXER: Record<NetworkName, { http: string; ws: string; node: st
     ws: 'wss://indexer.preview.midnight.network/api/v4/graphql/ws',
     node: 'wss://rpc.preview.midnight.network',
   },
+  // Preprod and Mainnet are served by Blockfrost since 2026-10-09; the CLI
+  // config adds the project id. This fallback is only used without cli/dist.
   preprod: {
-    http: 'https://indexer.preprod.midnight.network/api/v4/graphql',
-    ws: 'wss://indexer.preprod.midnight.network/api/v4/graphql/ws',
-    node: 'wss://rpc.preprod.midnight.network',
+    http: 'https://midnight-preprod.blockfrost.io/api/v0',
+    ws: 'wss://midnight-preprod.blockfrost.io/api/v0/ws',
+    node: 'wss://rpc.midnight-preprod.blockfrost.io',
+  },
+  mainnet: {
+    http: 'https://midnight-mainnet.blockfrost.io/api/v0',
+    ws: 'wss://midnight-mainnet.blockfrost.io/api/v0/ws',
+    node: 'wss://rpc.midnight-mainnet.blockfrost.io',
   },
 };
 
@@ -57,13 +64,18 @@ let cached: Promise<CliConfig> | undefined;
 /** Load cli/dist/config.js, falling back to the same env variables it reads. */
 export function loadConfig(): Promise<CliConfig> {
   cached ??= (async () => {
+    // The CLI defaults to Preprod. A simulator-mode server has no network, so
+    // label it as the local devnet unless told otherwise.
+    process.env.NOMINEE_NETWORK ??= LIVE ? 'preprod' : 'undeployed';
     try {
       const m: any = await import(cliDistUrl('config.js'));
+      // The CLI's network config is a function (the --network flag is chosen at
+      // run time); older builds exported constants. Accept both.
+      const net = typeof m.networkConfig === 'function' ? m.networkConfig() : m.networkConfig;
       return {
-        NETWORK: m.NETWORK,
-        networkConfig: m.networkConfig,
+        NETWORK: typeof m.currentNetwork === 'function' ? m.currentNetwork() : m.NETWORK,
+        networkConfig: net,
         DEMO_GRACE_SECONDS: BigInt(m.DEMO_GRACE_SECONDS ?? process.env.NOMINEE_GRACE ?? '60'),
-        // SPEC §1.9 adds DEMO_CHALLENGE_SECONDS to cli config; until it lands read the env.
         DEMO_CHALLENGE_SECONDS: BigInt(m.DEMO_CHALLENGE_SECONDS ?? process.env.NOMINEE_CHALLENGE ?? '30'),
         fromCli: true,
       };

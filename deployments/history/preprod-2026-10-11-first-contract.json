@@ -1,0 +1,16 @@
+{
+  "network": "preprod",
+  "toolchain": "0.31.1",
+  "contractAddress": "9aea95e9fa430a1a0ddf42891afb52ea50c8ef2fa3f6bfb1a887bafeda347ee2",
+  "graceSeconds": 60,
+  "transactions": [
+    {
+      "circuit": "deploy",
+      "txHash": "101372e0cf42611014049f6cd90e632075eedf5be407e33895174cd16c2e0d31",
+      "block": 2927513,
+      "status": "accepted"
+    }
+  ],
+  "simulatorOnly": [],
+  "timestamp": "2026-10-11T01:42:07.417Z"
+}

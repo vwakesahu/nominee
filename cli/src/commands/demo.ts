@@ -3,11 +3,11 @@
 // The whole story in one command: a life, silence, resolution, the nominees,
 // six attacks that fail, and a faked death that the owner contests.
 //
-// With NOMINEE_LIVE=1 chapters 1, 3, 4 and 6 are REAL: real circuits, real
-// proofs, real blocks on the devnet, including the three shielded payouts.
-// Chapter 5 is refusals, which happen at circuit execution before any proof
-// exists, so it runs in the simulator and says so. Without NOMINEE_LIVE the
-// whole story runs in the simulator: same compiled circuits, same assertions.
+// With --live (or NOMINEE_LIVE=1) chapters 1, 3, 4 and 6 are REAL: real
+// circuits, real proofs, real blocks on the selected network, including the
+// shielded payouts. Chapter 5 is refusals, which happen at circuit execution
+// before any proof exists, so it runs in the simulator and says so. Without
+// --live the whole story runs in the simulator: same circuits, same assertions.
 import { execSync } from 'node:child_process';
 import chalk from 'chalk';
 import { banner, chapter, countdownUntil, note, warn, ok, fail, summary } from '../display.js';
@@ -15,9 +15,13 @@ import {
   LiveSession, SimSession, buildCast, setHeirs, makeHasher, makeHeir, randKey, randScalar, describeErr,
   type Cast,
 } from '../session.js';
-import { DEMO_GRACE_SECONDS, DEMO_CHALLENGE_SECONDS, DEVICE_URL, NETWORK, HOLD_HEIR, DEPOSIT_ASSET } from '../config.js';
+import {
+  DEMO_GRACE_SECONDS, DEMO_CHALLENGE_SECONDS, DEVICE_URL, HOLD_HEIR,
+  currentNetwork, depositAsset, networkConfig,
+} from '../config.js';
 import { TOKEN_SYMBOL } from '../token.js';
-import { emptyDeployment, save, DEPLOYMENTS_PATH, type TxRecord } from '../state.js';
+import { emptyDeployment, save, type TxRecord } from '../state.js';
+import { runPreflight } from '../preflight.js';
 import { exportEnvelope, writeEnvelope } from '../envelope.js';
 import { SparseTree, ownerLeaf } from '../crypto.js';
 import { OWNER_DEPTH } from '../witnesses.js';
@@ -28,27 +32,44 @@ import {
   simResolve, simFinalize, simVeto, simGuardianResolve,
 } from './steps.js';
 
-function devnetUp(): boolean {
+/** Containers that must be up. */
+function containersUp(names: string[]): boolean {
   try {
     const out = execSync('docker ps --format "{{.Names}}"', { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] });
-    return ['midnight-node', 'midnight-indexer', 'midnight-proof-server'].every((n) => out.includes(n));
+    return names.every((n) => out.includes(n));
   } catch { return false; }
 }
 
-async function ensureDevnet() {
-  if (devnetUp()) { ok('Local devnet already running.'); return true; }
-  note('Local devnet not detected, starting it with docker compose…');
+/**
+ * Bring up what this machine is responsible for.
+ *
+ * Local devnet: the node, indexer and proof server all run here.
+ * Public network: only the proof server, and it must, because it sees the
+ * owner and heir secrets. The node and indexer are Midnight's (or Blockfrost's).
+ * When NOMINEE_PROOF_SERVER points elsewhere (run-preprod.sh), the preflight
+ * probe below is what checks it.
+ */
+async function ensureLocalServices(local: boolean) {
+  if (!local && process.env.NOMINEE_PROOF_SERVER) return true;
+  const names = local
+    ? ['midnight-node', 'midnight-indexer', 'midnight-proof-server']
+    : ['midnight-proof-server'];
+  const services = local ? [] : ['proof-server'];
+  const what = local ? 'Local devnet' : 'Proof server';
+
+  if (containersUp(names)) { ok(`${what} already running.`); return true; }
+  note(`${what} not detected, starting it with docker compose…`);
   try {
-    execSync('docker compose up -d', { stdio: 'inherit' });
+    execSync(['docker', 'compose', 'up', '-d', ...services].join(' '), { stdio: 'inherit' });
   } catch {
-    fail('Could not start the devnet. Start Docker Desktop, then: docker compose up -d');
+    fail(`Could not start it. Start Docker Desktop, then: docker compose up -d ${services.join(' ')}`);
     return false;
   }
   for (let i = 0; i < 40; i++) {
-    if (devnetUp()) { ok('Devnet is up.'); return true; }
+    if (containersUp(names)) { ok(`${what} is up.`); return true; }
     await new Promise((r) => setTimeout(r, 1500));
   }
-  fail('Devnet did not become healthy in time.');
+  fail(`${what} did not become healthy in time.`);
   return false;
 }
 
@@ -64,12 +85,29 @@ async function devicePublicKey(): Promise<{ x: bigint; y: bigint } | null> {
 const GRACE = DEMO_GRACE_SECONDS;
 const CHALLENGE = DEMO_CHALLENGE_SECONDS;
 
-export async function demo() {
+export async function demo(opts: { live?: boolean } = {}) {
   banner();
+  const net = networkConfig();
+  const NETWORK = currentNetwork();
   console.log();
+  note(`Network: ${chalk.bold(net.name)}`);
 
-  const wantLive = process.env.NOMINEE_LIVE === '1';
-  if (wantLive && NETWORK === 'undeployed' && !(await ensureDevnet())) process.exit(1);
+  // On-chain execution is opt-in: --live, or NOMINEE_LIVE=1.
+  const wantLive = opts.live === true || process.env.NOMINEE_LIVE === '1';
+
+  // Only touch docker, and only check the network, when something goes on chain.
+  if (wantLive) {
+    if (!(await ensureLocalServices(net.local))) process.exit(1);
+    const checks = await runPreflight();
+    for (const c of checks.filter((x) => !x.ok)) {
+      (c.fatal ? fail : warn)(c.label);
+      if (c.detail) note(`  ${c.detail}`);
+    }
+    if (checks.some((c) => !c.ok && c.fatal)) {
+      fail('Preflight failed, nothing will be submitted.');
+      process.exit(1);
+    }
+  }
 
   const deployment = emptyDeployment();
   deployment.graceSeconds = Number(GRACE);
@@ -95,14 +133,15 @@ export async function demo() {
 
   let live: LiveSession | null = null;
   if (!wantLive) {
-    note('Running in simulator mode (set NOMINEE_LIVE=1 to execute on the devnet).');
+    note(`Running in simulator mode (add --live to execute on ${net.name}).`);
     note('Same compiled circuits, same assertions, no proof, no ledger.');
   } else try {
-    note('Connecting wallet, proof server and indexer, then deploying the registry…');
+    note(`Deploying a fresh registry for this run on ${net.name}.`);
+    note('Connecting wallet, proof server and indexer…');
     live = await LiveSession.connect(cast, { grace: GRACE, challenge: CHALLENGE });
     deployment.contractAddress = live.address;
     ok(`Contract deployed: ${chalk.bold(live.address)}`);
-    txs.push({ circuit: 'deploy', txHash: live.address, block: live.deployed?.deployTxData?.public?.blockHeight ?? null, status: 'accepted' });
+    txs.push({ circuit: 'deploy', txHash: live.deployTxHash ?? live.address, block: live.deployed?.deployTxData?.public?.blockHeight ?? null, status: 'accepted' });
     for (const t of live.setupTxs) {
       ok(`${t.circuit} accepted in block ${t.block ?? '?'}  (a 13-key deploy exceeds a block's write budget; the authority adds the last two)`);
       txs.push({ circuit: t.circuit, txHash: t.txHash, block: t.block, status: 'accepted' });
@@ -147,13 +186,13 @@ export async function demo() {
     // Claims are unchanged: they pay out whatever colour the vault holds.
     let color: Uint8Array = new Uint8Array(32);
     let colourLabel = 'native';
-    if (DEPOSIT_ASSET === 'token') {
+    if (depositAsset() === 'token') {
       note(`Deposit asset: ${TOKEN_SYMBOL}, a testnet-only shielded demo token (NOMINEE_DEPOSIT=token).`);
       const t = await step('demotoken deploy', () => stepTokenDeploy(live!));
       if (t) {
         push(t.record);
         deployment.tokenContract = t.token.address;
-        const waitMs = NETWORK === 'undeployed' ? 5 * 60_000 : 30 * 60_000;
+        const waitMs = net.local ? 5 * 60_000 : 30 * 60_000;
         const m = await step('demotoken mint', () => stepTokenMint(live!, alice, t.token, 1000n, waitMs));
         if (m) {
           push(m.record);
@@ -328,7 +367,7 @@ export async function demo() {
   const claims = txs.filter((t) => t.circuit === 'claim' && t.status === 'accepted').length;
   deployment.transactions = txs;
   deployment.simulatorOnly = simOnly;
-  if (live) save(deployment);   // a simulator run never overwrites the live record
+  const recordPath = live ? save(deployment) : null;   // a simulator run never overwrites the live record
 
   summary({
     circuits: 13, maxK: 16, keysMB: 75,
@@ -337,12 +376,13 @@ export async function demo() {
   });
   console.log();
   if (live) {
-    note(`Transaction record written to ${DEPLOYMENTS_PATH.replace(process.cwd() + '/', '')}`);
+    note(`Transaction record written to ${recordPath!.replace(process.cwd() + '/', '')}`);
     note(`Contract: ${live.address}`);
+    if (net.explorer) note(`Explorer: ${net.explorer}/contracts/${live.address}`);
     // The wallet SDK keeps subscriptions open; close it, but never let that hold the process.
     await Promise.race([live.close(), new Promise((r) => setTimeout(r, 5000))]);
   } else {
-    note('Simulator run: no transaction record written. Set NOMINEE_LIVE=1 for the real thing.');
+    note('Simulator run: no transaction record written. Add --live for the real thing.');
   }
   console.log();
   process.exit(0);

@@ -8,21 +8,22 @@ import {
   createKeystore, InMemoryTransactionHistoryStorage, TransactionHistoryStorage,
 } from "@midnight-ntwrk/wallet-sdk";
 import * as rx from "rxjs";
-import { NETWORK, NETWORK_ID, networkConfig, DUST_CHECKPOINT_FILE } from "./config.js";
+import { networkConfig, networkId, dustCheckpointFile } from "./config.js";
 import { deriveShieldedSeed, deriveUnshieldedSeed, deriveDustSeed } from "./keys.js";
 
-/** Public networks need the DUST wallet fully caught up before anything can be balanced. */
-const PUBLIC_NETWORK = NETWORK !== "undeployed";
-const CHECKPOINT_ENABLED = PUBLIC_NETWORK && DUST_CHECKPOINT_FILE !== "off";
+/** Public networks need the DUST wallet fully caught up before anything can be balanced.
+ *  Functions, not constants: the --network flag is parsed after this module loads. */
+const isPublic = () => !networkConfig().local;
+const checkpointEnabled = () => isPublic() && dustCheckpointFile() !== "off";
 
 /**
  * Read the persisted DUST snapshot, if there is one for this network AND this
  * key (a snapshot made with another mnemonic is ignored, not an error).
  */
 function loadDustCheckpoint(dustSecretKey: ledger.DustSecretKey): string | null {
-  if (!CHECKPOINT_ENABLED) return null;
+  if (!checkpointEnabled()) return null;
   try {
-    const raw = fs.readFileSync(DUST_CHECKPOINT_FILE, "utf8");
+    const raw = fs.readFileSync(dustCheckpointFile(), "utf8");
     const snap = JSON.parse(raw);
     if (String(snap?.publicKey?.publicKey) !== String(dustSecretKey.publicKey)) return null;
     return raw;
@@ -31,12 +32,13 @@ function loadDustCheckpoint(dustSecretKey: ledger.DustSecretKey): string | null 
 
 /** Persist the DUST wallet state so the next run resumes instead of rescanning. Best effort. */
 export async function saveDustCheckpoint(bundle: { facade: any }): Promise<boolean> {
-  if (!CHECKPOINT_ENABLED) return false;
+  if (!checkpointEnabled()) return false;
   try {
+    const file = dustCheckpointFile();
     const serialized: string = await bundle.facade.dust.serializeState();
-    fs.mkdirSync(path.dirname(DUST_CHECKPOINT_FILE), { recursive: true });
-    fs.writeFileSync(`${DUST_CHECKPOINT_FILE}.tmp`, serialized);
-    fs.renameSync(`${DUST_CHECKPOINT_FILE}.tmp`, DUST_CHECKPOINT_FILE);
+    fs.mkdirSync(path.dirname(file), { recursive: true });
+    fs.writeFileSync(`${file}.tmp`, serialized);
+    fs.renameSync(`${file}.tmp`, file);
     return true;
   } catch { return false; }
 }
@@ -44,7 +46,7 @@ export async function saveDustCheckpoint(bundle: { facade: any }): Promise<boole
 /**
  * Build the wallet facade.
  *
- * On a public network the DUST wallet is RESTORED from `DUST_CHECKPOINT_FILE`
+ * On a public network the DUST wallet is RESTORED from `dustCheckpointFile()`
  * when that file exists and belongs to this key; otherwise it cold-scans every
  * generation event since genesis (~1.67M on Preprod). The SDK resumes from the
  * snapshot's offset and re-applies anything newer, so a snapshot taken before
@@ -57,22 +59,23 @@ export async function saveDustCheckpoint(bundle: { facade: any }): Promise<boole
 export async function buildWallet(seed: Buffer, _opts: { useCheckpoint?: boolean } = {}) {
   const zswapSecretKeys = ledger.ZswapSecretKeys.fromSeed(deriveShieldedSeed(seed));
   const dustSecretKey = ledger.DustSecretKey.fromSeed(deriveDustSeed(seed));
-  const keystore = createKeystore(deriveUnshieldedSeed(seed), NETWORK_ID);
+  const net = networkConfig();
+  const keystore = createKeystore(deriveUnshieldedSeed(seed), networkId() as any);
 
   const checkpoint = loadDustCheckpoint(dustSecretKey);
 
   const configuration = {
-    networkId: NETWORK_ID,
+    networkId: networkId() as any,
     indexerClientConnection: {
-      indexerHttpUrl: networkConfig.indexerHttpUrl,
-      indexerWsUrl: networkConfig.indexerWsUrl,
+      indexerHttpUrl: net.indexerHttpUrl,
+      indexerWsUrl: net.indexerWsUrl,
     },
     costParameters: { additionalFeeOverhead: 300_000_000_000_000n, feeBlocksMargin: 5 },
     txHistoryStorage: new InMemoryTransactionHistoryStorage(
       TransactionHistoryStorage.TransactionHistoryCommonSchema,
     ),
-    provingServerUrl: new URL(networkConfig.proofServer),
-    relayURL: new URL(networkConfig.node),
+    provingServerUrl: new URL(net.proofServer),
+    relayURL: new URL(net.node),
     // Event batching for the dust and shielded scans (CPU-bound in wasm). On
     // Preprod via Blockfrost the SDK default (10 events, 1 ms, 4 ms spacing)
     // applied ~180 DUST events/s over the first 100k events, 200-event
@@ -111,12 +114,54 @@ function isReallySynced(state: any): boolean {
  * local devnet's DUST history is a few events and never lagged.
  */
 function isDustSynced(state: any): boolean {
-  if (!PUBLIC_NETWORK) return true;
+  if (!isPublic()) return true;
   const p = state?.dust?.progress;
   if (!p) return false;
   const applied = Number(p.appliedIndex ?? 0);
   const highest = Number(p.highestRelevantWalletIndex ?? 0);
   return p.isConnected === true && highest > 0 && applied >= highest;
+}
+
+/**
+ * A wallet that has never received anything reports 0/0 forever.
+ *
+ * `isReallySynced` requires `highest > 0`, so an unfunded address never
+ * satisfies it and the sync would spin until the timeout, which looks like a
+ * network fault and is really just an empty wallet. Once 0/0 has held steady
+ * for this long, treat it as caught up and let the caller report the real
+ * problem: there are no funds.
+ */
+const EMPTY_WALLET_SETTLE_MS = Number(process.env.NOMINEE_EMPTY_SETTLE_MS ?? 20_000);
+
+/**
+ * Keeps the facade's services from shutting down. Dropping the last state
+ * subscriber lets the facade tear down its services, and the node client goes
+ * with them: a submission issued afterwards dies with "disconnected from
+ * wss://...: 1000:: Normal Closure" (on Preprod it surfaced as the wallet SDK's
+ * "Failed to prove transaction"). startAndSync holds one subscriber for the
+ * rest of the process.
+ */
+let keepAlive: rx.Subscription | null = null;
+
+/** Release the keep-alive subscriber once no more transactions will be sent. */
+export function releaseWallet() {
+  try { keepAlive?.unsubscribe(); } catch { /* best effort */ }
+  keepAlive = null;
+}
+
+/** Total NIGHT and DUST the wallet can see. Defensive: shapes vary by SDK version. */
+export function readFunds(state: any): { night: bigint; dust: bigint } {
+  let night = 0n;
+  try {
+    for (const v of Object.values(state?.unshielded?.balances ?? {})) night += BigInt(v as any);
+  } catch { /* leave at 0 */ }
+  let dust = 0n;
+  try {
+    const b = state?.dust?.balance;
+    const raw = typeof b === 'function' ? b.call(state.dust, new Date()) : b;
+    dust = BigInt(raw?.value ?? raw ?? 0);
+  } catch { /* leave at 0 */ }
+  return { night, dust };
 }
 
 /**
@@ -132,7 +177,7 @@ function isDustSynced(state: any): boolean {
  */
 export async function startAndSync(
   bundle: Awaited<ReturnType<typeof buildWallet>>,
-  timeoutMs = PUBLIC_NETWORK ? 4 * 3_600_000 : 600_000,
+  timeoutMs = Number(process.env.NOMINEE_SYNC_TIMEOUT_MS ?? (isPublic() ? 4 * 3_600_000 : 600_000)),
 ) {
   const { facade, zswapSecretKeys, dustSecretKey } = bundle;
   await facade.start(zswapSecretKeys, dustSecretKey);
@@ -147,14 +192,14 @@ export async function startAndSync(
     const draw = () => {
       const secs = Math.floor((Date.now() - startedAt) / 1000);
       const night = `${Math.min(lastApplied, lastHighest)}/${lastHighest} transactions`;
-      const dust = PUBLIC_NETWORK
+      const dust = isPublic()
         ? `, DUST ${dustApplied}/${dustHighest} events` +
           (dustHighest > 0 ? ` (${Math.floor((100 * Math.min(dustApplied, dustHighest)) / dustHighest)}%)` : "")
         : "";
       process.stdout.write(`\r  syncing… ${night}${dust} (${secs}s)   `);
     };
     const heartbeat = setInterval(draw, 1000);
-    const checkpointer = CHECKPOINT_ENABLED
+    const checkpointer = checkpointEnabled()
       ? setInterval(() => { void saveDustCheckpoint(bundle); }, 60_000)
       : null;
 
@@ -175,6 +220,7 @@ export async function startAndSync(
     }, timeoutMs);
 
     let settling = false;
+    let emptySince: number | null = null;
     sub = facade.state().subscribe(async (state: any) => {
       const p = state.unshielded?.progress;
       if (p) {
@@ -186,13 +232,21 @@ export async function startAndSync(
         dustApplied = Number(d.appliedIndex ?? 0);
         dustHighest = Number(d.highestRelevantWalletIndex ?? 0);
       }
-      if (!settling && isReallySynced(state) && isDustSynced(state)) {
+      // Nothing to walk: an address with no history. Give the indexer a moment
+      // to contradict us, then stop pretending we are making progress.
+      const empty = !!p && lastHighest === 0;
+      if (empty) emptySince ??= Date.now();
+      else emptySince = null;
+      const settledEmpty = emptySince !== null && Date.now() - emptySince >= EMPTY_WALLET_SETTLE_MS;
+
+      if (!settling && ((isReallySynced(state) && isDustSynced(state)) || settledEmpty)) {
         settling = true;
         stop();
+        keepAlive ??= facade.state().subscribe({ next: () => {}, error: () => {} });
         draw();
         process.stdout.write("\n");
         await saveDustCheckpoint(bundle);
-        if (PUBLIC_NETWORK && (state.dust?.availableCoins?.length ?? 0) === 0) {
+        if (!settledEmpty && isPublic() && (state.dust?.availableCoins?.length ?? 0) === 0) {
           process.stdout.write(
             "  DUST is synced but this wallet has no spendable DUST coin; " +
             "register NIGHT for DUST generation first (nominee register-dust).\n",

@@ -34,6 +34,7 @@ export class SimBackend implements Backend {
   private ctx: any;
   private readonly base: Record<string, Function>;
   private heartbeatNow = 0n;
+  private deviceKind: 2 | 4 = 2;
 
   constructor(private readonly cfg: CliConfig) {
     this.network = cfg.NETWORK;
@@ -61,7 +62,7 @@ export class SimBackend implements Backend {
       newVaultRoot: pass(this.heirTree.digest()),
       devicePkX: pass(owner.device.x),
       devicePkY: pass(owner.device.y),
-      deviceSig: (ctx: any) => [ctx.privateState, schnorrSign(h, owner.device, deviceMsg(this.heartbeatNow))],
+      deviceSig: (ctx: any) => [ctx.privateState, schnorrSign(h, owner.device, deviceMsg(this.heartbeatNow, this.deviceKind))],
       heirSecret: () => { throw new Error('no heir selected'); },
       heirShare: () => { throw new Error('no heir selected'); },
       heirPath: () => { throw new Error('no heir selected'); },
@@ -95,7 +96,10 @@ export class SimBackend implements Backend {
     this.heartbeatNow = lastSeen;
     this.run(base, 'heartbeat', lastSeen);
     this.run(base, 'deposit', { nonce: rand32(), color: ZERO32, value: 1000n });
-    this.run(base, 'updateWill');
+    // updateWill is device-signed too, with message kind 4.
+    this.deviceKind = 4;
+    this.run(base, 'updateWill', lastSeen);
+    this.deviceKind = 2;
 
     // --- silence, then resolution: resolve opens the window, finalize closes it
     this.setTime(lastSeen + grace + 1n);

@@ -43,20 +43,23 @@ circuits and proving keys in `contract/out/` are committed.
 ```bash
 git clone https://github.com/vwakesahu/nominee && cd nominee
 bun install                   # always from the repo root, see the gotcha below
-./run-devnet.sh               # brings up the devnet and runs the demo on chain
+bun run demo                  # the whole story in the simulator, about 15 s
+./run-devnet.sh               # brings up a local devnet and runs it on chain
+./run-preprod.sh              # runs it on Preprod (needs a wallet, see below)
 ```
 
 `run-devnet.sh` starts Docker Desktop if it is not up, brings up the node,
-indexer and proof server, builds the CLI and runs the demo live. First run pulls
-images and takes a few minutes. After that it is about six.
+indexer and proof server, and runs the demo live. First run pulls images and
+takes a few minutes. After that it is about ten.
 
-To run the pieces separately:
+The CLI picks its network with `--network` (`undeployed` | `preview` |
+`preprod` | `mainnet`, default `preprod`) and goes on chain only with `--live`:
 
 ```bash
-docker compose up -d            # node, indexer, proof server
-bun run --cwd cli build
-node cli/dist/index.js demo     # simulator, fast, no chain
-NOMINEE_LIVE=1 node cli/dist/index.js demo   # real proofs on the devnet
+docker compose up -d                                  # node, indexer, proof server
+bun run nominee demo                                  # simulator, fast, no chain
+bun run nominee --network undeployed demo --live      # real proofs on the devnet
+bun run nominee --network preprod doctor              # check a network before spending anything
 ```
 
 Tests and checks:
@@ -70,8 +73,8 @@ bun run nominee doctor
 The demo runs six chapters: a life (register, deposit, heartbeat, update the
 will, heartbeat), silence, resolution (a veto window opens, then `finalize`),
 the nominees claiming, six attacks refused, and a faked death that the owner
-contests. With `NOMINEE_LIVE=1` everything except the refusals runs on the
-devnet, including the three shielded payouts. Refusals happen at circuit
+contests. With `--live` everything except the refusals runs on chain,
+including the three shielded payouts. Refusals happen at circuit
 execution before a proof exists, so they run in the simulator and say so.
 
 ### The device
@@ -81,8 +84,8 @@ a Schnorr signature from the owner's device over the timestamp. `nominee device`
 is a stand-in signer:
 
 ```bash
-node cli/dist/index.js device --pulse          # http://127.0.0.1:7777
-NOMINEE_DEVICE_URL=http://127.0.0.1:7777 NOMINEE_LIVE=1 node cli/dist/index.js demo
+bun run nominee device --pulse                 # http://127.0.0.1:7777
+NOMINEE_DEVICE_URL=http://127.0.0.1:7777 bun run nominee --network undeployed demo --live
 ```
 
 It exposes `GET /pubkey` and `POST /sign {kind, now}` (kind 2 signs a heartbeat,
@@ -102,9 +105,21 @@ bun run server      # API on http://127.0.0.1:8787, simulator mode
 bun run web         # Next.js page on http://localhost:3000
 ```
 
-Against the devnet: `NOMINEE_LIVE=1 NOMINEE_CONTRACT=<address> bun run server`.
 To leave one nominee's share unclaimed by the demo so the page can claim it,
-run the demo with `NOMINEE_HOLD_HEIR=sam`.
+run the demo with `NOMINEE_HOLD_HEIR=sam`. Then point the server at that
+contract:
+
+```bash
+# devnet
+NOMINEE_LIVE=1 NOMINEE_NETWORK=undeployed NOMINEE_CONTRACT=<address> bun run server
+# Preprod (Node 22, same wallet and Blockfrost id as run-preprod.sh)
+NOMINEE_LIVE=1 NOMINEE_NETWORK=preprod NOMINEE_CONTRACT=<address> \
+  NOMINEE_BLOCKFROST=<id> NOMINEE_MNEMONIC_FILE=<file> \
+  NOMINEE_PROOF_SERVER=http://127.0.0.1:6301 bun run server
+```
+
+The envelopes are in `deployments/envelopes/` (devnet) and
+`deployments/envelopes/preprod/`.
 
 ![Claim as an heir](docs/screenshots/6-heir-claim.png)
 
@@ -118,25 +133,29 @@ their own secret, share and Merkle path.
 ### On chain
 
 A recorded live run is in [`deployments/devnet.json`](deployments/devnet.json):
-**17 accepted transactions** on contract `5da98e56…e5cc67`. Deploy, two
+**17 accepted transactions** on contract `7de3ca92…fee440`. Deploy, two
 verifier-key inserts, register, deposit, two device-signed heartbeats, a
 device-signed `updateWill`, `resolve`, `finalize`, three `claim`s (`heldCoin`
 1000 → 500 → 200 → entry removed), a second owner's register, `resolve`,
 `veto`, and `guardianResolve2of3`. Plus one deliberately refused `finalize`
 after the veto (`no open challenge`). Nothing in the run is simulator-only.
 
-Two of the claims came from the CLI (blocks 659 and 663). The third came from
+Two of the claims came from the CLI (blocks 5470 and 5475). The third came from
 the heir web page: the run held Sam back with `NOMINEE_HOLD_HEIR=sam`, then
 Sam's envelope was pasted into the claim server, which proved and submitted
-the claim in block 681.
+the claim in block 5499.
 
 **On Preprod.** The same story ran on the public Preprod network, recorded in
 [`deployments/preprod.json`](deployments/preprod.json): **19 accepted
-transactions** on contract `f3989203…7f1247`, blocks 3,023,384 to 3,023,703.
+transactions** on contract `82917563…ae8734`, blocks 3,030,390 to 3,030,516.
 That covers deploy, register, a deposit, device-signed heartbeats and will
 update, `resolve`, `finalize`, three claims, the faked-death veto and the
 guardian path. Two claims came from the CLI. Sam's came from the heir web page
-in block 3,023,703. Anyone can look up any hash on the Preprod indexer.
+in block 3,030,516. Anyone can look up any hash on the Preprod indexer, or open
+the contract in the
+[Preprod explorer](https://preprod.midnightexplorer.com/contracts/82917563749612d0ec07636b0d6a85a32bc5d7072c5f06002b3bd766b7ae8734).
+An earlier deploy of the first contract, from 11 October, is kept in
+[`deployments/history/`](deployments/history).
 
 One difference from the devnet. The funded Preprod wallet holds unshielded
 NIGHT, and NIGHT cannot be shielded, so the vault there holds **tNOM**. tNOM is
@@ -149,9 +168,27 @@ Blockfrost project id for Midnight Preprod. Midnight shut its own Preprod
 indexer on 9 October 2026, and Blockfrost now serves Preprod. Use Node 22.
 
 ```bash
-NOMINEE_BLOCKFROST=<project id> NOMINEE_MNEMONIC="<24 words>" ./run-preprod.sh
-NOMINEE_DRY_RUN=1 ... ./run-preprod.sh    # check the setup, submit nothing
+export NOMINEE_BLOCKFROST=<project id>
+export NOMINEE_MNEMONIC_FILE=<file with your 24 words>   # or NOMINEE_MNEMONIC="..." or NOMINEE_SEED_HEX
+NOMINEE_DRY_RUN=1 ./run-preprod.sh      # check the setup and print the address, submit nothing
+NOMINEE_HOLD_HEIR=sam ./run-preprod.sh  # the whole story; leaves Sam for the heir page
 ```
+
+Starting from a fresh wallet instead:
+
+```bash
+bun run nominee --network preprod address        # the address and the faucet URL
+#   fund it at https://midnight-tmnight-preprod.nethermind.dev/
+bun run nominee --network preprod register-dust  # NIGHT must be registered to generate DUST
+bun run nominee --network preprod balance        # NIGHT, DUST and shielded balances
+bun run nominee --network preprod deploy         # a durable registry, recorded per network
+```
+
+`deploy` derives the cohort secrets, device keys and guardian keys from the
+wallet seed, so the same seed reconnects to the same contract later: the
+constructor commits to the owner tree and guardian keys, and only the matching
+secrets satisfy them again. Keep the seed. `demo --live` deploys a fresh
+registry with fresh secrets every run.
 
 The script picks Node 22 and starts a local proof server 8.1.3 on port 6301. It
 masks the Blockfrost id in all output.
@@ -280,31 +317,30 @@ Named here because a judge will find them anyway, and because the validation fou
 
 **Always install from the repo root.** Installing inside a workspace creates a
 second copy of the wasm bindings there, which reproduces the class-identity
-failure below. The root `overrides` pin only applies to a root install.
+failure below. The root `overrides` pin only applies to a root install. Bun is
+the package manager.
 
-Bun is the package manager. The CLI and the API server are still executed with
-`node`, never with bun or a TypeScript loader, for the reason below.
-
-**Run the CLI on plain `node`, never through `tsx`.**
-
-A transform-based TypeScript loader resolves the wasm bindings under a second
-module URL, so two copies of `ContractState` end up in the process and every
-`instanceof` check across the boundary fails:
+**Keep `"type": "module"` in `contract/package.json`.** For a long time a
+deploy from the CLI failed with:
 
 ```
 'contractState' parameter ContractState (...) has unexpected type
 expected instance of ContractMaintenanceAuthority
 ```
 
-Measured directly, `cs instanceof ContractState` is `false` under `tsx` and
-`true` under `node`. That is why `bin/nominee` compiles first and spawns
-`node dist/index.js`, and why the same code passes 49 tests under vitest (which
-keeps one instance) while failing under `tsx`.
+The generated bindings in `contract/out/contract/index.js` are ESM. Without that
+field Node loaded them as CommonJS, which put a second instance of
+`@midnight-ntwrk/compact-runtime` in the process. A `ContractState` built by one
+instance is then rejected by the other. It looked like a duplicated package and
+was not: one copy on disk, two module instances. Vitest never showed it because
+Vite bundles everything as ESM. With the field in place the CLI runs from source
+through `tsx` (`cli/bin/nominee.mjs`, verified with a live deploy). The API
+server runs the compiled build in `cli/dist`, which `bun run server` builds.
 
 ## Roadmap
 
 - **Wave 1**, contract, CLI demo, validation trail
-- **Wave 2** (this wave), live shielded payout, device factor, veto window, heir web app, Preprod deployment
+- **Wave 2** (this wave), live shielded payout, device factor, veto window, heir web app, multi-network CLI (`--network`, `deploy`, preflight checks), Preprod deployment
 - **Wave 3**, probate disclosure and duress decoy wired into the CLI, DAO successor-signer, multi-asset vaults
 
 ## Validation trail

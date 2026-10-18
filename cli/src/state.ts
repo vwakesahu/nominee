@@ -1,12 +1,16 @@
 // SPDX-License-Identifier: Apache-2.0
-// deployments/devnet.json, the record a judge can check against the indexer.
+// deployments/<network>.json, the record a judge can check against the indexer.
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { NETWORK } from './config.js';
+import { currentNetwork, deploymentsFile } from './config.js';
 
 const ROOT = resolve(fileURLToPath(new URL('../..', import.meta.url)));
-export const DEPLOYMENTS_PATH = resolve(ROOT, `deployments/${NETWORK === 'undeployed' ? 'devnet' : NETWORK}.json`);
+
+/** Resolved per call: the target network is chosen after this module loads. */
+export const deploymentsPath = (): string => resolve(ROOT, deploymentsFile());
+
+const networkLabel = () => (currentNetwork() === 'undeployed' ? 'local-devnet' : currentNetwork());
 
 export interface TxRecord {
   circuit: string;
@@ -35,7 +39,7 @@ export interface Deployment {
 
 export function emptyDeployment(): Deployment {
   return {
-    network: NETWORK === 'undeployed' ? 'local-devnet' : NETWORK,
+    network: networkLabel(),
     toolchain: '0.31.1',
     contractAddress: null,
     graceSeconds: 60,
@@ -47,15 +51,20 @@ export function emptyDeployment(): Deployment {
 }
 
 export function load(): Deployment {
-  if (!existsSync(DEPLOYMENTS_PATH)) return emptyDeployment();
-  try { return JSON.parse(readFileSync(DEPLOYMENTS_PATH, 'utf8')); }
+  const path = deploymentsPath();
+  if (!existsSync(path)) return emptyDeployment();
+  try { return JSON.parse(readFileSync(path, 'utf8')); }
   catch { return emptyDeployment(); }
 }
 
-export function save(d: Deployment) {
+/** Write the record and return its path. */
+export function save(d: Deployment): string {
+  const path = deploymentsPath();
+  d.network = networkLabel();
   d.timestamp = new Date().toISOString();
-  mkdirSync(dirname(DEPLOYMENTS_PATH), { recursive: true });
+  mkdirSync(dirname(path), { recursive: true });
   // Ledger values are bigints; never let one abort the record after a live run.
   const json = JSON.stringify(d, (_k, v) => (typeof v === 'bigint' ? v.toString() : v), 2);
-  writeFileSync(DEPLOYMENTS_PATH, json + '\n');
+  writeFileSync(path, json + '\n');
+  return path;
 }

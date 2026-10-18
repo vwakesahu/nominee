@@ -81,7 +81,7 @@ export async function deployOrAttachToken(providers: any, address: string = TOKE
   const tokenProviders = {
     ...providers,
     zkConfigProvider,
-    proofProvider: httpClientProofProvider(networkConfig.proofServer, zkConfigProvider),
+    proofProvider: httpClientProofProvider(networkConfig().proofServer, zkConfigProvider),
   };
   const compiled = (CompiledContract.make('DemoToken', TokenContract) as any).pipe(
     (CompiledContract as any).withVacantWitnesses,

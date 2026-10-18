@@ -1,110 +1,110 @@
 {
   "network": "preprod",
   "toolchain": "0.31.1",
-  "contractAddress": "f3989203a7124ab71b8453582e6bf606cc762fe20a63faf83f91470cfd7f1247",
+  "contractAddress": "82917563749612d0ec07636b0d6a85a32bc5d7072c5f06002b3bd766b7ae8734",
   "graceSeconds": 60,
   "challengeSeconds": 30,
   "transactions": [
     {
       "circuit": "deploy",
-      "txHash": "f3989203a7124ab71b8453582e6bf606cc762fe20a63faf83f91470cfd7f1247",
-      "block": 3023384,
+      "txHash": "c16d73531f264f38809eb9a7ac2f913b2d51afd6b4f85c5c557741934c890a21",
+      "block": 3030390,
       "status": "accepted"
     },
     {
       "circuit": "insertVerifierKey(openProbate)",
-      "txHash": "70aad3ab1d8401093dad262d55be36af95561f881fb00496061c58909984d9d9",
-      "block": 3023389,
+      "txHash": "3b83cea65e5673659f8f15977ba9ae4bfbb0edce3cf310a9eb5e5ef94258427c",
+      "block": 3030395,
       "status": "accepted"
     },
     {
       "circuit": "insertVerifierKey(resolveUnderPin)",
-      "txHash": "6e6cefa8e3830b96ebbd57aa16f9cd0e3cdd1690d25c242e3788929649b772e4",
-      "block": 3023395,
+      "txHash": "947f3bfc3d6ed48fc4491297bc92cdcbc1b3d9a4a11824987b39113f118b93f7",
+      "block": 3030400,
       "status": "accepted"
     },
     {
       "circuit": "register",
-      "txHash": "c93d6d0a20ca82d1bd7582580eb4a7a6d043f1060b1afeaada7cb2fd79b95cae",
-      "block": 3023402,
+      "txHash": "9ff51bfc0e9dc7bbaa2a710672c5c078d83c4fb4cf750664bade2ad88ca2f644",
+      "block": 3030405,
       "status": "accepted"
     },
     {
       "circuit": "demotoken deploy",
-      "txHash": "6ef34f1eb2b05a5b30528911067332415d613fe263f62c525562c624a5b544ff",
-      "block": 3023407,
+      "txHash": "6eb9bd44e61be322d3c2391b32be2f42ede3eb9b80ac2c1c9354227c77261dd4",
+      "block": 3030409,
       "status": "accepted"
     },
     {
       "circuit": "demotoken mint",
-      "txHash": "cf775dc97d139145c95c3da4f7a508893a97095305eeb788d70705a6af5f42f6",
-      "block": 3023412,
+      "txHash": "5efafc88c63be0d57141ff63b6ae64188c1b8ebdb9e6e9d75b4bfc5f4e152e2e",
+      "block": 3030414,
       "status": "accepted"
     },
     {
       "circuit": "deposit",
-      "txHash": "6a1aed9ff9716524d470a72d025fbb168335936d141485c2a375746eaa71a5f7",
-      "block": 3023418,
+      "txHash": "d700c32c043a345e2b6df701cfed0d51fee0d2d896e8dc72b142ab92422d27f0",
+      "block": 3030420,
       "status": "accepted"
     },
     {
       "circuit": "heartbeat",
-      "txHash": "2fee36e65d996a237036cb1d00a0626e08ac29f5071f49c045677a078697234a",
-      "block": 3023431,
+      "txHash": "ba1dffb4089d163ec0dfb213c41cc41174b68959c0059d7659dfc1a4e7a2a355",
+      "block": 3030425,
       "status": "accepted"
     },
     {
       "circuit": "updateWill",
-      "txHash": "85610ceeb75e702e44fd1fd6945216f4db480aaeedd255710b50b00f749be6e5",
-      "block": 3023437,
+      "txHash": "197a8c54df9b450ea18527f65550243045ec483877c38ebfe1e3c8f62f9f284b",
+      "block": 3030430,
       "status": "accepted"
     },
     {
       "circuit": "heartbeat, the last one",
-      "txHash": "29a406571024d5402214ccf2e6871e44eaf1f0579f757e56c3e6300a060ba0d3",
-      "block": 3023442,
+      "txHash": "0166ff53597a2f42da20ac5093b608316fbbfe917d0ede0ee9c281ffc4f3bc16",
+      "block": 3030435,
       "status": "accepted"
     },
     {
       "circuit": "resolve",
-      "txHash": "a14898b10aef0bd4ec786ee417e3461a1cb1ced963a1841f04227b548a1800df",
-      "block": 3023452,
+      "txHash": "0a70b2551de7968551f0cecd5abdc8a7f094e9aaefb48ed87720d97f1ba0f098",
+      "block": 3030445,
       "status": "accepted"
     },
     {
       "circuit": "finalize",
-      "txHash": "5156479e043b8dda2e0313a0e97a398dcaa61691d6e08a45992afddda2c538b7",
-      "block": 3023457,
+      "txHash": "f5aa34543527e9d578881b0dc355d0220f998b34f98ac1d9c7ce7ebb66466b2f",
+      "block": 3030450,
       "status": "accepted"
     },
     {
       "circuit": "claim",
-      "txHash": "a35680518a7f9486d16423c374e849fe7670134f2ebf5cc4c7e9eeb2624b18d5",
-      "block": 3023463,
+      "txHash": "fab970de2ed076037d5033806da5da2e43fc67088806c5b00ee0f8826d309c76",
+      "block": 3030456,
       "status": "accepted"
     },
     {
       "circuit": "claim",
-      "txHash": "83cad77b8bf1c856c245a73e3fdb4bc0b13e8dadb14d25246c0c14ab56261a28",
-      "block": 3023468,
+      "txHash": "7729b77979507510152c7a1432af0fd3c26690db71d54db74ac52bb6f379e658",
+      "block": 3030462,
       "status": "accepted"
     },
     {
       "circuit": "register",
-      "txHash": "e00a7f58ab18329ddcf8fad66375bbf534dc032f0c448d7d27af31dbbdd1f17c",
-      "block": 3023473,
+      "txHash": "c3468329da941b6328de8f5695b54afa22ff52cd03e989bbdd582d55199235ee",
+      "block": 3030467,
       "status": "accepted"
     },
     {
       "circuit": "resolve",
-      "txHash": "67f7cd1bdedcc222b26d3285e87c8cdbe48d2160030364e95ff7675b3ee17e55",
-      "block": 3023477,
+      "txHash": "c4b211e834a5c9955f613b54f3fe54157ac8c8df269fa2f2f68050620ccc5e50",
+      "block": 3030472,
       "status": "accepted"
     },
     {
       "circuit": "veto",
-      "txHash": "ecca9ac934fea030a47b7cc33c9a71dbe9e38a4f745bceeb9ee3c13e9da33fb9",
-      "block": 3023482,
+      "txHash": "908a892c5688128e4ad3e5aff3f2c0eed79852da66196f267b2b418716a90412",
+      "block": 3030477,
       "status": "accepted"
     },
     {
@@ -117,19 +117,19 @@
     },
     {
       "circuit": "guardianResolve2of3",
-      "txHash": "e658a1eae1c13c4f4e9bc0d64dbc179055ecc97c1c3fbfddd48b01170d2bba4a",
-      "block": 3023487,
+      "txHash": "3d58dc5f1231bea98c18ac981c252ea0b7a285de23531bd484086d778c3b98e6",
+      "block": 3030481,
       "status": "accepted"
     },
     {
       "circuit": "claim (heir web page)",
-      "txHash": "a1309d692321aaee73933ff2060bafe1275e8b0a0edb87fda28dbe9d0c450914",
-      "block": 3023703,
+      "txHash": "b393db0d4d1bfd777f4809528d4e7fb9331174b1cf912e4e2f5372f395a0708e",
+      "block": 3030516,
       "status": "accepted"
     }
   ],
   "simulatorOnly": [],
-  "timestamp": "2026-10-17T17:39:32.690Z",
-  "tokenContract": "b3a482119cdf16e12bec2666c369d1c3b9abcfe61db402371cc7dd75df20e71f",
+  "timestamp": "2026-10-18T05:19:01.206Z",
+  "tokenContract": "02f23d2f91366aefb1a5158083f59a06d363161662129c0c975f7ee5e58b02e6",
   "depositAsset": "tNOM"
 }

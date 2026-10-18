@@ -1,22 +1,31 @@
 #!/usr/bin/env node
 // SPDX-License-Identifier: Apache-2.0
 //
-// Runs the COMPILED CLI on plain node — never through a TS loader.
-// tsx (and other transform-based loaders) resolve the wasm bindings under a
-// second module URL, which puts two copies of ContractState in the process and
-// makes every `instanceof` check across the boundary fail. Plain node keeps a
-// single instance.
-import { existsSync } from 'node:fs';
+// Runs the CLI from source through tsx, so there is no build step for CLI users.
+// This used to be impossible: tsx loaded the contract's ESM bindings as
+// CommonJS and put two copies of compact-runtime in the process. The fix was
+// `"type": "module"` in contract/package.json (see README). If tsx is not
+// installed, fall back to the compiled build in dist/ (`bun run build`), which
+// the claim server also uses.
 import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
+import { existsSync } from 'node:fs';
 
 const here = dirname(fileURLToPath(import.meta.url));
-const entry = resolve(here, '../dist/index.js');
+// Workspaces may hoist tsx to the repo root.
+const tsx = [resolve(here, '../node_modules/.bin/tsx'), resolve(here, '../../node_modules/.bin/tsx')]
+  .find(existsSync);
+const dist = resolve(here, '../dist/index.js');
 
-if (!existsSync(entry)) {
-  console.error('nominee: not built yet — run `npm run build` first.');
+const [cmd, args] = tsx
+  ? [tsx, [resolve(here, '../src/index.ts')]]
+  : existsSync(dist)
+    ? [process.execPath, [dist]]
+    : [null, []];
+if (!cmd) {
+  console.error('nominee: neither tsx nor a build was found. Run `bun install` from the repo root.');
   process.exit(1);
 }
-spawn(process.execPath, [entry, ...process.argv.slice(2)], { stdio: 'inherit' })
+spawn(cmd, [...args, ...process.argv.slice(2)], { stdio: 'inherit' })
   .on('exit', (c) => process.exit(c ?? 0));

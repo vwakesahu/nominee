@@ -9,7 +9,8 @@ import { fileURLToPath } from 'node:url';
 import type { Hasher, Entry } from './crypto.js';
 import { heirLeaf } from './crypto.js';
 import { ownerTag } from './crypto.js';
-import { networkConfig, type NetworkName } from './config.js';
+import { type NetworkName } from './config.js';
+import { NETWORKS } from './networks.js';
 import type { Cast } from './session.js';
 import type { Owner } from './witnesses.js';
 
@@ -50,7 +51,8 @@ export function exportEnvelope(
     merklePath: cast.heirTree.pathFor(heirIndex).map((e) => ({
       sibling: e.sibling.field.toString(), goesLeft: e.goes_left,
     })),
-    indexerUrl: networkConfig.indexerHttpUrl,
+    // The base URL only: a Blockfrost project id must never travel inside an envelope.
+    indexerUrl: NETWORKS[network]?.indexerHttpUrl ?? '',
   };
 }
 

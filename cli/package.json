@@ -2,7 +2,7 @@
   "name": "nominee-cli",
   "version": "0.1.0",
   "private": true,
-  "description": "Nominee CLI \u2014 add a nominee to your crypto. Nobody learns who.",
+  "description": "Nominee CLI, add a nominee to your crypto. Nobody learns who.",
   "homepage": "https://nominee.world",
   "license": "Apache-2.0",
   "type": "module",
@@ -11,7 +11,8 @@
   },
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "start": "node dist/index.js",
+    "start": "node bin/nominee.mjs",
+    "dev": "tsx src/index.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
