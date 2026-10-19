@@ -10,7 +10,9 @@ nominee.world · built on Midnight
 
 **Your crypto knows who comes next. Nobody else does.**
 
-[Demo video](https://youtu.be/Fb69qNrujFU) · [Deck](docs/nominee-deck.pdf) · [nominee.world](https://nominee.world)
+[Wave 2 demo video](https://youtu.be/fb3CRRd7_hM) · [Wave 2 deck](docs/nominee-deck-wave2.pdf) · [nominee.world](https://nominee.world)
+
+Wave 1: [video](https://youtu.be/Fb69qNrujFU) · [deck](docs/nominee-deck.pdf)
 
 ![The demo, chapter 1](docs/screenshots/1-a-life.png)
 
@@ -121,7 +123,7 @@ NOMINEE_LIVE=1 NOMINEE_NETWORK=preprod NOMINEE_CONTRACT=<address> \
 The envelopes are in `deployments/envelopes/` (devnet) and
 `deployments/envelopes/preprod/`.
 
-![Claim as an heir](docs/screenshots/6-heir-claim.png)
+![Claim as an heir, paid on Preprod](docs/screenshots/8-heir-paid-preprod.png)
 
 The page shows the vault's state in one sentence (still in the grace period,
 still in the veto window, open), then claims. The payout goes to the key the
@@ -147,13 +149,13 @@ the claim in block 5499.
 
 **On Preprod.** The same story ran on the public Preprod network, recorded in
 [`deployments/preprod.json`](deployments/preprod.json): **19 accepted
-transactions** on contract `82917563…ae8734`, blocks 3,030,390 to 3,030,516.
+transactions** on contract `d06ccea1…3c0609`, blocks 3,034,294 to 3,034,432.
 That covers deploy, register, a deposit, device-signed heartbeats and will
 update, `resolve`, `finalize`, three claims, the faked-death veto and the
 guardian path. Two claims came from the CLI. Sam's came from the heir web page
-in block 3,030,516. Anyone can look up any hash on the Preprod indexer, or open
+in block 3,034,432. Anyone can look up any hash on the Preprod indexer, or open
 the contract in the
-[Preprod explorer](https://preprod.midnightexplorer.com/contracts/82917563749612d0ec07636b0d6a85a32bc5d7072c5f06002b3bd766b7ae8734).
+[Preprod explorer](https://preprod.midnightexplorer.com/contracts/d06ccea10c211b5bf2b9de325cafa33136a6ac3cb371c5178cbd8243083c0609).
 An earlier deploy of the first contract, from 11 October, is kept in
 [`deployments/history/`](deployments/history).
 

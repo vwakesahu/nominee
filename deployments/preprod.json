@@ -1,110 +1,110 @@
 {
   "network": "preprod",
   "toolchain": "0.31.1",
-  "contractAddress": "82917563749612d0ec07636b0d6a85a32bc5d7072c5f06002b3bd766b7ae8734",
+  "contractAddress": "6e4156cfdb59dafd0341f75a6c006a7c7f46abaaad0e31f7366e44287d1cb190",
   "graceSeconds": 60,
   "challengeSeconds": 30,
   "transactions": [
     {
       "circuit": "deploy",
-      "txHash": "c16d73531f264f38809eb9a7ac2f913b2d51afd6b4f85c5c557741934c890a21",
-      "block": 3030390,
+      "txHash": "d40f3d06bc54cf199bdafe62033e2379dc721299e433d3c67c7e67aa934d9aa3",
+      "block": 3049063,
       "status": "accepted"
     },
     {
       "circuit": "insertVerifierKey(openProbate)",
-      "txHash": "3b83cea65e5673659f8f15977ba9ae4bfbb0edce3cf310a9eb5e5ef94258427c",
-      "block": 3030395,
+      "txHash": "e6f2c077819e206b992d3866751a49446199803b08851aa992a2e6232019447e",
+      "block": 3049078,
       "status": "accepted"
     },
     {
       "circuit": "insertVerifierKey(resolveUnderPin)",
-      "txHash": "947f3bfc3d6ed48fc4491297bc92cdcbc1b3d9a4a11824987b39113f118b93f7",
-      "block": 3030400,
+      "txHash": "760ba57ecc74af2422f1d1a9779841287ef66bd1eacbf4b6e2b0dcadbaf05375",
+      "block": 3049084,
       "status": "accepted"
     },
     {
       "circuit": "register",
-      "txHash": "9ff51bfc0e9dc7bbaa2a710672c5c078d83c4fb4cf750664bade2ad88ca2f644",
-      "block": 3030405,
+      "txHash": "ec6311bde344ca2e1bc546a5f4a037f4e8abd5893ec8ce873cce37c87ff02e93",
+      "block": 3049091,
       "status": "accepted"
     },
     {
       "circuit": "demotoken deploy",
-      "txHash": "6eb9bd44e61be322d3c2391b32be2f42ede3eb9b80ac2c1c9354227c77261dd4",
-      "block": 3030409,
+      "txHash": "6f560a6757ff71f2afd288cdddde494f15247d3bf079f1631083dadc51933923",
+      "block": 3049095,
       "status": "accepted"
     },
     {
       "circuit": "demotoken mint",
-      "txHash": "5efafc88c63be0d57141ff63b6ae64188c1b8ebdb9e6e9d75b4bfc5f4e152e2e",
-      "block": 3030414,
+      "txHash": "bec53b13ce2da66c8f89291883afc893ad013ad7b04f5fac65743756f0c63943",
+      "block": 3049100,
       "status": "accepted"
     },
     {
       "circuit": "deposit",
-      "txHash": "d700c32c043a345e2b6df701cfed0d51fee0d2d896e8dc72b142ab92422d27f0",
-      "block": 3030420,
+      "txHash": "05957d462741023ea7993154bae5e1b9a8d3ca6b904ce3578007aa36b5bb1838",
+      "block": 3049106,
       "status": "accepted"
     },
     {
       "circuit": "heartbeat",
-      "txHash": "ba1dffb4089d163ec0dfb213c41cc41174b68959c0059d7659dfc1a4e7a2a355",
-      "block": 3030425,
+      "txHash": "c9fc851d76bef974df52e1f8cec941e2f381d93d064d9571f6dceebb726faa92",
+      "block": 3049110,
       "status": "accepted"
     },
     {
       "circuit": "updateWill",
-      "txHash": "197a8c54df9b450ea18527f65550243045ec483877c38ebfe1e3c8f62f9f284b",
-      "block": 3030430,
+      "txHash": "91ce06f312bae68a1967eb3fe4a9d87a4cfb6b5db018cb4d678dc32463695b6f",
+      "block": 3049114,
       "status": "accepted"
     },
     {
       "circuit": "heartbeat, the last one",
-      "txHash": "0166ff53597a2f42da20ac5093b608316fbbfe917d0ede0ee9c281ffc4f3bc16",
-      "block": 3030435,
+      "txHash": "abef9e80624fc6ebb61f1e3af3cb3804f7fdb48d6cd48b4883ee443ddbdf4676",
+      "block": 3049118,
       "status": "accepted"
     },
     {
       "circuit": "resolve",
-      "txHash": "0a70b2551de7968551f0cecd5abdc8a7f094e9aaefb48ed87720d97f1ba0f098",
-      "block": 3030445,
+      "txHash": "256452ae451ab96b1117f80f53266c3b0cada1bf9b1f48130b39fa482520c6df",
+      "block": 3049127,
       "status": "accepted"
     },
     {
       "circuit": "finalize",
-      "txHash": "f5aa34543527e9d578881b0dc355d0220f998b34f98ac1d9c7ce7ebb66466b2f",
-      "block": 3030450,
+      "txHash": "7e0362733aec3f0ddd21b96375682b3b7bc4d096dbbf2078212eb4be4605944a",
+      "block": 3049132,
       "status": "accepted"
     },
     {
       "circuit": "claim",
-      "txHash": "fab970de2ed076037d5033806da5da2e43fc67088806c5b00ee0f8826d309c76",
-      "block": 3030456,
+      "txHash": "45f44f6c32a8f0e565b8fb5239c9ae4cc167bf760690b1417e43a415672133c5",
+      "block": 3049137,
       "status": "accepted"
     },
     {
       "circuit": "claim",
-      "txHash": "7729b77979507510152c7a1432af0fd3c26690db71d54db74ac52bb6f379e658",
-      "block": 3030462,
+      "txHash": "764d37c5e0081f953a0d3ac5d9422fd3ac698d4d9c912df22657cc33c678b59b",
+      "block": 3049140,
       "status": "accepted"
     },
     {
       "circuit": "register",
-      "txHash": "c3468329da941b6328de8f5695b54afa22ff52cd03e989bbdd582d55199235ee",
-      "block": 3030467,
+      "txHash": "2d252a67d6a47ce3263e544bed83e4acf951d8989d5d7df7df329b3ba991ae15",
+      "block": 3049144,
       "status": "accepted"
     },
     {
       "circuit": "resolve",
-      "txHash": "c4b211e834a5c9955f613b54f3fe54157ac8c8df269fa2f2f68050620ccc5e50",
-      "block": 3030472,
+      "txHash": "dd0231cc4f0d0dff3ac4639ecdf37a6785d0eb51a47e6262d916eb034fc23181",
+      "block": 3049148,
       "status": "accepted"
     },
     {
       "circuit": "veto",
-      "txHash": "908a892c5688128e4ad3e5aff3f2c0eed79852da66196f267b2b418716a90412",
-      "block": 3030477,
+      "txHash": "de6e7bef520c5ae1ecfb7f5cdd2a92997693e3716a3c61c008c4090c673b67eb",
+      "block": 3049152,
       "status": "accepted"
     },
     {
@@ -117,19 +117,13 @@
     },
     {
       "circuit": "guardianResolve2of3",
-      "txHash": "3d58dc5f1231bea98c18ac981c252ea0b7a285de23531bd484086d778c3b98e6",
-      "block": 3030481,
-      "status": "accepted"
-    },
-    {
-      "circuit": "claim (heir web page)",
-      "txHash": "b393db0d4d1bfd777f4809528d4e7fb9331174b1cf912e4e2f5372f395a0708e",
-      "block": 3030516,
+      "txHash": "effeb00ff0d24a88215670decbd2b904e42c612daab3db586a8efe2e6d879f36",
+      "block": 3049156,
       "status": "accepted"
     }
   ],
   "simulatorOnly": [],
-  "timestamp": "2026-10-18T05:19:01.206Z",
-  "tokenContract": "02f23d2f91366aefb1a5158083f59a06d363161662129c0c975f7ee5e58b02e6",
+  "timestamp": "2026-10-19T13:48:57.719Z",
+  "tokenContract": "6f59a8aacf59bed9d59f2de24b12b184fde2599e1b769fdf589f0c1b759b774a",
   "depositAsset": "tNOM"
 }

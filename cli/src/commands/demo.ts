@@ -22,6 +22,7 @@ import {
 import { TOKEN_SYMBOL } from '../token.js';
 import { emptyDeployment, save, type TxRecord } from '../state.js';
 import { runPreflight } from '../preflight.js';
+import { errorCode, LEDGER_ERRORS } from '../retry.js';
 import { exportEnvelope, writeEnvelope } from '../envelope.js';
 import { SparseTree, ownerLeaf } from '../crypto.js';
 import { OWNER_DEPTH } from '../witnesses.js';
@@ -147,8 +148,13 @@ export async function demo(opts: { live?: boolean } = {}) {
       txs.push({ circuit: t.circuit, txHash: t.txHash, block: t.block, status: 'accepted' });
     }
   } catch (e) {
-    warn('On-chain deploy unavailable, running the whole story in the simulator.');
-    note(describeErr(e).split('\n')[0].slice(0, 160));
+    // --live means live. Falling back to the simulator here produced runs that
+    // looked real and weren't, so a failed live deploy stops instead.
+    fail('Live deploy failed, nothing was recorded. Run the same command again.');
+    note(describeErr(e).replace(/\s+/g, ' ').slice(0, 600));
+    const code = errorCode(e);
+    if (code) note(`ledger code: Custom(${code})${LEDGER_ERRORS[code] ? ' ' + LEDGER_ERRORS[code] : ''}`);
+    process.exit(1);
   }
 
   // Every heir leaf binds the heir's Zswap coin public key. Live, the payout

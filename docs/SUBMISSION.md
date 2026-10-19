@@ -256,13 +256,13 @@ and answered the judge's questions in the contract itself.
 **Links**
 
 - Repo: https://github.com/vwakesahu/nominee
-- Demo video: https://youtu.be/Fb69qNrujFU
-- Deck: `docs/nominee-deck.pdf` in the repo
+- Demo video: https://youtu.be/fb3CRRd7_hM (Wave 1: https://youtu.be/Fb69qNrujFU)
+- Deck: `docs/nominee-deck-wave2.pdf` in the repo (Wave 1: `docs/nominee-deck.pdf`)
 - Landing page: https://nominee.world
 - Live run: `deployments/devnet.json` (17 accepted transactions, contract
   `7de3ca92…fee440`)
 - Preprod run: `deployments/preprod.json` (19 accepted transactions, contract
-  `82917563…ae8734`, blocks 3,030,390 to 3,030,516, including three claims and
+  `d06ccea1…3c0609`, blocks 3,034,294 to 3,034,432, including three claims and
   the heir web page's claim)
 
 ### The payout is live
@@ -282,10 +282,10 @@ anywhere on that path.
 
 The whole story ran on the public Preprod network:
 `deployments/preprod.json` lists 19 accepted transactions on contract
-`82917563…ae8734`, blocks 3,030,390 to 3,030,516. That includes the deposit,
+`d06ccea1…3c0609`, blocks 3,034,294 to 3,034,432. That includes the deposit,
 the device-signed heartbeats and will update, resolve and finalize, three
 claims, the faked-death veto and the guardian path. Sam's claim is in block
-3,030,516. Sam pasted an envelope into the heir web page, and the page's server
+3,034,432. Sam pasted an envelope into the heir web page, and the page's server
 proved and submitted the claim. Anyone can check every hash on the Preprod
 indexer.
 
