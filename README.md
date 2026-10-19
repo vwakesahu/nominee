@@ -14,10 +14,12 @@ nominee.world · built on Midnight
 
 Wave 1: [video](https://youtu.be/Fb69qNrujFU) · [deck](docs/nominee-deck.pdf)
 
-![The demo, chapter 1](docs/screenshots/1-a-life.png)
+![The demo on Preprod, chapter 1](docs/screenshots/1-a-life.png)
 
 Every step of the demo prints two panels. What actually happened on the left,
-what the chain got out of it on the right.
+what the chain got out of it on the right. Above: the live run on Midnight's
+public Preprod network that `deployments/preprod.json` records, with a real
+transaction and block on every step.
 
 ---
 
@@ -134,7 +136,29 @@ their own secret, share and Merkle path.
 
 ### On chain
 
-A recorded live run is in [`deployments/devnet.json`](deployments/devnet.json):
+The whole story runs on Midnight's public Preprod network, recorded in
+[`deployments/preprod.json`](deployments/preprod.json): **19 accepted
+transactions** on contract `d06ccea1…3c0609`, blocks 3,034,294 to 3,034,432.
+That covers deploy, register, a deposit, device-signed heartbeats and will
+update, `resolve`, `finalize`, three claims, the faked-death veto and the
+guardian path. Two claims came from the CLI. Sam's came from the heir web page
+in block 3,034,432. Anyone can look up any hash on the Preprod indexer, or open
+the contract in the
+[Preprod explorer](https://preprod.midnightexplorer.com/contracts/d06ccea10c211b5bf2b9de325cafa33136a6ac3cb371c5178cbd8243083c0609).
+An earlier deploy of the first contract, from 11 October, is kept in
+[`deployments/history/`](deployments/history).
+
+![Resolve opens a veto window, then finalize](docs/screenshots/2-silence-and-resolve.png)
+
+![The contract pays the nominees](docs/screenshots/3-nominees-claim.png)
+
+The faked-death chapter, also live: Ben's vault is resolved against him while he
+is alive, his secret alone vetoes it, `finalize` is refused, and later two of his
+three guardians open it.
+
+![Faked death, contested](docs/screenshots/9-faked-death.png)
+
+**On a local devnet.** A recorded live run is in [`deployments/devnet.json`](deployments/devnet.json):
 **17 accepted transactions** on contract `7de3ca92…fee440`. Deploy, two
 verifier-key inserts, register, deposit, two device-signed heartbeats, a
 device-signed `updateWill`, `resolve`, `finalize`, three `claim`s (`heldCoin`
@@ -146,18 +170,6 @@ Two of the claims came from the CLI (blocks 5470 and 5475). The third came from
 the heir web page: the run held Sam back with `NOMINEE_HOLD_HEIR=sam`, then
 Sam's envelope was pasted into the claim server, which proved and submitted
 the claim in block 5499.
-
-**On Preprod.** The same story ran on the public Preprod network, recorded in
-[`deployments/preprod.json`](deployments/preprod.json): **19 accepted
-transactions** on contract `d06ccea1…3c0609`, blocks 3,034,294 to 3,034,432.
-That covers deploy, register, a deposit, device-signed heartbeats and will
-update, `resolve`, `finalize`, three claims, the faked-death veto and the
-guardian path. Two claims came from the CLI. Sam's came from the heir web page
-in block 3,034,432. Anyone can look up any hash on the Preprod indexer, or open
-the contract in the
-[Preprod explorer](https://preprod.midnightexplorer.com/contracts/d06ccea10c211b5bf2b9de325cafa33136a6ac3cb371c5178cbd8243083c0609).
-An earlier deploy of the first contract, from 11 October, is kept in
-[`deployments/history/`](deployments/history).
 
 One difference from the devnet. The funded Preprod wallet holds unshielded
 NIGHT, and NIGHT cannot be shielded, so the vault there holds **tNOM**. tNOM is
@@ -194,6 +206,13 @@ registry with fresh secrets every run.
 
 The script picks Node 22 and starts a local proof server 8.1.3 on port 6301. It
 masks the Blockfrost id in all output.
+
+A live run never falls back to the simulator. If the deploy fails it stops
+with `Live deploy failed, nothing was recorded` and the ledger code; run the
+same command again. Retries such as `Custom(170)` or a DUST coin still in
+flight recover on their own. Don't stop a run in the middle of a chapter: the
+wallet has only a couple of fee coins, and a half-submitted transaction holds
+one for a few minutes.
 
 The first run scans about 1.7 million DUST events, which takes about 30
 minutes with the machine awake. It checkpoints to `~/.nominee/`, so later runs
@@ -252,13 +271,15 @@ Full detail (state layout, per-circuit inputs, envelope format, threat model) is
 - A heartbeat stopped
 - A window opened, and whether it was contested
 - N anonymous claims were made
-- No double-claim succeeded
+- No double-claim, stolen seed or replayed signature succeeded
 
 ### Attacks, run every time the demo runs
 
 ![Attacks refused](docs/screenshots/4-attacks-refused.png)
 
-Six refusals: a nominee claiming twice, a stranger, a nominee asking for more
+These panels say SIMULATOR on purpose: a refusal happens when the circuit
+runs, before any proof exists, so there is no transaction to send. Six
+refusals: a nominee claiming twice, a stranger, a nominee asking for more
 than they were left, a stolen seed heartbeating without the device, a stolen
 envelope claiming to a different payout key, and a guardian signature for one
 vault replayed against another.

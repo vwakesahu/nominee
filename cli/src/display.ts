@@ -139,7 +139,7 @@ export function summary(stats: {
   row(`Circuits: ${stats.circuits} compiled  │  Max k=${stats.maxK}  │  Keys: ${stats.keysMB} MB`);
   row(`Tests: ${stats.tests}  │  Leak check: ${stats.leak}`);
   row(stats.live
-    ? `Devnet txs: ${stats.txs} accepted  │  Shielded payouts on chain: ${stats.claims}`
+    ? `On-chain txs: ${stats.txs} accepted  │  Shielded payouts on chain: ${stats.claims}`
     : `Simulator run  │  Shielded payouts (simulated): ${stats.claims}`);
   row();
   row('The chain never learned:');
